@@ -342,7 +342,7 @@ export async function GET(request: NextRequest) {
     )
 
     // Kategori istatistiklerini hesapla
-    const categories = [...new Set(apiEndpoints.map(api => api.category))]
+    const categories = Array.from(new Set(apiEndpoints.map(api => api.category)))
     const categoryStats = categories.map(category => {
       const categoryApis = apiStats.filter(api => api.category === category)
       const activeCount = categoryApis.filter(api => api.status === 'active').length
