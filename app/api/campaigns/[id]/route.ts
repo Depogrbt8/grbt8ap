@@ -28,7 +28,7 @@ export async function DELETE(
     })
 
     await createLog({
-      level: 'info',
+      level: 'INFO',
       message: 'Kampanya silindi',
       details: `Kampanya: ${campaign.title}`
     })
