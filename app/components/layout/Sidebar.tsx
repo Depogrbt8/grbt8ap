@@ -1,5 +1,5 @@
 'use client'
-import { Calendar, Clock, User, Layout, Megaphone, CreditCard, FileText, Settings, BookOpen, BarChart3 } from 'lucide-react'
+import { Calendar, Clock, User, Layout, Megaphone, CreditCard, FileText, Settings, BookOpen, BarChart3, Search, Mail, Code, Globe, Briefcase } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -12,9 +12,9 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const pathname = usePathname()
   
   return (
-    <div className="w-64 bg-white shadow-lg">
+    <div className="w-64 bg-white shadow-lg flex flex-col h-full">
       {/* Zaman/Tarih Alanı */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center space-x-2 text-gray-600">
           <Calendar className="h-4 w-4" />
           <span className="text-sm">19 Temmuz 2024</span>
@@ -26,7 +26,7 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       </div>
 
       {/* Admin Bilgisi Alanı */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
             <User className="h-4 w-4 text-white" />
@@ -38,9 +38,21 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         </div>
       </div>
 
-      {/* Sekmeler */}
-      <div className="p-4">
-        <nav className="space-y-2">
+      {/* Sekmeler - Scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        <nav className="p-4 space-y-2">
+          <Link 
+            href="/dashboard"
+            onClick={() => setActiveTab('dashboard')}
+            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
+              pathname === '/dashboard' 
+                ? 'text-gray-900 bg-blue-50' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            <BarChart3 className="h-4 w-4" />
+            <span>Dashboard</span>
+          </Link>
           <Link 
             href="/sistem"
             onClick={() => setActiveTab('sistem')}
@@ -76,6 +88,66 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
           >
             <Megaphone className="h-4 w-4" />
             <span>Kampanyalar</span>
+          </Link>
+          <Link 
+            href="/seo"
+            onClick={() => setActiveTab('seo')}
+            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
+              pathname === '/seo' 
+                ? 'text-gray-900 bg-blue-50' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            <Search className="h-4 w-4" />
+            <span>SEO</span>
+          </Link>
+          <Link 
+            href="/email"
+            onClick={() => setActiveTab('email')}
+            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
+              pathname === '/email' 
+                ? 'text-gray-900 bg-blue-50' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            <Mail className="h-4 w-4" />
+            <span>Email</span>
+          </Link>
+          <Link 
+            href="/apiler"
+            onClick={() => setActiveTab('apiler')}
+            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
+              pathname === '/apiler' 
+                ? 'text-gray-900 bg-blue-50' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            <Code className="h-4 w-4" />
+            <span>API</span>
+          </Link>
+          <Link 
+            href="/dis-apiler"
+            onClick={() => setActiveTab('dis-apiler')}
+            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
+              pathname === '/dis-apiler' 
+                ? 'text-gray-900 bg-blue-50' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            <Globe className="h-4 w-4" />
+            <span>Dış API</span>
+          </Link>
+          <Link 
+            href="/calismalarim"
+            onClick={() => setActiveTab('calismalarim')}
+            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
+              pathname === '/calismalarim' 
+                ? 'text-gray-900 bg-blue-50' 
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+            }`}
+          >
+            <Briefcase className="h-4 w-4" />
+            <span>Çalışmalarım</span>
           </Link>
           <Link 
             href="/rezervasyonlar"

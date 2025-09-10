@@ -27,6 +27,16 @@ export default function AdminList({ admins, onEdit, onDelete, onToggleStatus }: 
         return 'bg-blue-100 text-blue-800'
       case 'Moderator':
         return 'bg-green-100 text-green-800'
+      case 'Satış':
+        return 'bg-purple-100 text-purple-800'
+      case 'Temsilci':
+        return 'bg-yellow-100 text-yellow-800'
+      case 'Email Yöneticisi':
+        return 'bg-indigo-100 text-indigo-800'
+      case 'API Yöneticisi':
+        return 'bg-orange-100 text-orange-800'
+      case 'Viewer':
+        return 'bg-gray-100 text-gray-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -39,7 +49,7 @@ export default function AdminList({ admins, onEdit, onDelete, onToggleStatus }: 
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto bg-white rounded-lg border border-gray-200">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>

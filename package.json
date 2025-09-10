@@ -6,7 +6,12 @@
     "dev": "next dev -p 3004",
     "build": "next build",
     "start": "next start -p 3004",
-    "lint": "next lint"
+    "lint": "next lint",
+    "deploy": "bash deploy.sh",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:seed": "prisma db seed"
   },
   "dependencies": {
     "@prisma/client": "5.10.2",
@@ -14,16 +19,22 @@
     "@radix-ui/react-dropdown-menu": "2.1.15",
     "@radix-ui/react-tabs": "1.1.12",
     "@tanstack/react-query": "5.83.0",
+    "@types/pdfkit": "0.17.2",
     "bcrypt": "6.0.0",
+    "better-sqlite3": "8.7.0",
     "date-fns": "4.1.0",
+    "isomorphic-dompurify": "^2.8.0",
     "lucide-react": "0.525.0",
     "next": "13.5.6",
     "next-auth": "4.24.11",
+    "otplib": "^12.0.1",
+    "pdfkit": "0.17.2",
     "prisma": "5.10.2",
     "react": "^18",
     "react-dom": "^18",
     "react-hook-form": "7.60.0",
     "recharts": "3.1.0",
+    "systeminformation": "5.27.8",
     "zod": "4.0.5"
   },
   "devDependencies": {
@@ -37,4 +48,4 @@
     "tailwindcss": "^3",
     "typescript": "^5"
   }
-} 
+}

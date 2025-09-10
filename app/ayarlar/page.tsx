@@ -8,7 +8,9 @@ import CountryRestrictionModal from '../components/settings/CountryRestrictionMo
 import SiteSettingsModal from '../components/settings/SiteSettingsModal'
 import SecurityModal from '../components/settings/SecurityModal'
 import EmailModal from '../components/settings/EmailModal'
+import AgencyModal from '../components/settings/AgencyModal'
 import AnnouncementModal from '../components/settings/AnnouncementModal'
+import SeoModal from '../components/settings/SeoModal'
 
 export default function AyarlarPage() {
   const [activeTab, setActiveTab] = useState('ayarlar')
@@ -18,7 +20,9 @@ export default function AyarlarPage() {
   const [isSiteModalOpen, setIsSiteModalOpen] = useState(false)
   const [isSecurityModalOpen, setIsSecurityModalOpen] = useState(false)
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
+  const [isAgencyModalOpen, setIsAgencyModalOpen] = useState(false)
   const [isAnnouncementModalOpen, setIsAnnouncementModalOpen] = useState(false)
+  const [isSeoModalOpen, setIsSeoModalOpen] = useState(false)
 
   return (
     <div className="flex h-screen bg-gray-100 w-full">
@@ -43,6 +47,15 @@ export default function AyarlarPage() {
                 <p className="text-sm text-gray-600">Site başlığı, iletişim bilgileri</p>
               </button>
 
+              {/* SEO Ayarları Butonu */}
+              <button
+                onClick={() => setIsSeoModalOpen(true)}
+                className="bg-white rounded-lg border border-gray-200 p-6 hover:bg-gray-50 transition-colors"
+              >
+                <h2 className="text-lg font-medium text-gray-900 mb-2">SEO Ayarları</h2>
+                <p className="text-sm text-gray-600">Meta tags, sosyal medya, güvenlik</p>
+              </button>
+
               {/* Güvenlik Ayarları Butonu */}
               <button
                 onClick={() => setIsSecurityModalOpen(true)}
@@ -59,6 +72,15 @@ export default function AyarlarPage() {
               >
                 <h2 className="text-lg font-medium text-gray-900 mb-2">Email Ayarları</h2>
                 <p className="text-sm text-gray-600">SMTP ayarları, email türleri</p>
+              </button>
+
+              {/* Ajans Ayarları Butonu */}
+              <button
+                onClick={() => setIsAgencyModalOpen(true)}
+                className="bg-white rounded-lg border border-gray-200 p-6 hover:bg-gray-50 transition-colors"
+              >
+                <h2 className="text-lg font-medium text-gray-900 mb-2">Ajans Ayarları</h2>
+                <p className="text-sm text-gray-600">Ajans yönetimi ve komisyon ayarları</p>
               </button>
 
               {/* Admin Yönetimi Butonu */}
@@ -135,9 +157,17 @@ export default function AyarlarPage() {
         isOpen={isEmailModalOpen} 
         onClose={() => setIsEmailModalOpen(false)} 
       />
+      <AgencyModal 
+        isOpen={isAgencyModalOpen} 
+        onClose={() => setIsAgencyModalOpen(false)} 
+      />
       <AnnouncementModal 
         isOpen={isAnnouncementModalOpen} 
         onClose={() => setIsAnnouncementModalOpen(false)} 
+      />
+      <SeoModal 
+        isOpen={isSeoModalOpen} 
+        onClose={() => setIsSeoModalOpen(false)} 
       />
     </div>
   )

@@ -9,9 +9,11 @@ import PermissionManager from '../../components/admin/PermissionManager'
 export default function AdminYonetimiPage() {
   const [activeTab, setActiveTab] = useState('ayarlar')
   const [activeAdminTab, setActiveAdminTab] = useState('liste')
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingAdmin, setEditingAdmin] = useState<any>(null)
 
   // Örnek admin verileri
-  const [admins] = useState([
+  const [admins, setAdmins] = useState([
     {
       id: 1,
       name: 'Ahmet Yılmaz',
@@ -59,6 +61,54 @@ export default function AdminYonetimiPage() {
     }
   ])
 
+  // Admin işlemleri
+  const handleAddAdmin = (adminData: any) => {
+    const newAdmin = {
+      id: Math.max(...admins.map(a => a.id)) + 1,
+      name: `${adminData.firstName} ${adminData.lastName}`,
+      email: adminData.email,
+      role: adminData.role,
+      status: 'active' as const,
+      lastLogin: 'Henüz giriş yapmadı',
+      createdAt: new Date().toLocaleDateString('tr-TR')
+    }
+    setAdmins([...admins, newAdmin])
+    setActiveAdminTab('liste')
+    alert('Admin başarıyla eklendi!')
+  }
+
+  const handleEditAdmin = (admin: any) => {
+    setEditingAdmin(admin)
+    setShowEditModal(true)
+  }
+
+  const handleUpdateAdmin = (updatedAdmin: any) => {
+    setAdmins(admins.map(admin => 
+      admin.id === updatedAdmin.id 
+        ? { ...admin, ...updatedAdmin }
+        : admin
+    ))
+    setShowEditModal(false)
+    setEditingAdmin(null)
+    alert('Admin başarıyla güncellendi!')
+  }
+
+  const handleDeleteAdmin = (admin: any) => {
+    if (confirm(`${admin.name} adlı admini silmek istediğinizden emin misiniz?`)) {
+      setAdmins(admins.filter(a => a.id !== admin.id))
+      alert('Admin başarıyla silindi!')
+    }
+  }
+
+  const handleToggleStatus = (admin: any) => {
+    setAdmins(admins.map(a => 
+      a.id === admin.id 
+        ? { ...a, status: a.status === 'active' ? 'inactive' : 'active' }
+        : a
+    ))
+    alert(`Admin durumu ${admin.status === 'active' ? 'pasif' : 'aktif'} yapıldı!`)
+  }
+
   return (
     <div className="flex h-screen bg-gray-100 w-full">
       {/* Sidebar */}
@@ -70,18 +120,18 @@ export default function AdminYonetimiPage() {
         <Header />
 
         {/* Ana İçerik */}
-        <main className="flex-1 p-4 w-full">
-          <div className="p-6">
+        <main className="flex-1 p-4 overflow-hidden">
+          <div className="h-full overflow-y-auto">
             <div className="mb-6">
               <h1 className="text-2xl font-semibold text-gray-900">Admin Yönetimi</h1>
             </div>
 
             {/* Tab Navigation */}
             <div className="border-b border-gray-200 mb-6">
-              <nav className="-mb-px flex space-x-8">
+              <nav className="-mb-px flex space-x-8 overflow-x-auto">
                 <button
                   onClick={() => setActiveAdminTab('liste')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                     activeAdminTab === 'liste'
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -91,7 +141,7 @@ export default function AdminYonetimiPage() {
                 </button>
                 <button
                   onClick={() => setActiveAdminTab('ekle')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                     activeAdminTab === 'ekle'
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -100,9 +150,9 @@ export default function AdminYonetimiPage() {
                   Yeni Admin Ekle
                 </button>
                 <button
-                  onClick={() => setActiveAdminTab('yetki')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                    activeAdminTab === 'yetki'
+                  onClick={() => setActiveAdminTab('yetkiler')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    activeAdminTab === 'yetkiler'
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
@@ -112,51 +162,61 @@ export default function AdminYonetimiPage() {
               </nav>
             </div>
 
-            {/* Tab Content */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              {activeAdminTab === 'liste' && (
-                <div>
-                  <div className="mb-4">
-                    <h2 className="text-lg font-medium text-gray-900">Admin Listesi</h2>
-                  </div>
-                  <AdminList 
-                    admins={admins}
-                    onEdit={(admin) => console.log('Edit:', admin)}
-                    onDelete={(admin) => console.log('Delete:', admin)}
-                    onToggleStatus={(admin) => console.log('Toggle status:', admin)}
-                  />
-                </div>
-              )}
+            {/* Tab İçerikleri */}
+            {activeAdminTab === 'liste' && (
+              <AdminList 
+                admins={admins} 
+                onEdit={handleEditAdmin}
+                onDelete={handleDeleteAdmin}
+                onToggleStatus={handleToggleStatus}
+              />
+            )}
 
-              {activeAdminTab === 'ekle' && (
-                <div>
-                  <h2 className="text-lg font-medium text-gray-900 mb-4">Yeni Admin Ekle</h2>
-                  <AdminForm 
-                    onSubmit={(adminData) => {
-                      console.log('Yeni admin:', adminData)
-                      // Burada API çağrısı yapılacak
-                      alert('Admin başarıyla eklendi!')
-                    }}
-                    onCancel={() => setActiveAdminTab('liste')}
-                  />
-                </div>
-              )}
+            {activeAdminTab === 'ekle' && (
+              <AdminForm 
+                onSubmit={handleAddAdmin}
+                onCancel={() => setActiveAdminTab('liste')}
+              />
+            )}
 
-              {activeAdminTab === 'yetki' && (
-                <div>
-                  <h2 className="text-lg font-medium text-gray-900 mb-4">Yetki Yönetimi</h2>
-                  <PermissionManager 
-                    onSave={(roles) => {
-                      console.log('Güncellenmiş roller:', roles)
-                      alert('Yetkiler başarıyla kaydedildi!')
-                    }}
-                  />
-                </div>
-              )}
-            </div>
+            {activeAdminTab === 'yetkiler' && (
+              <PermissionManager onSave={(roles) => console.log('Yetkiler kaydedildi:', roles)} />
+            )}
           </div>
         </main>
       </div>
+
+      {/* Admin Düzenleme Modal */}
+      {showEditModal && editingAdmin && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-gray-900">Admin Düzenle</h2>
+              <button
+                onClick={() => {
+                  setShowEditModal(false)
+                  setEditingAdmin(null)
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <AdminForm
+              onSubmit={handleUpdateAdmin}
+              onCancel={() => {
+                setShowEditModal(false)
+                setEditingAdmin(null)
+              }}
+              editingAdmin={editingAdmin}
+              isEdit={true}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 } 

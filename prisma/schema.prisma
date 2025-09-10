@@ -10,65 +10,313 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Kullanıcılar
+// Ana sitenin User modeli
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  firstName String
-  lastName  String
-  password  String
-  phone     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            String    @id @default(cuid())
+  firstName     String
+  lastName      String
+  email         String    @unique
+  password      String
+  countryCode   String?
+  phone         String?
+  birthDay      String?
+  birthMonth    String?
+  birthYear     String?
+  gender        String?
+  identityNumber String?
+  isForeigner   Boolean   @default(false)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  status        String    @default("active")
+  role          String    @default("user") // "admin" veya "user"
+  canDelete     Boolean   @default(true)
 
   // İlişkiler
-  passengers     Passenger[]
+  accounts      Account[]
+  sessions      Session[]
+  reservations  Reservation[]
+  payments      Payment[]
+  passengers    Passenger[]
   priceAlerts   PriceAlert[]
   searchFavorites SearchFavorite[]
+  surveyResponses SurveyResponse[]
+  systemLogs    SystemLog[]
+  campaigns     Campaign[]
+  emailTemplates EmailTemplate[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Reservation {
+  id                  String    @id @default(cuid())
+  userId              String
+  type                String    // flight, hotel, car, esim
+  status              String    // pending, confirmed, cancelled
+  amount              Float
+  currency            String
+  biletDukkaniOrderId String?
+  biletDukkaniRouteId String?
+  pnr                 String?
+  validUntil          DateTime?
+  passengers          String?
+  flightNumber        String?
+  origin              String?
+  destination         String?
+  departureTime       DateTime?
+  arrivalTime         DateTime?
+  airline             String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  user                User      @relation(fields: [userId], references: [id])
+  payment             Payment?
+}
+
+model Payment {
+  id            String      @id @default(cuid())
+  reservationId String      @unique
+  userId        String
+  amount        Float
+  currency      String
+  status        String      // pending, completed, failed
+  provider      String      // stripe, paypal, etc.
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  user          User        @relation(fields: [userId], references: [id])
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
 }
 
 // Yolcular
 model Passenger {
-  id             String   @id @default(cuid())
-  userId         String
-  firstName      String
-  lastName       String
-  birthDate      DateTime
-  documentType   String
-  documentNumber String
-  nationality    String
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id              String    @id @default(cuid())
+  userId          String
+  firstName       String
+  lastName        String
+  identityNumber  String?
+  isForeigner     Boolean   @default(false)
+  birthDay        String
+  birthMonth      String
+  birthYear       String
+  gender          String
+  countryCode     String?
+  phone           String?
+  hasMilCard      Boolean   @default(false)
+  hasPassport     Boolean   @default(false)
+  passportNumber  String?
+  passportExpiry  DateTime?
+  milCardNumber   String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  status          String    @default("active")
+  isAccountOwner  Boolean   @default(false)
 
-  // İlişkiler
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, identityNumber])
+  @@index([userId])
 }
 
 // Fiyat Alarmları
 model PriceAlert {
-  id                 String    @id @default(cuid())
-  userId             String
-  origin             String
-  destination        String
-  targetPrice        Float?
-  lastNotifiedPrice  Float?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-
-  // İlişkiler
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
+  userId        String
+  origin        String
+  destination   String
+  departureDate DateTime
+  targetPrice   Float?
+  lastNotifiedPrice Float?
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
 }
 
 // Favori Aramalar
 model SearchFavorite {
-  id             String   @id @default(cuid())
-  userId         String
-  origin         String
-  destination    String
-  departureDate  DateTime
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  // İlişkiler
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String   @id @default(cuid())
+  userId        String
+  origin        String
+  destination   String
+  departureDate DateTime
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
 }
+
+// Sistem Ayarları ve Bakım Modu
+model SystemSettings {
+  id                String   @id @default(cuid())
+  maintenanceMode   Boolean  @default(false)
+  maintenanceReason String?
+  maintenanceStart  DateTime?
+  estimatedDuration String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// Kampanyalar
+model Campaign {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String?  // Görsel URL'i - Opsiyonel
+  altText     String   // Alt text
+  linkUrl     String?  // Tıklanınca gidilecek URL
+  status      String   @default("active") // active, inactive
+  position    Int      @default(0) // Sıralama
+  clickCount  Int      @default(0) // Tıklanma sayısı
+  viewCount   Int      @default(0) // Görüntülenme sayısı
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  // Admin kullanıcı ID'si
+  
+  // İlişkiler
+  user User? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+}
+
+// Anket Yanıtları
+model SurveyResponse {
+  id           String   @id @default(cuid())
+  userId       String   // Kullanıcı ID'si eklendi
+  answers      String   // JSON string olarak saklanacak
+  completedAt  DateTime
+  userAgent    String?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+// Sistem Logları
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String   // INFO, WARNING, ERROR, DEBUG
+  message   String
+  source    String   // system, auth, database, api, etc.
+  userId    String?  // İsteğe bağlı kullanıcı ID'si
+  metadata  String?  // JSON string olarak ek bilgiler
+  timestamp DateTime @default(now())
+  
+  // İlişkiler
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+// Email Template'leri
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  subject     String
+  content     String   // HTML content
+  type        String   // transactional, marketing, notification
+  language    String   @default("tr")
+  variables   String?  // JSON string olarak template değişkenleri
+  status      String   @default("active") // active, inactive
+  usageCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?  // Admin kullanıcı ID'si
+  
+  // İlişkiler
+  user User? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  emails EmailLog[]
+  queueEmails EmailQueue[]
+}
+
+// Email Kuyruğu
+model EmailQueue {
+  id          String   @id @default(cuid())
+  recipient   String
+  cc          String?
+  bcc         String?
+  subject     String
+  content     String
+  templateId  String?
+  priority    String   @default("normal") // low, normal, high
+  status      String   @default("pending") // pending, sent, failed, cancelled
+  scheduledAt DateTime?
+  sentAt      DateTime?
+  errorMessage String?
+  retryCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // İlişkiler
+  template EmailTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+}
+
+// Email Logları
+model EmailLog {
+  id          String   @id @default(cuid())
+  recipient   String
+  cc          String?
+  bcc         String?
+  subject     String
+  content     String
+  templateId  String?
+  status      String   // sent, delivered, opened, clicked, bounced, failed
+  sentAt      DateTime @default(now())
+  deliveredAt DateTime?
+  openedAt    DateTime?
+  clickedAt   DateTime?
+  bouncedAt   DateTime?
+  errorMessage String?
+  ipAddress   String?
+  userAgent   String?
+  trackingId  String?  // Unique tracking ID for analytics
+  
+  // İlişkiler
+  template EmailTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+}
+
+// Email Ayarları
+model EmailSettings {
+  id            String   @id @default(cuid())
+  smtpHost      String
+  smtpPort      Int      @default(587)
+  smtpUser      String
+  smtpPassword  String
+  fromEmail     String
+  fromName      String
+  dailyLimit    Int      @default(1000)
+  rateLimit     Int      @default(100) // per minute
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+

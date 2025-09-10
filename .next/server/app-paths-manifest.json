@@ -1,9 +1,8 @@
 {
   "/not-found": "app/not-found.js",
-  "/ayarlar/page": "app/ayarlar/page.js",
-  "/sistem/page": "app/sistem/page.js",
-  "/rezervasyonlar/page": "app/rezervasyonlar/page.js",
-  "/istatistikler/page": "app/istatistikler/page.js",
-  "/odemeler/page": "app/odemeler/page.js",
-  "/rezervasyonlar/[id]/page": "app/rezervasyonlar/[id]/page.js"
+  "/page": "app/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/dashboard/page": "app/dashboard/page.js",
+  "/kullanici/page": "app/kullanici/page.js",
+  "/api/users/route": "app/api/users/route.js"
 }

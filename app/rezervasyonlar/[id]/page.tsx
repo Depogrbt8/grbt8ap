@@ -62,6 +62,7 @@ interface AirRule {
 
 interface Reservation {
   id: string
+  pnr: string
   name: string
   orderType: 'individual' | 'corporate'
   status: 'ready' | 'preparing' | 'cancelled' | 'completed'
@@ -120,6 +121,7 @@ export default function RezervasyonDetayPage({ params }: { params: { id: string 
   // Ana site bilgilerine göre örnek rezervasyon verisi
       const [reservation] = useState<Reservation>({
       id: params.id,
+      pnr: 'ABC123456',
       name: 'Ahmet Yılmaz',
     orderType: 'individual',
     status: 'ready',
@@ -298,10 +300,88 @@ export default function RezervasyonDetayPage({ params }: { params: { id: string 
     // TODO: API call to update status to 'ready'
   }
 
-  const handleCancel = () => {
-    // Bilet Dükkanı API'ye iptal isteği gönder
-    console.log('Rezervasyon iptal edildi:', reservation.id)
-    // TODO: API call to update status to 'cancelled'
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [showRefundModal, setShowRefundModal] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
+  const [refundAmount, setRefundAmount] = useState(0)
+  const [isProcessing, setIsProcessing] = useState(false)
+
+  const handleCancel = async () => {
+    if (!cancelReason.trim()) {
+      alert('Lütfen iptal sebebini belirtin')
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      // Bilet Dükkanı API'ye iptal isteği gönder
+      const response = await fetch(`/api/orders/${reservation.id}/cancel`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          reason: cancelReason,
+          refundAmount: reservation.totalAmount || 0
+        })
+      })
+
+      if (response.ok) {
+        alert('Rezervasyon başarıyla iptal edildi')
+        setShowCancelModal(false)
+        setCancelReason('')
+        // Sayfayı yenile veya state'i güncelle
+        window.location.reload()
+      } else {
+        const error = await response.json()
+        alert(`İptal işlemi başarısız: ${error.message}`)
+      }
+    } catch (error) {
+      console.error('İptal hatası:', error)
+      alert('İptal işlemi sırasında bir hata oluştu')
+    } finally {
+      setIsProcessing(false)
+    }
+  }
+
+  const handleRefund = async () => {
+    if (refundAmount <= 0) {
+      alert('Lütfen geçerli bir iade tutarı girin')
+      return
+    }
+
+    setIsProcessing(true)
+    try {
+      // Bilet Dükkanı API'ye iade isteği gönder
+      const response = await fetch(`/api/orders/${reservation.id}/refund`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({
+          amount: refundAmount,
+          reason: 'Manuel iade işlemi'
+        })
+      })
+
+      if (response.ok) {
+        alert('İade işlemi başarıyla tamamlandı')
+        setShowRefundModal(false)
+        setRefundAmount(0)
+        // Sayfayı yenile veya state'i güncelle
+        window.location.reload()
+      } else {
+        const error = await response.json()
+        alert(`İade işlemi başarısız: ${error.message}`)
+      }
+    } catch (error) {
+      console.error('İade hatası:', error)
+      alert('İade işlemi sırasında bir hata oluştu')
+    } finally {
+      setIsProcessing(false)
+    }
   }
 
   const getPaymentTypeText = (paymentType: string) => {
@@ -371,6 +451,8 @@ export default function RezervasyonDetayPage({ params }: { params: { id: string 
               onApprove={handleApprove}
               onPrepare={handlePrepare}
               onCancel={handleCancel}
+              onShowCancelModal={() => setShowCancelModal(true)}
+              onShowRefundModal={() => setShowRefundModal(true)}
             />
 
             {/* Detay Sekmeleri */}
@@ -802,6 +884,157 @@ export default function RezervasyonDetayPage({ params }: { params: { id: string 
           </div>
         </main>
       </div>
+
+      {/* İptal Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Rezervasyon İptali</h3>
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-3">
+                Bu rezervasyonu iptal etmek istediğinizden emin misiniz? Bu işlem geri alınamaz.
+              </p>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  İptal Sebebi *
+                </label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="İptal sebebini belirtin..."
+                />
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Dikkat:</strong> İptal işlemi sonrasında müşteriye otomatik iade yapılacaktır.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                disabled={isProcessing}
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleCancel}
+                disabled={isProcessing || !cancelReason.trim()}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? 'İşleniyor...' : 'Rezervasyonu İptal Et'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* İade Modal */}
+      {showRefundModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-medium text-gray-900">Manuel İade İşlemi</h3>
+              <button
+                onClick={() => setShowRefundModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-3">
+                Müşteriye manuel iade işlemi yapmak istediğinizden emin misiniz?
+              </p>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  İade Tutarı *
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={refundAmount}
+                    onChange={(e) => setRefundAmount(parseFloat(e.target.value) || 0)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="0.00"
+                    step="0.01"
+                    min="0"
+                    max={reservation.totalAmount || 0}
+                  />
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 sm:text-sm">{reservation.currency || '€'}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Maksimum iade tutarı: {reservation.currency || '€'}{reservation.totalAmount?.toFixed(2) || '0.00'}
+                </p>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-blue-800">
+                      Bu işlem müşterinin ödeme yöntemine göre iade yapacaktır.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowRefundModal(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                disabled={isProcessing}
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleRefund}
+                disabled={isProcessing || refundAmount <= 0}
+                className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isProcessing ? 'İşleniyor...' : 'İade Yap'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 
