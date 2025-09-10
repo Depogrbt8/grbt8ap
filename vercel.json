@@ -5,7 +5,6 @@
   "framework": "nextjs",
   "regions": ["fra1"],
   "env": {
-    "DATABASE_URL": "@database_url",
     "JWT_SECRET": "@jwt_secret",
     "NEXTAUTH_SECRET": "@nextauth_secret",
     "NEXTAUTH_URL": "@nextauth_url"
