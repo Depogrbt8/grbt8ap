@@ -21,10 +21,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/kullanici/page.js"
     ],
-    "/not-found": [
+    "/sistem/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/not-found.js"
+      "static/chunks/app/sistem/page.js"
+    ],
+    "/kampanyalar/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/kampanyalar/page.js"
     ]
   }
 }
