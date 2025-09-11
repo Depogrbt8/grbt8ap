@@ -34,3 +34,4 @@ echo "1. Run: vercel env pull .env.local"
 echo "2. Run: vercel --prod"
 echo ""
 echo "🌐 Your app will be deployed to Vercel!"
+
