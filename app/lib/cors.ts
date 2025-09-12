@@ -21,9 +21,26 @@ export function corsMiddleware(request: NextRequest) {
   return headers
 }
 
+export function getCorsHeaders(request: NextRequest) {
+  const origin = request.headers.get('origin')
+  const allowedOrigins = config.cors.allowedOrigins
+
+  return {
+    'Access-Control-Allow-Origin': allowedOrigins.includes(origin || '') ? (origin || allowedOrigins[0]) : allowedOrigins[0],
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Credentials': 'true',
+  }
+}
+
 export function withCors(handler: Function) {
   return async (request: NextRequest) => {
-    const headers = corsMiddleware(request)
+    // Handle preflight requests first
+    if (request.method === 'OPTIONS') {
+      return corsMiddleware(request)
+    }
+    
+    const headers = getCorsHeaders(request)
     
     try {
       const response = await handler(request)
