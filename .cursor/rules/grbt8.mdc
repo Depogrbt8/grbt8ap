@@ -1,6 +1,15 @@
-/Users/incesu/Desktop/grbt8ap dosyasını gitteki bu adrese aktardık https://github.com/Depogrbt8/grbt8ap ve bu dosyayı vercele aktarmaya başladık. Tüm dosyayı eksiksiz, hatasız, sistemi bozmayacak şekilde hataları düzelterek verceldeki https://vercel.com/grbt8/grbt8ap adresine aktarmaya çalışıyoruz. Hataları AI asistanı gitteki dosya üzerinde düzeltecek, ve kayıt edecek, sonra verceldeki dosyaya aktarılması sağlanacak. Ben dosyalar üzerinde düzeltme yapamıyorum, bana terminal aç, şu dosyaya şunu yaz denmeyecek, hepsi AI asistanı tarafından yapılacak. GitHub hesabı ve Vercel hesabını tam anlamıyla bağlamaya çalışıyoruz, tam anlamıyla bağlanmalı. Dosyalar ve kodlar iyi aktarılmalı, cursor-github-vercel bağlantısı iyi sağlanmalı. Bu bir seyahat projesi, uçak bileti bölümü geliştirildi. Ana site ve admin panel sitesi var. Proje GitHub'ta yüklü, Vercel'e aktarılmaya çalışılıyor. Sistemin düzgün şekilde Vercel'e yüklenmesini sağla. Uzun cevaplar verme, bu dosya haricinde ortamdaki başka dosyalara dokunma, komutları bekle. Teknik anlamda komut isteme (y/n soruları, terminal çalıştırma gibi). Temiz çalışalım, sistemin yapısına uygun çalışalım.
+Bu proje bir seyahat sitesinin admin panelidir, sistem @https://github.com/Depogrbt8/grbt8ap adresinden vercele deploy edilmiştir, vercel adresi budur @https://vercel.com/grbt8/grbt8ap . Sistem şuanda çalışmaktadır. Yavaş yavaş geliştirilecektir, bu sistem üzerinde çalışırken ; düzenlemeleri ai asistan yapacaktır, düzenlemeyi yapıp kaydedecek, proje yöneticisinden istek talep etmeyecektir.
+
+1-Komut alınmadan büyük değişiklikler yapılamaz, her işlem sistem yapısına ve tasarımına uygun olarak yapılmalıdır.
+
+2-Yapılan değişiklik önce githubdaki adrese push edilecek, sonra vercele deploy edilecektir.
+
+4-Otomatik deploy kapatılmıştır.
+
+5-Yapılan değişiklikler ana site de düşünülerek yapılmalıdır.
+
 ---
-description: Seyahat sitesi projesi - uçak bileti sistemi
+description: Seyahat sitesi admin paneli - PostgreSQL database ile çalışmaktadır
 globs: ["**/*"]
-alwaysApply: truedur
+alwaysApply: true
 ---
