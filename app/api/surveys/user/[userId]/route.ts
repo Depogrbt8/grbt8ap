@@ -1,12 +1,20 @@
 import { NextResponse } from 'next/server'
-import Database from 'better-sqlite3'
 
 // Ana sitedeki SQLite veritabanından kullanıcının anket cevaplarını getir
 export async function GET(request: Request, { params }: { params: { userId: string } }) {
   try {
     const { userId } = params
 
-    // Ana sitedeki SQLite veritabanına bağlan
+    // Vercel production ortamında SQLite erişimi yok
+    if (process.env.NODE_ENV === 'production') {
+      return NextResponse.json({
+        success: false,
+        message: 'Bu özellik production ortamında kullanılamaz'
+      }, { status: 501 })
+    }
+
+    // Local development için SQLite bağlantısı
+    const Database = require('better-sqlite3')
     const db = new Database('/Users/incesu/Desktop/grbt8/prisma/dev.db')
     
     // Kullanıcının en son anket cevabını getir
