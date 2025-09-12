@@ -36,7 +36,11 @@ export default function CampaignModal({ isOpen, onClose, campaign, onSave }: Cam
     status: 'active',
     position: 1,
     startDate: '',
-    endDate: ''
+    endDate: '',
+    clickCount: 0,
+    viewCount: 0,
+    createdAt: '',
+    updatedAt: ''
   })
   const [isLoading, setIsLoading] = useState(false)
   const [imagePreview, setImagePreview] = useState<string>('')
