@@ -9,6 +9,7 @@ interface MainSiteMetrics {
   nodeVersion: string
   platform: string
   arch: string
+  hostname: string
   memory: {
     total: number
     free: number
