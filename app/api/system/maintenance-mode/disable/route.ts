@@ -45,7 +45,7 @@ export async function DELETE() {
       level: 'ERROR',
       message: 'Bakım modu kapatma hatası',
       source: 'maintenance',
-      metadata: { error: error.message }
+      metadata: { error: error instanceof Error ? error.message : 'Unknown error' }
     })
     
     return NextResponse.json({
