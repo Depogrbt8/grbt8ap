@@ -33,11 +33,11 @@ export function createRateLimit(config: Partial<RateLimitConfig> = {}) {
     const windowStart = now - finalConfig.windowMs
 
     // Eski kayıtları temizle
-    for (const [k, v] of rateLimitStore.entries()) {
+    rateLimitStore.forEach((v, k) => {
       if (v.resetTime < now) {
         rateLimitStore.delete(k)
       }
-    }
+    })
 
     // Mevcut kaydı al veya oluştur
     let record = rateLimitStore.get(key)
