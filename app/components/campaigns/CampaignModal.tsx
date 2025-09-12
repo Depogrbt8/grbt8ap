@@ -13,6 +13,10 @@ interface Campaign {
   position: number
   startDate: string
   endDate: string
+  clickCount: number
+  viewCount: number
+  createdAt: string
+  updatedAt: string
 }
 
 interface CampaignModalProps {
