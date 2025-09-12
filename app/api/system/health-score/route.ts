@@ -77,7 +77,12 @@ export async function GET() {
 
     // Log kaydet
     try {
-      await createLog('INFO', `Sistem sağlığı skoru hesaplandı: ${overallScore}/100`, 'monitoring', null, JSON.stringify(healthReport))
+      await createLog({
+        level: 'INFO',
+        message: `Sistem sağlığı skoru hesaplandı: ${overallScore}/100`,
+        source: 'monitoring',
+        metadata: JSON.stringify(healthReport)
+      })
     } catch (logError) {
       console.error('Log kaydetme hatası:', logError)
     }
@@ -93,7 +98,11 @@ export async function GET() {
     
     // Hata logunu kaydet
     try {
-      await createLog('ERROR', `Sağlık skoru hesaplama hatası: ${error}`, 'monitoring')
+      await createLog({
+        level: 'ERROR',
+        message: `Sağlık skoru hesaplama hatası: ${error}`,
+        source: 'monitoring'
+      })
     } catch (logError) {
       console.error('Hata logu kaydetme hatası:', logError)
     }

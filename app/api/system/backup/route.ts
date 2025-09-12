@@ -86,9 +86,14 @@ export async function POST(request: NextRequest) {
       const result = await createBackup()
       
       if (result.success) {
-        await createLog('INFO', 'Manuel yedekleme oluşturuldu', 'backup', null, {
-          backupPath: result.path,
-          size: result.size
+        await createLog({
+          level: 'INFO',
+          message: 'Manuel yedekleme oluşturuldu',
+          source: 'backup',
+          metadata: {
+            backupPath: result.path,
+            size: result.size
+          }
         })
       }
 
@@ -100,7 +105,12 @@ export async function POST(request: NextRequest) {
       const configPath = path.join(process.cwd(), 'shared', 'backup-config.json')
       fs.writeFileSync(configPath, JSON.stringify(config, null, 2))
       
-      await createLog('INFO', 'Yedekleme konfigürasyonu güncellendi', 'backup', null, config)
+      await createLog({
+        level: 'INFO',
+        message: 'Yedekleme konfigürasyonu güncellendi',
+        source: 'backup',
+        metadata: config
+      })
 
       return NextResponse.json({
         success: true,
@@ -128,12 +138,12 @@ export async function POST(request: NextRequest) {
       currentConfig.enabled = !currentConfig.enabled
       fs.writeFileSync(configPath, JSON.stringify(currentConfig, null, 2))
 
-      await createLog('INFO', 
-        `Otomatik yedekleme ${currentConfig.enabled ? 'açıldı' : 'kapatıldı'}`, 
-        'backup', 
-        null, 
-        { enabled: currentConfig.enabled }
-      )
+      await createLog({
+        level: 'INFO',
+        message: `Otomatik yedekleme ${currentConfig.enabled ? 'açıldı' : 'kapatıldı'}`,
+        source: 'backup',
+        metadata: { enabled: currentConfig.enabled }
+      })
 
       return NextResponse.json({
         success: true,
