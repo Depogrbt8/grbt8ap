@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { X, Upload, Calendar, Link, Eye, Check } from 'lucide-react'
 
 interface Campaign {
-  id?: string
+  id: string
   title: string
   description: string
   imageUrl: string
@@ -28,6 +28,7 @@ interface CampaignModalProps {
 
 export default function CampaignModal({ isOpen, onClose, campaign, onSave }: CampaignModalProps) {
   const [formData, setFormData] = useState<Campaign>({
+    id: '',
     title: '',
     description: '',
     imageUrl: '',
@@ -52,6 +53,7 @@ export default function CampaignModal({ isOpen, onClose, campaign, onSave }: Cam
       setImagePreview(campaign.imageUrl)
     } else {
       setFormData({
+        id: '',
         title: '',
         description: '',
         imageUrl: '',
