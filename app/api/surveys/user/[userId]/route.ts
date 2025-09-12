@@ -111,7 +111,7 @@ export async function GET(request: Request, { params }: { params: { userId: stri
     console.error('Error fetching survey response:', error)
     return NextResponse.json({
       success: false,
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
   }
 }

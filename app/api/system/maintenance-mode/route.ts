@@ -48,7 +48,7 @@ export async function POST() {
       level: 'ERROR',
       message: 'Bakım modu aktifleştirme hatası',
       source: 'maintenance',
-      metadata: { error: error.message }
+      metadata: { error: error instanceof Error ? error.message : 'Unknown error' }
     })
     
     return NextResponse.json({

@@ -31,7 +31,7 @@ export async function POST() {
       level: 'ERROR',
       message: 'Cache temizleme işlemi başarısız',
       source: 'cache',
-      metadata: { error: error.message }
+      metadata: { error: error instanceof Error ? error.message : 'Unknown error' }
     })
     
     return NextResponse.json({
