@@ -97,11 +97,13 @@ export default function CampaignModal({ isOpen, onClose, campaign, onSave }: Cam
         // 3 saniye sonra başarı mesajını kaldır
         setTimeout(() => setUploadSuccess(false), 3000)
       } else {
-        alert('Resim yükleme hatası')
+        const errorData = await response.json().catch(() => ({ error: 'Bilinmeyen hata' }))
+        console.error('Upload error:', errorData)
+        alert(`Resim yükleme hatası: ${errorData.error || 'Bilinmeyen hata'}`)
       }
     } catch (error) {
       console.error('Upload error:', error)
-      alert('Resim yükleme hatası')
+      alert(`Resim yükleme hatası: ${error instanceof Error ? error.message : 'Bilinmeyen hata'}`)
     } finally {
       setIsLoading(false)
     }
