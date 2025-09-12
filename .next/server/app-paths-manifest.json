@@ -1,24 +1,6 @@
 {
-  "/not-found": "app/not-found.js",
+  "/kullanici/page": "app/kullanici/page.js",
   "/page": "app/page.js",
   "/dashboard/page": "app/dashboard/page.js",
-  "/kullanici/page": "app/kullanici/page.js",
-  "/kampanyalar/page": "app/kampanyalar/page.js",
-  "/seo/page": "app/seo/page.js",
-  "/api/campaigns/route": "app/api/campaigns/route.js",
-  "/raporlar/page": "app/raporlar/page.js",
-  "/api/users/metrics/route": "app/api/users/metrics/route.js",
-  "/ucuslar/page": "app/ucuslar/page.js",
-  "/api/reservations/metrics/route": "app/api/reservations/metrics/route.js",
-  "/istatistikler/page": "app/istatistikler/page.js",
-  "/api/flights/metrics/route": "app/api/flights/metrics/route.js",
-  "/api/revenue/metrics/route": "app/api/revenue/metrics/route.js",
-  "/sistem/page": "app/sistem/page.js",
-  "/api/system/main-site-status/route": "app/api/system/main-site-status/route.js",
-  "/api/system/real-metrics/route": "app/api/system/real-metrics/route.js",
-  "/api/system/maintenance-mode/route": "app/api/system/maintenance-mode/route.js",
-  "/api/system/health-score/route": "app/api/system/health-score/route.js",
-  "/api/security/analysis/route": "app/api/security/analysis/route.js",
-  "/api/system/backup/route": "app/api/system/backup/route.js",
-  "/api/system/logs/init/route": "app/api/system/logs/init/route.js"
+  "/api/users/route": "app/api/users/route.js"
 }

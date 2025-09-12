@@ -30,7 +30,7 @@ export async function DELETE(
     await createLog({
       level: 'INFO',
       message: 'Kampanya silindi',
-      details: `Kampanya: ${campaign.title}`
+      metadata: `Kampanya: ${campaign.title}`
     })
 
     return NextResponse.json({
@@ -41,9 +41,9 @@ export async function DELETE(
     console.error('Kampanya silme hatası:', error)
     
     await createLog({
-      level: 'error',
+      level: 'ERROR',
       message: 'Kampanya silinemedi',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      metadata: error instanceof Error ? error.message : 'Unknown error'
     })
 
     return NextResponse.json(

@@ -1,5 +1,6 @@
-bu bir seyat sitesi prjesi, ucak bileti,---
-description:
-globs:
-alwaysApply: true
+/Users/incesu/Desktop/grbt8ap dosyasını gitteki bu adrese aktardık https://github.com/Depogrbt8/grbt8ap ve bu dosyayı vercele aktarmaya başladık. Tüm dosyayı eksiksiz, hatasız, sistemi bozmayacak şekilde hataları düzelterek verceldeki https://vercel.com/grbt8/grbt8ap adresine aktarmaya çalışıyoruz. Hataları AI asistanı gitteki dosya üzerinde düzeltecek, ve kayıt edecek, sonra verceldeki dosyaya aktarılması sağlanacak. Ben dosyalar üzerinde düzeltme yapamıyorum, bana terminal aç, şu dosyaya şunu yaz denmeyecek, hepsi AI asistanı tarafından yapılacak. GitHub hesabı ve Vercel hesabını tam anlamıyla bağlamaya çalışıyoruz, tam anlamıyla bağlanmalı. Dosyalar ve kodlar iyi aktarılmalı, cursor-github-vercel bağlantısı iyi sağlanmalı. Bu bir seyahat projesi, uçak bileti bölümü geliştirildi. Ana site ve admin panel sitesi var. Proje GitHub'ta yüklü, Vercel'e aktarılmaya çalışılıyor. Sistemin düzgün şekilde Vercel'e yüklenmesini sağla. Uzun cevaplar verme, bu dosya haricinde ortamdaki başka dosyalara dokunma, komutları bekle. Teknik anlamda komut isteme (y/n soruları, terminal çalıştırma gibi). Temiz çalışalım, sistemin yapısına uygun çalışalım.
+---
+description: Seyahat sitesi projesi - uçak bileti sistemi
+globs: ["**/*"]
+alwaysApply: truedur
 ---
