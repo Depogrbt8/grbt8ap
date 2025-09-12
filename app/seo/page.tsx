@@ -66,7 +66,12 @@ export default function SeoPage() {
 
   // SEO Analiz Fonksiyonu
   const analyzeSEO = () => {
-    const analysis = {
+    const analysis: {
+      score: number
+      issues: Array<{type: string, message: string}>
+      recommendations: Array<{type: string, message: string}>
+      status: string
+    } = {
       score: 0,
       issues: [],
       recommendations: [],
