@@ -36,7 +36,7 @@ export async function GET() {
     console.error('Kampanya listesi getirme hatası:', error)
     
     await createLog({
-      level: 'error',
+      level: 'ERROR',
       message: 'Kampanya listesi getirilemedi',
       source: 'api',
       metadata: error instanceof Error ? error.message : 'Unknown error'
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     })
 
     await createLog({
-      level: 'info',
+      level: 'INFO',
       message: 'Yeni kampanya oluşturuldu',
       source: 'api',
       metadata: `Kampanya: ${campaign.title}`
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     console.error('Kampanya oluşturma hatası:', error)
     
     await createLog({
-      level: 'error',
+      level: 'ERROR',
       message: 'Kampanya oluşturulamadı',
       source: 'api',
       metadata: error instanceof Error ? error.message : 'Unknown error'
@@ -145,7 +145,7 @@ export async function PUT(request: NextRequest) {
     })
 
     await createLog({
-      level: 'info',
+      level: 'INFO',
       message: 'Kampanya güncellendi',
       source: 'api',
       metadata: `Kampanya: ${campaign.title}`
@@ -178,7 +178,7 @@ export async function PUT(request: NextRequest) {
     console.error('Kampanya güncelleme hatası:', error)
     
     await createLog({
-      level: 'error',
+      level: 'ERROR',
       message: 'Kampanya güncellenemedi',
       source: 'api',
       metadata: error instanceof Error ? error.message : 'Unknown error'
