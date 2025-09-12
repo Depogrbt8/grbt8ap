@@ -7,7 +7,6 @@ export async function GET() {
       overallScore: 95,
       failedLogins: 3,
       blockedIPs: 1,
-      suspiciousActivity: 0,
       lastCheck: new Date().toISOString(),
       threats: {
         total: 0,
