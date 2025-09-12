@@ -75,7 +75,6 @@ export async function GET(request: NextRequest) {
       level: 'INFO',
       message: 'Kullanıcı listesi getirildi',
       source: 'api/users',
-      userId: null,
       metadata: JSON.stringify({ count: formattedUsers.length })
     })
 
@@ -93,7 +92,6 @@ export async function GET(request: NextRequest) {
       level: 'ERROR',
       message: 'Kullanıcı listesi getirme hatası',
       source: 'api/users',
-      userId: null,
       metadata: JSON.stringify({ error: error instanceof Error ? error.message : 'Bilinmeyen hata' })
     })
 
