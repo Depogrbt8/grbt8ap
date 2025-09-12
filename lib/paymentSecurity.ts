@@ -313,11 +313,11 @@ export function logPaymentEvent(event: string, data: any): void {
 // Eski session'ları temizle
 export function cleanupExpiredSessions(): void {
   const now = Date.now()
-  for (const [sessionId, session] of paymentSessions.entries()) {
+  paymentSessions.forEach((session, sessionId) => {
     if (session.expires < now) {
       paymentSessions.delete(sessionId)
     }
-  }
+  })
 }
 
 // Periyodik temizlik (her 5 dakikada bir çalıştırılmalı)
