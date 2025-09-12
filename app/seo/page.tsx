@@ -173,7 +173,12 @@ export default function SeoPage() {
     return analysis
   }
 
-  const [analysisResult, setAnalysisResult] = useState(null)
+  const [analysisResult, setAnalysisResult] = useState<{
+    score: number
+    issues: Array<{type: string, message: string}>
+    recommendations: Array<{type: string, message: string}>
+    status: string
+  } | null>(null)
 
   return (
     <div className="flex h-screen bg-gray-50">
