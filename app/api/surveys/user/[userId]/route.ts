@@ -36,7 +36,7 @@ export async function GET(request: Request, { params }: { params: { userId: stri
     }
 
     // JSON string'i parse et ve düzenli format'a çevir
-    let formattedAnswers = []
+    let formattedAnswers: Array<{question: string, answer: string}> = []
     try {
       const parsedAnswers = JSON.parse(surveyResponse.answers)
       
