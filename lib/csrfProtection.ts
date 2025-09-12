@@ -77,11 +77,14 @@ export function isValidCSRFToken(token: string): boolean {
   }
 
   // Token'ın geçerli olup olmadığını kontrol et
-  for (const [sessionId, data] of csrfTokens.entries()) {
+  let isValid = false
+  csrfTokens.forEach((data) => {
     if (data.token === token && data.expires > Date.now()) {
-      return true
+      isValid = true
     }
-  }
+  })
+  
+  if (isValid) return true
 
   return false
 }
@@ -89,11 +92,11 @@ export function isValidCSRFToken(token: string): boolean {
 // Eski token'ları temizle
 function cleanupExpiredTokens(): void {
   const now = Date.now()
-  for (const [sessionId, data] of csrfTokens.entries()) {
+  csrfTokens.forEach((data, sessionId) => {
     if (data.expires <= now) {
       csrfTokens.delete(sessionId)
     }
-  }
+  })
 }
 
 // CSRF token'ı response'a ekle
