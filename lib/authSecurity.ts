@@ -207,11 +207,11 @@ function getClientIP(req: NextRequest): string {
 // Eski deneme kayıtlarını temizle
 function cleanupOldAttempts(now: number, windowMs: number): void {
   const cutoff = now - windowMs
-  for (const [ip, attempts] of loginAttempts.entries()) {
+  loginAttempts.forEach((attempts, ip) => {
     if (attempts.lastAttempt < cutoff && (!attempts.blockedUntil || attempts.blockedUntil < now)) {
       loginAttempts.delete(ip)
     }
-  }
+  })
 }
 
 // Güvenlik olayını logla
