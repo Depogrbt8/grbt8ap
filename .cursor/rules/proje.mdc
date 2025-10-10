@@ -1,0 +1,219 @@
+# GRBT8 Seyahat Sitesi Projesi - Deployment Dokümantasyonu
+
+## Proje Genel Bilgileri
+
+**Proje Adı:** GRBT8 Seyahat Sitesi  
+**Proje Türü:** Next.js Seyahat Rezervasyon Sistemi  
+**Veritabanı:** Neon PostgreSQL  
+**Deployment Platform:** Vercel  
+
+## Repository ve Deployment Bilgileri
+
+### Git Repository
+- **GitHub Adresi:** https://github.com/Depogrbt8/grbt8
+- **Branch:** main
+- **Son Commit:** Proje tam yedek - GitHub'a yükleme
+
+### Vercel Deployment
+- **Vercel Adresi:** ur
+https://vercel.com/grbt8/grbt8
+- **Domain:** grbt8.vercel.app (tahmini)
+- **Platform:** Vercel
+
+## Deployment Stratejisi
+
+### AI Asistan Destekli Deployment Süreci
+
+1. **Otomatik Push ve Deploy:**
+   - AI asistan kodları GitHub'a push eder
+   - Vercel otomatik deploy kapali  asistan manuel olarak GitHub'dan çeker ve deploy eder
+   - Hata çıktığında AI asistan otomatik düzeltme yapar
+
+2. **Hata Yönetimi:**
+   - Vercel build hataları GitHub'a bildirilir
+   - AI asistan hataları analiz eder
+   - Gerekli düzeltmeleri yapar ve tekrar push eder
+   - Süreç hata çözülene kadar devam eder
+
+3. **Sistem Uyumluluğu:**
+   - Tüm kodlar Vercel platformuna uygun hale getirilir
+   - Next.js optimizasyonları yapılır
+   - Build süreci sorunsuz çalışacak şekilde düzenlenir
+
+## Veritabanı Konfigürasyonu
+
+### Neon PostgreSQL Entegrasyonu
+
+**Veritabanı:** Neon PostgreSQL  
+**Bağlantı:** Prisma ORM ile  
+**Schema:** `prisma/schema.prisma`  
+
+### 🛡️ VERİTABANI KORUMA SİSTEMİ
+
+**ÖNEMLİ:** AI Asistanların veritabanı işlemlerini engellemek için koruma sistemi aktif!
+
+#### Yasaklı Komutlar:
+- `prisma db push --force-reset`
+- `prisma migrate reset`
+- `prisma db push --accept-data-loss`
+- `DROP TABLE`, `TRUNCATE TABLE`
+- `DELETE FROM users/passengers/reservations`
+
+#### Korunması Gereken Tablolar:
+- users, passengers, reservations, flights, airlines, airports
+
+#### Koruma Kuralları:
+1. **Production'da:** Hiçbir veritabanı silme işlemi yapılamaz
+2. **Development'da:** Onay istenir + otomatik backup alınır
+3. **Schema değişikliklerinde:** Özel onay gerekir
+4. **Backup:** Her tehlikeli işlem öncesi otomatik backup
+
+#### Kullanım:
+```bash
+# Komut kontrolü
+node scripts/prisma-guard.js "prisma db push"
+
+# Otomatik backup
+npm run backup:auto
+
+# Güvenli Prisma komutları
+npm run prisma:push
+npm run prisma:migrate
+```
+
+#### AI Asistan Kuralları:
+1. **ASLA** `prisma db push --force-reset` kullanmayın
+2. **ASLA** `prisma migrate reset` kullanmayın  
+3. **ASLA** `DROP TABLE` komutları kullanmayın
+4. **ASLA** `DELETE FROM` ile toplu silme yapmayın
+5. **HER ZAMAN** `npm run` script'lerini kullanın
+6. **VERİTABANI DEĞİŞİKLİĞİNDEN ÖNCE** backup alın
+
+#### Gerekli Environment Variables:
+```env
+DATABASE_URL="postgresql://username:password@host:port/database?sslmode=require"
+NEXTAUTH_SECRET="your-secret-key"
+NEXTAUTH_URL="https://grbt8.vercel.app"
+```
+
+#### Veritabanı Migrasyonları:
+- Tüm migration dosyaları `prisma/migrations/` klasöründe mevcut
+- Vercel deploy sırasında otomatik migrate edilecek
+- Production veritabanı Neon'da kurulacak
+
+## Teknik Gereksinimler
+
+### Next.js Konfigürasyonu
+- **Framework:** Next.js 14+
+- **TypeScript:** Aktif
+- **Tailwind CSS:** Styling
+- **Prisma:** Database ORM
+
+### Vercel Optimizasyonları
+- **Build Command:** `npm run build`
+- **Output Directory:** `.next`
+- **Node.js Version:** 18.x
+- **Install Command:** `npm install`
+
+### API Routes
+- **Backend API:** `/src/app/api/` klasöründe
+- **BiletDukkani API:** Entegre edilmiş
+- **Authentication:** NextAuth.js ile
+
+## Deployment Checklist
+
+### Öncesi Hazırlık
+- [ ] Neon PostgreSQL veritabanı kurulumu
+- [ ] Environment variables ayarlanması
+- 
+
+## Hata Çözüm Süreci
+prisma db push --force-reset g gibi buyuk islemler , birseyler resetlenecekse silinecekse, haber edilecek, yedek alinacak
+
+### AI Asistan Hata Yönetimi
+
+1. **Build Hataları:**
+   - TypeScript hataları otomatik düzeltilir
+   - Import path'leri düzenlenir
+   - Dependency sorunları çözülür
+
+2. **Runtime Hataları:**
+   - API endpoint hataları düzeltilir
+   - Database connection sorunları çözülür
+   - Environment variable eksiklikleri tamamlanır
+
+3. **Performance Sorunları:**
+   - Bundle size optimizasyonu
+   - Image optimization
+   - Caching stratejileri
+
+## Monitoring ve Maintenance
+
+### Vercel Analytics
+- **Performance:** Vercel Analytics ile izleme
+- **Errors:** Vercel Error Tracking
+- **Uptime:** Vercel Status Page
+
+### Database Monitoring
+- **Neon Console:** Veritabanı performansı
+- **Query Performance:** Prisma query optimization
+- **Connection Pooling:** Neon connection management
+
+## Güvenlik
+
+### Environment Variables
+- Tüm hassas bilgiler environment variables'da
+- Vercel'de güvenli şekilde saklanır
+- GitHub'da expose edilmez
+
+### API Security
+- CSRF protection aktif
+- Rate limiting uygulanır
+- Input validation yapılır
+
+## Backup ve Recovery
+
+### Code Backup
+- GitHub'da otomatik backup
+- Branch protection rules
+- Pull request reviews
+
+### Database Backup
+- Neon otomatik backup
+- Point-in-time recovery
+- Cross-region replication
+
+## Database ve Storage Konfigürasyonu
+
+### Önemli Not: Tek Database Kullanımı
+**AI Asistan için Kritik Bilgi:** Bu projede database ve storage için aynı Neon PostgreSQL veritabanı kullanılmaktadır. Ayrı bir storage servisi (Redis, MongoDB, vs.) kullanılmamaktadır.
+
+### Neon PostgreSQL - Hem Database Hem Storage
+- **Database:** Tüm uygulama verileri (kullanıcılar, rezervasyonlar, ödemeler)
+- **Storage:** Session verileri, cache, geçici veriler
+- **Tek Bağlantı:** Prisma ORM üzerinden tek DATABASE_URL ile erişim
+- **Vercel Entegrasyonu:** Vercel Neon PostgreSQL template kullanılıyor
+
+### AI Asistan Kuralları:
+1. **Storage İçin Ayrı Servis Önerme:** Redis, MongoDB, Supabase Storage gibi ayrı servisler önerilmemeli
+2. **Tek Database Mantığı:** Tüm veriler Neon PostgreSQL'de saklanmalı
+3. **Prisma Schema:** Storage ihtiyaçları için Prisma modelleri kullanılmalı
+4. **Session Management:** NextAuth.js session'ları Neon'da saklanmalı
+5. **Cache Stratejisi:** Database tabanlı cache implementasyonu yapılmalı
+
+### Environment Variables (Storage Dahil):
+```env
+DATABASE_URL="postgresql://neondb_owner:npg_IpbdP9an2jlm@ep-icy-mode-ag8baxgo-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require"
+NEXTAUTH_SECRET="grbt8-nextauth-secret-key-2025"
+NEXTAUTH_URL="https://anasite.grbt8.store"
+```
+
+**Önemli:** AI asistan bu bilgiyi her zaman göz önünde bulundurmalı ve ayrı storage servisleri önermemelidir.
+
+---
+
+**Son Güncelleme:** 2025-01-09  
+**Deployment Durumu:** Hazır  
+**AI Asistan:** Aktif  
+
+Bu dokümantasyon, GRBT8 seyahat sitesinin Vercel'e sorunsuz deployment'ı için gerekli tüm bilgileri içerir. AI asistan bu bilgileri kullanarak otomatik deployment ve hata yönetimi yapacaktır.

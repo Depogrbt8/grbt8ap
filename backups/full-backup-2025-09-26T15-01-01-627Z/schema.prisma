@@ -1,0 +1,371 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String           @id @default(cuid())
+  firstName        String
+  lastName         String
+  email            String           @unique
+  password         String
+  countryCode      String?
+  phone            String?
+  birthDay         String?
+  birthMonth       String?
+  birthYear        String?
+  gender           String?
+  identityNumber   String?
+  address          String?
+  city             String?
+  isForeigner      Boolean          @default(false)
+  emailVerified    DateTime?
+  image            String?
+  resetToken       String?
+  resetTokenExpiry DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  lastLoginAt      DateTime?
+  status           String           @default("active")
+  role             String           @default("user")
+  canDelete        Boolean          @default(true)
+  accounts         Account[]
+  billingInfos     BillingInfo[]
+  campaigns        Campaign[]
+  emailLogs        EmailLog[]
+  emailTemplates   EmailTemplate[]
+  passengers       Passenger[]
+  payments         Payment[]
+  priceAlerts      PriceAlert[]
+  reservations     Reservation[]
+  searchFavorites  SearchFavorite[]
+  sessions         Session[]
+  surveyResponses  SurveyResponse[]
+  systemLogs       SystemLog[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Reservation {
+  id                  String    @id @default(cuid())
+  userId              String
+  type                String
+  status              String
+  amount              Float
+  currency            String
+  biletDukkaniOrderId String?
+  biletDukkaniRouteId String?
+  pnr                 String?
+  validUntil          DateTime?
+  passengers          String?
+  flightNumber        String?
+  origin              String?
+  destination         String?
+  departureTime       DateTime?
+  arrivalTime         DateTime?
+  airline             String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  payment             Payment?
+  user                User      @relation(fields: [userId], references: [id])
+}
+
+model Payment {
+  id            String      @id @default(cuid())
+  reservationId String      @unique
+  userId        String
+  amount        Float
+  currency      String
+  status        String
+  provider      String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
+}
+
+model Passenger {
+  id             String    @id @default(cuid())
+  userId         String
+  firstName      String
+  lastName       String
+  identityNumber String?
+  isForeigner    Boolean   @default(false)
+  birthDay       String
+  birthMonth     String
+  birthYear      String
+  gender         String
+  countryCode    String?
+  phone          String?
+  hasMilCard     Boolean   @default(false)
+  hasPassport    Boolean   @default(false)
+  passportNumber String?
+  passportExpiry DateTime?
+  milCardNumber  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  status         String    @default("active")
+  isAccountOwner Boolean   @default(false)
+  user           User      @relation(fields: [userId], references: [id])
+
+  @@unique([userId, identityNumber])
+  @@index([userId])
+}
+
+model PriceAlert {
+  id                String   @id @default(cuid())
+  userId            String
+  origin            String
+  destination       String
+  departureDate     DateTime
+  targetPrice       Float?
+  createdAt         DateTime @default(now())
+  lastNotifiedPrice Float?
+  user              User     @relation(fields: [userId], references: [id])
+}
+
+model SearchFavorite {
+  id            String   @id @default(cuid())
+  userId        String
+  origin        String
+  destination   String
+  departureDate DateTime
+  createdAt     DateTime @default(now())
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+model SystemSettings {
+  id                String    @id @default(cuid())
+  maintenanceMode   Boolean   @default(false)
+  maintenanceReason String?
+  maintenanceStart  DateTime?
+  estimatedDuration String?
+  backupEnabled     Boolean   @default(false)
+  backupSchedule    String    @default("0 2 * * *")
+  backupRetention   Int       @default(7)
+  backupDatabase    Boolean   @default(true)
+  backupUploads     Boolean   @default(true)
+  backupLogs        Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Campaign {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String?
+  imageData   String?
+  altText     String
+  linkUrl     String?
+  status      String    @default("active")
+  position    Int       @default(0)
+  clickCount  Int       @default(0)
+  viewCount   Int       @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  user        User?     @relation(fields: [createdBy], references: [id])
+}
+
+model SurveyResponse {
+  id          String   @id @default(cuid())
+  userId      String
+  answers     String
+  completedAt DateTime
+  userAgent   String?
+  ipAddress   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+model SystemLog {
+  id        String   @id @default(cuid())
+  level     String
+  message   String
+  source    String
+  userId    String?
+  metadata  String?
+  timestamp DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model EmailTemplate {
+  id          String       @id @default(cuid())
+  name        String
+  subject     String
+  content     String
+  type        String
+  language    String       @default("tr")
+  variables   String?
+  status      String       @default("active")
+  usageCount  Int          @default(0)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  createdBy   String?
+  emails      EmailLog[]
+  queueEmails EmailQueue[]
+  user        User?        @relation(fields: [createdBy], references: [id])
+}
+
+model EmailQueue {
+  id           String         @id @default(cuid())
+  recipient    String
+  cc           String?
+  bcc          String?
+  subject      String
+  content      String
+  templateId   String?
+  priority     String         @default("normal")
+  status       String         @default("pending")
+  scheduledAt  DateTime?
+  sentAt       DateTime?
+  errorMessage String?
+  retryCount   Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  template     EmailTemplate? @relation(fields: [templateId], references: [id])
+}
+
+model EmailLog {
+  id             String         @id @default(cuid())
+  cc             String?
+  bcc            String?
+  subject        String
+  content        String?
+  templateId     String?
+  status         String
+  sentAt         DateTime       @default(now())
+  deliveredAt    DateTime?
+  openedAt       DateTime?
+  clickedAt      DateTime?
+  bouncedAt      DateTime?
+  errorMessage   String?
+  ipAddress      String?
+  userAgent      String?
+  trackingId     String?
+  bounceCount    Int            @default(0)
+  bounceReason   String?
+  campaignId     String?
+  clickCount     Int            @default(0)
+  createdAt      DateTime       @default(now())
+  deliveryTime   Int?
+  emailId        String?
+  openCount      Int            @default(0)
+  recipientEmail String
+  recipientName  String?
+  retryCount     Int            @default(0)
+  spamScore      Float?
+  templateName   String?
+  updatedAt      DateTime       @updatedAt
+  userId         String?
+  template       EmailTemplate? @relation(fields: [templateId], references: [id])
+  user           User?          @relation(fields: [userId], references: [id])
+
+  @@index([recipientEmail])
+  @@index([status])
+  @@index([sentAt])
+  @@index([userId])
+}
+
+model EmailSettings {
+  id           String   @id @default(cuid())
+  smtpHost     String
+  smtpPort     Int      @default(587)
+  smtpUser     String
+  smtpPassword String
+  fromEmail    String
+  fromName     String
+  dailyLimit   Int      @default(1000)
+  rateLimit    Int      @default(100)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model BillingInfo {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  title       String
+  firstName   String?
+  lastName    String?
+  companyName String?
+  taxNumber   String?
+  address     String
+  city        String
+  country     String
+  isDefault   Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model SeoSettings {
+  id                      String   @id @default(cuid())
+  siteTitle               String
+  siteDescription         String
+  keywords                String
+  canonicalUrl            String
+  ogTitle                 String?
+  ogDescription           String?
+  ogImage                 String?
+  twitterCard             String?
+  facebookUrl             String?
+  twitterUrl              String?
+  instagramUrl            String?
+  robotsIndex             Boolean  @default(true)
+  robotsFollow            Boolean  @default(true)
+  googleVerification      String?
+  yandexVerification      String?
+  organizationName        String?
+  organizationDescription String?
+  organizationLogo        String?
+  organizationUrl         String?
+  organizationPhone       String?
+  organizationFounded     String?
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+}

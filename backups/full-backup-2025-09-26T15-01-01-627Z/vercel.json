@@ -1,0 +1,17 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "regions": ["fra1"],
+  "crons": [
+    {
+      "path": "/api/database-backup/github",
+      "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/database-backup/gitlab",
+      "schedule": "0 2 * * *"
+    }
+  ]
+}

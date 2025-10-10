@@ -1,0 +1,201 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      transparent,
+      rgb(var(--background-end-rgb))
+    )
+    rgb(var(--background-start-rgb));
+}
+
+/* Admin Panel Compact Monitor Styles */
+@layer components {
+  /* Page containers */
+  .admin-page-container {
+    @apply flex h-screen bg-white w-full;
+  }
+  
+  .admin-main-content {
+    @apply flex-1 p-4 w-full overflow-y-auto scroll-smooth;
+  }
+  
+  .admin-content-wrapper {
+    @apply max-w-7xl mx-auto space-y-3;
+  }
+  
+  /* Compact cards */
+  .admin-card {
+    @apply border rounded p-3;
+  }
+  
+  .admin-card-small {
+    @apply border rounded p-2;
+  }
+  
+  .admin-card-header {
+    @apply flex items-center justify-between mb-2;
+  }
+  
+  .admin-card-title {
+    @apply text-base font-semibold text-gray-900;
+  }
+  
+  .admin-card-subtitle {
+    @apply text-xs text-gray-500 mt-1;
+  }
+  
+  /* Compact buttons */
+  .admin-btn {
+    @apply px-2 py-1 text-xs rounded hover:opacity-80 transition-opacity;
+  }
+  
+  .admin-btn-primary {
+    @apply bg-blue-50 text-blue-700 hover:bg-blue-100;
+  }
+  
+  .admin-btn-secondary {
+    @apply bg-gray-50 text-gray-700 hover:bg-gray-100;
+  }
+  
+  /* Compact badges */
+  .admin-badge {
+    @apply px-2 py-0.5 rounded text-xs font-medium;
+  }
+  
+  .admin-badge-success {
+    @apply bg-green-100 text-green-700;
+  }
+  
+  .admin-badge-warning {
+    @apply bg-yellow-100 text-yellow-700;
+  }
+  
+  .admin-badge-error {
+    @apply bg-red-100 text-red-700;
+  }
+  
+  /* Compact status indicators */
+  .admin-status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+  
+  .admin-status-dot-success {
+    @apply bg-green-500;
+  }
+  
+  .admin-status-dot-error {
+    @apply bg-red-500;
+  }
+  
+  /* Compact tables */
+  .admin-table {
+    @apply w-full text-xs;
+  }
+  
+  .admin-table th {
+    @apply py-1 text-left text-gray-500 font-medium;
+  }
+  
+  .admin-table td {
+    @apply py-1 border-t;
+  }
+  
+  /* Compact forms */
+  .admin-form-group {
+    @apply mb-3;
+  }
+  
+  .admin-form-label {
+    @apply block text-xs font-medium text-gray-700 mb-1;
+  }
+  
+  .admin-form-input {
+    @apply w-full px-2 py-1 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-blue-500;
+  }
+  
+  .admin-form-select {
+    @apply w-full px-2 py-1 text-xs border rounded bg-white;
+  }
+  
+  /* Compact modals */
+  .admin-modal-overlay {
+    @apply fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50 p-4;
+  }
+  
+  .admin-modal {
+    @apply bg-white rounded shadow border w-full max-w-sm max-h-[80vh] overflow-hidden;
+  }
+  
+  .admin-modal-header {
+    @apply flex items-center justify-between p-3 border-b;
+  }
+  
+  .admin-modal-title {
+    @apply text-sm font-semibold text-gray-900;
+  }
+  
+  .admin-modal-content {
+    @apply p-3 max-h-96 overflow-y-auto;
+  }
+  
+  .admin-modal-footer {
+    @apply p-3 border-t bg-gray-50;
+  }
+  
+  /* Compact grid layouts */
+  .admin-grid-2 {
+    @apply grid gap-2 md:grid-cols-2;
+  }
+  
+  .admin-grid-3 {
+    @apply grid gap-2 md:grid-cols-3;
+  }
+  
+  .admin-grid-4 {
+    @apply grid gap-2 md:grid-cols-4;
+  }
+  
+  .admin-grid-6 {
+    @apply grid gap-2 md:grid-cols-6;
+  }
+  
+  /* Compact text sizes */
+  .admin-text-xs {
+    @apply text-[10px] text-gray-500;
+  }
+  
+  .admin-text-sm {
+    @apply text-sm font-semibold text-gray-900;
+  }
+  
+  .admin-text-lg {
+    @apply text-lg font-semibold text-gray-900;
+  }
+  
+  /* Compact spacing */
+  .admin-space-y-2 {
+    @apply space-y-2;
+  }
+  
+  .admin-space-y-3 {
+    @apply space-y-3;
+  }
+} 

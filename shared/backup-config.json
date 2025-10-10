@@ -1,0 +1,8 @@
+{
+  "enabled": false,
+  "schedule": "0 2 * * *",
+  "retention": 7,
+  "includeDatabase": true,
+  "includeUploads": true,
+  "includeLogs": true
+}

@@ -1,0 +1,26 @@
+Bu proje bir seyahat sitesinin admin panelidir, sistem @https://github.com/Depogrbt8/grbt8ap adresinden vercele deploy edilmiştir, vercel adresi budur    . Sistem şuanda çalışmaktadır. Yavaş yavaş geliştirilecektir, bu sistem üzerinde çalışırken ; düzenlemeleri ai asistan yapacaktır, düzenlemeyi yapıp kaydedecek, proje yöneticisinden istek talep etmeyecektir.
+
+1-Komut alınmadan büyük değişiklikler yapılamaz, her işlem sistem yapısına ve tasarımına uygun olarak yapılmalıdır.
+
+2-Yapılan değişiklik önce githubdaki adrese push edilecek, sonra vercele deploy edilecektir.
+
+4-Otomatik deploy kapatılmıştır.
+
+5-Yapılan değişiklikler ana site de düşünülerek yapılmalıdır.
+
+6-Database ve Storage: Sistem Neon PostgreSQL database kullanmaktadır. Hem veritabanı işlemleri hem de dosya storage (resim yükleme) için aynı Neon database kullanılır. Resimler base64 formatında Campaign tablosundaki imageData field'ında saklanır. Vercel deployment'ında Neon database bağlantısı aktif ve çalışır durumdadır.
+
+---
+description: Seyahat sitesi admin paneli - Neon PostgreSQL database ile çalışmaktadır, resimler base64 olarak database'de saklanır
+globs: ["**/*"]
+alwaysApply: true
+GitHub adresi  https://github.com/Depogrbt8/grbt8ap
+Github token   [TOKEN_GUVENLIK_ICIN_KALDIRILDI]
+
+Vercel https://vercel.com/grbt8/grbt8ap
+Vercel Token  [TOKEN_GUVENLIK_ICIN_KALDIRILDI]
+Domain https://www.grbt8.store
+
+Prisme ,Database gibi alanlarda  Silme reset islemi yapilacaksa mutlaka veri kaybi olabilir diye uyar, illa yapilmasi gerekiyorsa yedek al mutlaka, tum icerikleR
+
+ Vercel otomatik deploy kapali, yapilan islem commit edilip gitte push edilir sonra da gitan Vercel déploy edilir.

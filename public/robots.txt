@@ -1,0 +1,53 @@
+# Gurbet.biz Robots.txt
+# Bu dosya arama motorlarına hangi sayfaların taranabileceğini söyler
+
+User-agent: *
+Allow: /
+
+# Admin paneli ve yönetim sayfalarını gizle
+Disallow: /ayarlar/
+Disallow: /ayarlar/admin-yonetimi/
+Disallow: /dis-apiler/
+Disallow: /email/
+Disallow: /apiler/
+Disallow: /kampanyalar/
+Disallow: /kullanici/
+Disallow: /sistem/
+Disallow: /raporlar/
+Disallow: /istatistikler/
+Disallow: /rezervasyonlar/
+Disallow: /ucuslar/
+Disallow: /odemeler/
+
+# API endpoint'lerini gizle
+Disallow: /api/
+Disallow: /api/external/
+Disallow: /api/email/
+Disallow: /api/admin/
+
+# Sistem dosyalarını gizle
+Disallow: /_next/
+Disallow: /static/
+Disallow: /public/
+
+# Sitemap yolu
+Sitemap: https://gurbet.biz/sitemap.xml
+
+# Özel bot ayarları
+User-agent: Googlebot
+Allow: /
+Disallow: /ayarlar/
+Disallow: /api/
+Disallow: /_next/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /ayarlar/
+Disallow: /api/
+Disallow: /_next/
+
+User-agent: Yandex
+Allow: /
+Disallow: /ayarlar/
+Disallow: /api/
+Disallow: /_next/

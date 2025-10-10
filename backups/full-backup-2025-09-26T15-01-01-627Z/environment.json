@@ -1,0 +1,6 @@
+{
+  "DATABASE_URL": "***MASKED***",
+  "NEXTAUTH_SECRET": "***MASKED***",
+  "NEXTAUTH_URL": "https://www.grbt8.store",
+  "NODE_ENV": "production"
+}
