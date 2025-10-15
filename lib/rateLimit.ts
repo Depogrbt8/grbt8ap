@@ -134,3 +134,36 @@ export function checkRateLimit(key: string, config: RateLimitConfig): {
   }
 }
 
+// Predefined rate limit configurations
+export const rateLimitConfigs = {
+  // API calls
+  api: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 100
+  },
+  
+  // Admin operations
+  admin: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 50
+  },
+  
+  // Authentication
+  auth: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 5
+  },
+  
+  // User operations
+  user: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 20
+  },
+  
+  // Strict (for sensitive operations)
+  strict: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 3
+  }
+}
+
