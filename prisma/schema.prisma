@@ -72,6 +72,13 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Security fields
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  lastUsed     DateTime @default(now())
+  isActive     Boolean  @default(true)
 }
 
 model VerificationToken {

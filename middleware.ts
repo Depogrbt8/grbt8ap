@@ -1,10 +1,22 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { getToken } from 'next-auth/jwt'
+import { addSecurityHeaders } from '@/lib/authMiddleware'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // Admin paneli veya ilgili rotalar için kontrol
+  // Public paths that don't require authentication
+  const publicPaths = [
+    '/',
+    '/api/auth',
+    '/api/email/track',
+    '/api/health'
+  ]
+
+  const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
+
+  // Admin paneli veya API rotaları için kontrol
   if (
     pathname.startsWith('/admin') ||
     pathname.startsWith('/ayarlar') ||
@@ -19,32 +31,54 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/rezervasyonlar') ||
     pathname.startsWith('/ucuslar') ||
     pathname.startsWith('/odemeler') ||
-    pathname.startsWith('/api/')
+    pathname.startsWith('/dashboard') ||
+    (pathname.startsWith('/api/') && !isPublicPath)
   ) {
+    // Check authentication for protected routes
+    if (!isPublicPath) {
+      const token = await getToken({
+        req: request as any,
+        secret: process.env.NEXTAUTH_SECRET
+      })
+
+      // API endpoint'leri için
+      if (pathname.startsWith('/api/')) {
+        if (!token) {
+          return NextResponse.json(
+            { 
+              success: false,
+              error: 'Unauthorized', 
+              message: 'Lütfen giriş yapın' 
+            },
+            { status: 401 }
+          )
+        }
+
+        if (token.role !== 'admin') {
+          return NextResponse.json(
+            { 
+              success: false,
+              error: 'Forbidden', 
+              message: 'Admin yetkisi gereklidir' 
+            },
+            { status: 403 }
+          )
+        }
+      }
+      // UI sayfaları için
+      else {
+        if (!token) {
+          return NextResponse.redirect(new URL('/', request.url))
+        }
+
+        if (token.role !== 'admin') {
+          return NextResponse.redirect(new URL('/', request.url))
+        }
+      }
+    }
+
     const response = NextResponse.next()
-
-    // Temel güvenlik
-    response.headers.set('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet')
-    response.headers.set('X-Frame-Options', 'DENY')
-    response.headers.set('X-Content-Type-Options', 'nosniff')
-    response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-
-    // Sıkı Content Security Policy (admin panel odaklı)
-    const csp = [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https:",
-      "font-src 'self'",
-      "connect-src 'self' https://api.github.com https://www.grbt8.store https://anasite.grbt8.store",
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'"
-    ].join('; ')
-
-    response.headers.set('Content-Security-Policy', csp)
-
-    return response
+    return addSecurityHeaders(response)
   }
 
   return NextResponse.next()
