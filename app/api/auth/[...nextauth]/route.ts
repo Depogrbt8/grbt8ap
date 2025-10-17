@@ -18,7 +18,7 @@ const authRateLimit = createRateLimit({
 })
 
 const authOptions: NextAuthOptions = {
-  // adapter: PrismaAdapter(prisma), // Mock Prisma ile uyumlu değil
+  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: 'credentials',
