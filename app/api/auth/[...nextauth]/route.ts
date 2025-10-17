@@ -30,9 +30,14 @@ const authOptions: NextAuthOptions = {
       },
       async authorize(credentials, req) {
         try {
+          console.log('🔍 [AUTH DEBUG] Authorize fonksiyonu çağrıldı')
+          console.log('📧 [AUTH DEBUG] Email:', credentials?.email)
+          console.log('🔑 [AUTH DEBUG] Password length:', credentials?.password?.length)
+          
           // Rate limiting check
           const rateLimitResult = await authRateLimit(req as any)
           if (rateLimitResult) {
+            console.log('⚠️ [AUTH DEBUG] Rate limit exceeded')
             await createLog({
               level: 'warn',
               message: 'Rate limit exceeded for authentication',
@@ -47,15 +52,18 @@ const authOptions: NextAuthOptions = {
           }
 
           if (!credentials?.email || !credentials?.password) {
+            console.log('❌ [AUTH DEBUG] Credentials eksik')
             return null
           }
 
           // Find user by email
+          console.log('🔍 [AUTH DEBUG] Kullanıcı aranıyor:', credentials.email)
           const user = await prisma.user.findUnique({
             where: { email: credentials.email }
           })
 
           if (!user) {
+            console.log('❌ [AUTH DEBUG] Kullanıcı bulunamadı:', credentials.email)
             await createLog({
               level: 'warn',
               message: 'Failed login attempt - user not found',
@@ -68,6 +76,8 @@ const authOptions: NextAuthOptions = {
             })
             return null
           }
+
+          console.log('✅ [AUTH DEBUG] Kullanıcı bulundu:', user.email, 'Status:', user.status)
 
           // Check if user is active
           if (user.status !== 'active') {
@@ -85,9 +95,15 @@ const authOptions: NextAuthOptions = {
           }
 
           // Verify password
+          console.log('🔍 [AUTH DEBUG] Şifre kontrol ediliyor...')
+          console.log('🔑 [AUTH DEBUG] Girilen şifre:', credentials.password)
+          console.log('🔐 [AUTH DEBUG] DB hash:', user.password.substring(0, 20) + '...')
+          
           const isValidPassword = await bcrypt.compare(credentials.password, user.password)
+          console.log('✅ [AUTH DEBUG] Şifre kontrolü sonucu:', isValidPassword)
           
           if (!isValidPassword) {
+            console.log('❌ [AUTH DEBUG] Şifre yanlış!')
             await createLog({
               level: 'warn',
               message: 'Failed login attempt - invalid password',
@@ -135,6 +151,7 @@ const authOptions: NextAuthOptions = {
             }
           })
 
+          console.log('🎉 [AUTH DEBUG] Giriş başarılı! Kullanıcı döndürülüyor:', user.email)
           return {
             id: user.id,
             email: user.email,
@@ -144,6 +161,9 @@ const authOptions: NextAuthOptions = {
           }
 
         } catch (error) {
+          console.log('💥 [AUTH DEBUG] Hata oluştu:', error.message)
+          console.log('💥 [AUTH DEBUG] Stack:', error.stack)
+          
           await createLog({
             level: 'error',
             message: 'Authentication error',
