@@ -23,18 +23,13 @@ class Logger {
 
   private async readLogs(): Promise<LogEntry[]> {
     try {
-      const fs = await import('fs/promises')
-      const path = await import('path')
-      
-      const logPath = path.resolve(process.cwd(), this.config.logFile)
-      
-      try {
-        const data = await fs.readFile(logPath, 'utf-8')
-        return JSON.parse(data)
-      } catch (error) {
-        // Log dosyası yoksa boş array döndür
+      // Edge Runtime için file system operations'ı skip et
+      if (typeof window !== 'undefined' || process.env.NODE_ENV === 'development') {
         return []
       }
+      
+      // Production'da sadece console logging kullan
+      return []
     } catch (error) {
       console.error('Log okuma hatası:', error)
       return []
@@ -43,19 +38,13 @@ class Logger {
 
   private async writeLogs(logs: LogEntry[]): Promise<void> {
     try {
-      const fs = await import('fs/promises')
-      const path = await import('path')
+      // Edge Runtime için file system operations'ı skip et
+      if (typeof window !== 'undefined' || process.env.NODE_ENV === 'development') {
+        return
+      }
       
-      const logPath = path.resolve(process.cwd(), this.config.logFile)
-      const logDir = path.dirname(logPath)
-      
-      // Dizin yoksa oluştur
-      await fs.mkdir(logDir, { recursive: true })
-      
-      // Son N log'u tut
-      const recentLogs = logs.slice(-this.config.maxLogs)
-      
-      await fs.writeFile(logPath, JSON.stringify(recentLogs, null, 2), 'utf-8')
+      // Production'da sadece console logging kullan
+      return
     } catch (error) {
       console.error('Log yazma hatası:', error)
     }

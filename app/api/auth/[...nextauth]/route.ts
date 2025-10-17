@@ -36,7 +36,7 @@ const authOptions: NextAuthOptions = {
               message: 'Rate limit exceeded for authentication',
               category: 'security',
               metadata: {
-                ip: req?.headers?.get('x-forwarded-for') || req?.ip,
+                ip: req?.headers?.get('x-forwarded-for') || 'unknown',
                 userAgent: req?.headers?.get('user-agent'),
                 endpoint: '/api/auth/signin'
               }
@@ -60,7 +60,7 @@ const authOptions: NextAuthOptions = {
               category: 'security',
               metadata: {
                 email: credentials.email,
-                ip: req?.headers?.get('x-forwarded-for') || req?.ip,
+                ip: req?.headers?.get('x-forwarded-for') || 'unknown',
                 userAgent: req?.headers?.get('user-agent')
               }
             })
@@ -93,7 +93,7 @@ const authOptions: NextAuthOptions = {
               metadata: {
                 email: credentials.email,
                 userId: user.id,
-                ip: req?.headers?.get('x-forwarded-for') || req?.ip
+                ip: req?.headers?.get('x-forwarded-for') || 'unknown'
               }
             })
             return null
@@ -128,7 +128,7 @@ const authOptions: NextAuthOptions = {
             metadata: {
               email: credentials.email,
               userId: user.id,
-              ip: req?.headers?.get('x-forwarded-for') || req?.ip,
+              ip: req?.headers?.get('x-forwarded-for') || 'unknown',
               userAgent: req?.headers?.get('user-agent')
             }
           })
@@ -149,7 +149,7 @@ const authOptions: NextAuthOptions = {
             metadata: {
               error: error instanceof Error ? error.message : 'Unknown error',
               email: credentials?.email,
-              ip: req?.headers?.get('x-forwarded-for') || req?.ip
+              ip: req?.headers?.get('x-forwarded-for') || 'unknown'
             }
           })
           return null
