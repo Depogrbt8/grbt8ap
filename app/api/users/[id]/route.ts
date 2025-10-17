@@ -107,17 +107,24 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    console.log('🔍 [UPDATE DEBUG] PUT /api/users/[id] çağrıldı')
+    console.log('🆔 [UPDATE DEBUG] User ID:', params.id)
+    
     // Admin yetkisi kontrolü
     const adminCheck = await requireAdmin(request)
     if (adminCheck) {
+      console.log('❌ [UPDATE DEBUG] Admin yetkisi yok')
       return adminCheck
     }
 
     const userId = params.id
     const body = await request.json()
+    console.log('📝 [UPDATE DEBUG] Request body:', JSON.stringify(body, null, 2))
 
     // Transaction ile kullanıcı ve ilk yolcu bilgilerini güncelle
+    console.log('🔄 [UPDATE DEBUG] Transaction başlatılıyor...')
     const result = await prisma.$transaction(async (tx) => {
+      console.log('👤 [UPDATE DEBUG] Kullanıcı güncelleniyor...')
       // Kullanıcıyı güncelle
       const updatedUser = await tx.user.update({
         where: { id: userId },
@@ -135,6 +142,7 @@ export async function PUT(
           updatedAt: new Date()
         }
       })
+      console.log('✅ [UPDATE DEBUG] Kullanıcı güncellendi:', updatedUser.email)
 
       // İlk yolcu (hesap sahibi) bilgilerini güncelle
       // İlk yolcu genellikle en eski tarihli yolcu olur
@@ -174,12 +182,14 @@ export async function PUT(
     })
 
   } catch (error) {
-    console.error('Kullanıcı güncelleme hatası:', error)
+    console.log('💥 [UPDATE DEBUG] Hata oluştu:', error.message)
+    console.log('💥 [UPDATE DEBUG] Stack:', error.stack)
     
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Kullanıcı güncellenemedi' 
+        error: 'Kullanıcı güncellenemedi',
+        details: error.message
       },
       { status: 500 }
     )
