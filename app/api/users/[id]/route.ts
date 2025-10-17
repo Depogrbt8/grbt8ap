@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
+    // Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      return adminCheck
+    }
+
     const userId = params.id
 
     // Kullanıcıyı getir
@@ -100,6 +107,12 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      return adminCheck
+    }
+
     const userId = params.id
     const body = await request.json()
 
@@ -178,6 +191,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    // Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      return adminCheck
+    }
+
     const userId = params.id
     console.log('Silinecek kullanıcı ID:', userId)
 
