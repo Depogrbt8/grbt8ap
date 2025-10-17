@@ -1,6 +1,9 @@
 import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import { PrismaClient } from '@prisma/client'
 import bcrypt from 'bcryptjs'
+
+const prisma = new PrismaClient()
 
 const authOptions: NextAuthOptions = {
   providers: [
@@ -19,20 +22,55 @@ const authOptions: NextAuthOptions = {
           return null
         }
 
-        // Sabit admin hesabı - Prisma olmadan
-        if (credentials.email === 'admin@grbt8.store' && credentials.password === 'admin123') {
-          console.log('✅ [AUTH DEBUG] Sabit admin hesabı ile giriş başarılı')
-          return {
-            id: 'admin-123',
-            email: 'admin@grbt8.store',
-            name: 'Admin User',
-            role: 'admin',
-            status: 'active'
-          }
-        }
+        try {
+          // Kullanıcıyı veritabanından bul
+          console.log('🔍 [AUTH DEBUG] Kullanıcı aranıyor:', credentials.email)
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          })
 
-        console.log('❌ [AUTH DEBUG] Geçersiz credentials')
-        return null
+          if (!user) {
+            console.log('❌ [AUTH DEBUG] Kullanıcı bulunamadı:', credentials.email)
+            return null
+          }
+
+          console.log('✅ [AUTH DEBUG] Kullanıcı bulundu:', user.email, 'Status:', user.status)
+
+          // Kullanıcı aktif mi?
+          if (user.status !== 'active') {
+            console.log('❌ [AUTH DEBUG] Kullanıcı aktif değil:', user.status)
+            return null
+          }
+
+          // Şifre kontrolü
+          console.log('🔍 [AUTH DEBUG] Şifre kontrol ediliyor...')
+          const isValidPassword = await bcrypt.compare(credentials.password, user.password)
+          console.log('✅ [AUTH DEBUG] Şifre kontrolü sonucu:', isValidPassword)
+          
+          if (!isValidPassword) {
+            console.log('❌ [AUTH DEBUG] Şifre yanlış!')
+            return null
+          }
+
+          // Admin rolü kontrolü
+          if (user.role !== 'admin') {
+            console.log('❌ [AUTH DEBUG] Admin yetkisi yok:', user.role)
+            return null
+          }
+
+          console.log('🎉 [AUTH DEBUG] Giriş başarılı! Kullanıcı döndürülüyor:', user.email)
+          return {
+            id: user.id,
+            email: user.email,
+            name: `${user.firstName} ${user.lastName}`,
+            role: user.role,
+            status: user.status
+          }
+
+        } catch (error) {
+          console.log('💥 [AUTH DEBUG] Hata oluştu:', error.message)
+          return null
+        }
       }
     })
   ],
