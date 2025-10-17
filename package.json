@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3004",
-    "build": "node vercel-protection.js && prisma generate && prisma db push --accept-data-loss && next build",
+    "build": "node vercel-protection.js && next build",
     "start": "next start -p 3004",
     "lint": "next lint",
     "deploy": "bash deploy.sh",

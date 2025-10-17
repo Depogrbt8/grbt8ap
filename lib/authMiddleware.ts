@@ -137,7 +137,8 @@ export function checkApiRateLimit(request: NextRequest, maxRequests: number = 10
   const windowStart = now - windowMs
   
   // Clean old entries
-  for (const key of apiRateLimit.keys()) {
+  const keys = Array.from(apiRateLimit.keys())
+  for (const key of keys) {
     const record = apiRateLimit.get(key)
     if (record && record.resetTime < windowStart) {
       apiRateLimit.delete(key)

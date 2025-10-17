@@ -41,18 +41,18 @@ export async function GET(request: Request) {
     const allQueueItems = await prisma.emailQueue.findMany()
     const queueStats = {
       total: allQueueItems.length,
-      pending: allQueueItems.filter(item => item.status === 'pending').length,
-      processing: allQueueItems.filter(item => item.status === 'processing').length,
-      failed: allQueueItems.filter(item => item.status === 'failed').length,
-      completed: allQueueItems.filter(item => item.status === 'completed').length,
-      highPriority: allQueueItems.filter(item => item.priority === 'high').length,
-      normalPriority: allQueueItems.filter(item => item.priority === 'normal').length,
-      lowPriority: allQueueItems.filter(item => item.priority === 'low').length,
-      retryNeeded: allQueueItems.filter(item => item.status === 'failed' && item.retryCount < 3).length
+      pending: allQueueItems.filter((item: any) => item.status === 'pending').length,
+      processing: allQueueItems.filter((item: any) => item.status === 'processing').length,
+      failed: allQueueItems.filter((item: any) => item.status === 'failed').length,
+      completed: allQueueItems.filter((item: any) => item.status === 'completed').length,
+      highPriority: allQueueItems.filter((item: any) => item.priority === 'high').length,
+      normalPriority: allQueueItems.filter((item: any) => item.priority === 'normal').length,
+      lowPriority: allQueueItems.filter((item: any) => item.priority === 'low').length,
+      retryNeeded: allQueueItems.filter((item: any) => item.status === 'failed' && item.retryCount < 3).length
     }
 
     // Mock data yerine gerçek data formatla
-    const formattedQueue = emailQueue.map(item => ({
+    const formattedQueue = emailQueue.map((item: any) => ({
       id: item.id,
       recipientEmail: item.recipient,
       subject: item.subject,

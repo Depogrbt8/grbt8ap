@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       changes.newPayments = currentData.payments.length - existingBackup.data.payments.length
       
       // Güncellenen kayıtları bul (updatedAt'e göre)
-      const updatedUsers = currentData.users.filter(user => {
+      const updatedUsers = currentData.users.filter((user: any) => {
         const existingUser = existingBackup.data.users.find((u: any) => u.id === user.id)
         return existingUser && new Date(user.updatedAt) > new Date(existingUser.updatedAt)
       })

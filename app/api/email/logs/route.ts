@@ -61,7 +61,7 @@ export async function GET(request: Request) {
     })
 
     // Database loglarını frontend formatına çevir
-    const formattedLogs = emailLogs.map(log => ({
+    const formattedLogs = emailLogs.map((log: any) => ({
       id: log.id,
       emailId: log.emailId,
       recipientEmail: log.recipientEmail,

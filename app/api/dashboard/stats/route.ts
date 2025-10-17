@@ -61,7 +61,7 @@ export async function GET() {
         where: {
           status: { in: ['completed', 'success'] }
         }
-      }).then(result => result._sum.amount || 0),
+      }).then((result: any) => result._sum.amount || 0),
       
       // Toplam API sayısı (sistem endpoint'lerini say)
       Promise.resolve(12), // Sabit değer - gerçek API sayısı
@@ -108,7 +108,7 @@ export async function GET() {
         emailsSent: await prisma.emailLog.count().catch(() => 0),
         totalRevenue: await prisma.payment.aggregate({
           _sum: { amount: true }
-        }).then(r => r._sum.amount || 0).catch(() => 0),
+        }).then((r: any) => r._sum.amount || 0).catch(() => 0),
         todayRegistrations: 0,
         activeUsers24h: 0,
         deliveryRate: 0,

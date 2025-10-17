@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/app/lib/prisma'
 import { gzip, gunzip } from 'zlib'
 import { promisify } from 'util'
 
@@ -8,8 +8,6 @@ const gunzipAsync = promisify(gunzip)
 
 // 6 saatte bir çalışacak cron job - Vercel Cron Jobs
 // Vercel dashboard'dan manuel olarak ayarlanacak
-
-const prisma = new PrismaClient()
 
 // GitHub bilgileri
 const GITHUB_TOKEN = process.env.GITHUB_BACKUP_TOKEN || ''
