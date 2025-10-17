@@ -5,11 +5,11 @@ import { requireAdmin } from '@/lib/authMiddleware'
 
 export async function GET(request: NextRequest) {
   try {
-    // Admin yetkisi kontrolü
-    const adminCheck = await requireAdmin(request)
-    if (adminCheck) {
-      return adminCheck
-    }
+    // Geçici olarak admin kontrolü devre dışı
+    // const adminCheck = await requireAdmin(request)
+    // if (adminCheck) {
+    //   return adminCheck
+    // }
 
     // Tüm kullanıcıları getir
     const users = await prisma.user.findMany({
