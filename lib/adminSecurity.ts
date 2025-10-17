@@ -11,7 +11,7 @@ export const adminSecurityMiddlewares = {
   adminRateLimit: createRateLimit(rateLimitConfigs.admin),
   
   // Login sayfası için sıkı rate limiting
-  loginRateLimit: createRateLimit(rateLimitConfigs.login),
+  loginRateLimit: createRateLimit(rateLimitConfigs.auth),
   
   // CSRF koruması
   csrfProtection: createCSRFProtection(),
