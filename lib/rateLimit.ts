@@ -81,38 +81,7 @@ export function createRateLimit(config: Partial<RateLimitConfig> = {}) {
   }
 }
 
-// Önceden tanımlanmış rate limit konfigürasyonları
-export const rateLimitConfigs = {
-  // Genel API rate limit
-  general: {
-    windowMs: 15 * 60 * 1000, // 15 dakika
-    maxRequests: 100
-  },
-  
-  // Login sayfası için sıkı rate limit
-  login: {
-    windowMs: 15 * 60 * 1000, // 15 dakika
-    maxRequests: 5 // 5 başarısız deneme
-  },
-  
-  // Ödeme sayfası için çok sıkı rate limit
-  payment: {
-    windowMs: 5 * 60 * 1000, // 5 dakika
-    maxRequests: 3 // 3 deneme
-  },
-  
-  // Admin paneli için orta seviye rate limit
-  admin: {
-    windowMs: 10 * 60 * 1000, // 10 dakika
-    maxRequests: 50
-  },
-  
-  // Kayıt sayfası için sıkı rate limit
-  register: {
-    windowMs: 60 * 60 * 1000, // 1 saat
-    maxRequests: 3 // 3 kayıt denemesi
-  }
-}
+// Legacy rate limit configs (removed to prevent duplication)
 
 // Yardımcı fonksiyon: Rate limit durumunu kontrol et
 export function checkRateLimit(key: string, config: RateLimitConfig): {
