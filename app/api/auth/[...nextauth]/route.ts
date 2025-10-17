@@ -1,7 +1,9 @@
 import NextAuth, { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
-import { prisma } from '@/app/lib/prisma'
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
 import bcrypt from 'bcryptjs'
 import { createRateLimit, rateLimitConfigs } from '@/lib/rateLimit'
 import { createLog } from '@/lib/logger'
