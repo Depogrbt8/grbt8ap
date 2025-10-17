@@ -11,7 +11,8 @@ export async function middleware(request: NextRequest) {
     '/',
     '/api/auth',
     '/api/email/track',
-    '/api/health'
+    '/api/health',
+    '/kullanici' // Geçici olarak kullanıcı sayfasını public yap
   ]
 
   const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
