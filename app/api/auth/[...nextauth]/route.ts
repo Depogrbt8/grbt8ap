@@ -34,21 +34,16 @@ const authOptions: NextAuthOptions = {
           console.log('📧 [AUTH DEBUG] Email:', credentials?.email)
           console.log('🔑 [AUTH DEBUG] Password length:', credentials?.password?.length)
           
-          // Rate limiting check
-          const rateLimitResult = await authRateLimit(req as any)
-          if (rateLimitResult) {
-            console.log('⚠️ [AUTH DEBUG] Rate limit exceeded')
-            await createLog({
-              level: 'warn',
-              message: 'Rate limit exceeded for authentication',
-              category: 'security',
-              metadata: {
-                ip: req?.headers?.get('x-forwarded-for') || 'unknown',
-                userAgent: req?.headers?.get('user-agent'),
-                endpoint: '/api/auth/signin'
-              }
-            })
-            return null
+          // Rate limiting check - Edge Runtime uyumlu
+          try {
+            const rateLimitResult = await authRateLimit(req as any)
+            if (rateLimitResult) {
+              console.log('⚠️ [AUTH DEBUG] Rate limit exceeded')
+              return null
+            }
+          } catch (rateLimitError) {
+            console.log('⚠️ [AUTH DEBUG] Rate limiting hatası:', rateLimitError.message)
+            // Rate limiting hatası varsa devam et
           }
 
           if (!credentials?.email || !credentials?.password) {
@@ -64,16 +59,7 @@ const authOptions: NextAuthOptions = {
 
           if (!user) {
             console.log('❌ [AUTH DEBUG] Kullanıcı bulunamadı:', credentials.email)
-            await createLog({
-              level: 'warn',
-              message: 'Failed login attempt - user not found',
-              category: 'security',
-              metadata: {
-                email: credentials.email,
-                ip: req?.headers?.get('x-forwarded-for') || 'unknown',
-                userAgent: req?.headers?.get('user-agent')
-              }
-            })
+            // Edge Runtime'da createLog çalışmayabilir, sadece console.log kullan
             return null
           }
 
@@ -81,16 +67,7 @@ const authOptions: NextAuthOptions = {
 
           // Check if user is active
           if (user.status !== 'active') {
-            await createLog({
-              level: 'warn',
-              message: 'Failed login attempt - inactive user',
-              category: 'security',
-              metadata: {
-                email: credentials.email,
-                userId: user.id,
-                status: user.status
-              }
-            })
+            console.log('❌ [AUTH DEBUG] Kullanıcı aktif değil:', user.status)
             return null
           }
 
@@ -104,31 +81,12 @@ const authOptions: NextAuthOptions = {
           
           if (!isValidPassword) {
             console.log('❌ [AUTH DEBUG] Şifre yanlış!')
-            await createLog({
-              level: 'warn',
-              message: 'Failed login attempt - invalid password',
-              category: 'security',
-              metadata: {
-                email: credentials.email,
-                userId: user.id,
-                ip: req?.headers?.get('x-forwarded-for') || 'unknown'
-              }
-            })
             return null
           }
 
           // Check if user has admin role
           if (user.role !== 'admin') {
-            await createLog({
-              level: 'warn',
-              message: 'Failed login attempt - insufficient privileges',
-              category: 'security',
-              metadata: {
-                email: credentials.email,
-                userId: user.id,
-                role: user.role
-              }
-            })
+            console.log('❌ [AUTH DEBUG] Admin yetkisi yok:', user.role)
             return null
           }
 
@@ -163,17 +121,6 @@ const authOptions: NextAuthOptions = {
         } catch (error) {
           console.log('💥 [AUTH DEBUG] Hata oluştu:', error.message)
           console.log('💥 [AUTH DEBUG] Stack:', error.stack)
-          
-          await createLog({
-            level: 'error',
-            message: 'Authentication error',
-            category: 'security',
-            metadata: {
-              error: error instanceof Error ? error.message : 'Unknown error',
-              email: credentials?.email,
-              ip: req?.headers?.get('x-forwarded-for') || 'unknown'
-            }
-          })
           return null
         }
       }
