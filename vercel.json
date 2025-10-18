@@ -1,7 +1,7 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "bash vercel-build.sh",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
+  "installCommand": "npm install && npx prisma generate",
   "framework": "nextjs",
   "regions": ["fra1"],
   "crons": [

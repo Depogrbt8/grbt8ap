@@ -4,8 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3004",
-    "build": "node vercel-protection.js && next build",
+    "build": "npx prisma generate && next build",
     "start": "next start -p 3004",
+    "postinstall": "npx prisma generate",
     "lint": "next lint",
     "deploy": "bash deploy.sh",
     "db:generate": "prisma generate",
@@ -62,5 +63,8 @@
     "postcss": "^8",
     "tailwindcss": "^3",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
