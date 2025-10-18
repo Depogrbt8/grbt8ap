@@ -78,18 +78,6 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             <span>Kullanıcılar</span>
           </Link>
           <Link 
-            href="/kampanyalar"
-            onClick={() => setActiveTab('kampanyalar')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/kampanyalar' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <Megaphone className="h-3 w-3" />
-            <span>Kampanyalar</span>
-          </Link>
-          <Link 
             href="/seo"
             onClick={() => setActiveTab('seo')}
             className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
