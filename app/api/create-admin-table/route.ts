@@ -1,15 +1,7 @@
-// Vercel'de Admin tablosunu oluşturmak için script
-// Bu script'i Vercel Functions'da çalıştır
+import { NextRequest, NextResponse } from 'next/server'
+import { prisma } from '../../lib/prisma'
 
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
-
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
-
+export async function POST(request: NextRequest) {
   try {
     // Admin tablosunu oluştur
     await prisma.$executeRaw`
@@ -48,18 +40,16 @@ export default async function handler(req, res) {
       CREATE INDEX IF NOT EXISTS "Admin_role_idx" ON "Admin"("role");
     `
 
-    return res.status(200).json({ 
+    return NextResponse.json({ 
       success: true, 
       message: 'Admin tablosu başarıyla oluşturuldu!' 
     })
 
   } catch (error) {
     console.error('Admin tablosu oluşturma hatası:', error)
-    return res.status(500).json({ 
+    return NextResponse.json({ 
       success: false, 
       error: 'Admin tablosu oluşturulamadı: ' + error.message 
-    })
-  } finally {
-    await prisma.$disconnect()
+    }, { status: 500 })
   }
 }
