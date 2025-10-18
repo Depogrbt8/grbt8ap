@@ -13,7 +13,7 @@ JWT_SECRET="your-jwt-secret-key"  # ❌ Dummy secret
 NEXTAUTH_SECRET="your-nextauth-secret-key"  # ❌ Dummy secret
 ```
 
-### 3. API Endpoint Güvenlik Sorunu
+### yapildi 3. API Endpoint Güvenlik Sorunu
 - ❌ User update API'sinde authentication kontrolü yok
 - ❌ Herkes kullanıcıları güncelleyebilir
 

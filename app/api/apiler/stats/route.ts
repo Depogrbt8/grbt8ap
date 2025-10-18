@@ -56,12 +56,16 @@ export async function GET(request: NextRequest) {
       return a.endpoint.localeCompare(b.endpoint)
     })
 
+    // Unique kategorileri al
+    const categorySet = new Set(apis.map(a => a.category))
+    const categories = Array.from(categorySet).sort((a, b) => a.localeCompare(b, 'tr'))
+
     return NextResponse.json({
       success: true,
       data: {
         apis,
         totalApis: apis.length,
-        categories: Array.from(new Set(apis.map(a => a.category))).sort((a, b) => a.localeCompare(b, 'tr'))
+        categories
       }
     })
 

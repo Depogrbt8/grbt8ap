@@ -8,13 +8,14 @@ export async function middleware(request: NextRequest) {
 
   // Public paths that don't require authentication
   const publicPaths = [
-    '/',
     '/api/auth',
     '/api/email/track',
     '/api/health'
   ]
 
-  const isPublicPath = publicPaths.some(path => pathname.startsWith(path))
+  // Exact match için root path kontrolü
+  const isRootPath = pathname === '/' || pathname === '/login'
+  const isPublicPath = isRootPath || publicPaths.some(path => pathname.startsWith(path))
 
   // Admin paneli veya API rotaları için kontrol
   if (
