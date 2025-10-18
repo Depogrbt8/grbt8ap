@@ -1,24 +1,11 @@
 {
-  "buildCommand": "npm run build",
-  "devCommand": "npm run dev", 
+  "buildCommand": "npx prisma generate && npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["fra1"],
-  "git": {
-    "deploymentEnabled": {
-      "main": true,
-      "preview": true
-    },
-    "ignoreCommand": "exit 1"
-  },
-  "crons": [
-    {
-      "path": "/api/database-backup/github",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/database-backup/gitlab", 
-      "schedule": "0 2 * * *"
+  "outputDirectory": ".next",
+  "build": {
+    "env": {
+      "PRISMA_GENERATE_DATAPROXY": "true"
     }
-  ]
+  }
 }
