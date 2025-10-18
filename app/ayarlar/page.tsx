@@ -100,6 +100,15 @@ export default function AyarlarPage() {
                 <h2 className="admin-card-title mb-2">SEO</h2>
                 <p className="admin-text-xs">Arama motoru optimizasyonu</p>
               </button>
+
+              {/* Admin Yönetimi Butonu */}
+              <a
+                href="/ayarlar/admin-yonetimi"
+                className="admin-card hover:bg-gray-50 transition-colors block"
+              >
+                <h2 className="admin-card-title mb-2">Admin Yönetimi</h2>
+                <p className="admin-text-xs">Admin kullanıcıları ve yetkileri yönetimi</p>
+              </a>
           </div>
         </div>
       </div>
