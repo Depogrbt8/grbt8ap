@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     if (adminCheck) {
       return adminCheck
     }
-  try {
+
     // Vercel serverless ortamında gerçek sistem metrikleri
     const metrics = {
       timestamp: new Date().toISOString(),

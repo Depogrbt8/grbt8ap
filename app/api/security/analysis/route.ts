@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     if (adminCheck) {
       return adminCheck
     }
-  try {
+
     const mainSiteUrl = process.env.MAIN_SITE_URL || 'http://localhost:4000'
     const response = await fetch(`${mainSiteUrl}/api/security/analysis`)
 

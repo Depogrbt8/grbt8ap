@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (adminCheck) {
       return adminCheck
     }
-  try {
+
     // Zaman aralıklarını hesapla
     const now = new Date()
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())

@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     if (adminCheck) {
       return adminCheck
     }
-  try {
+
     const now = new Date()
     const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000)
     const lastHour = new Date(now.getTime() - 60 * 60 * 1000)

@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     if (adminCheck) {
       return adminCheck
     }
-  try {
+
     // Log isteğini kaydet
     await createLog({
       level: 'INFO',

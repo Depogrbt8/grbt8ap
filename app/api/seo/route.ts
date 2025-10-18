@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     if (adminCheck) {
       return adminCheck
     }
-  try {
+
     // SEO ayarlarını veritabanından getir
     let seoSettings = await prisma.seoSettings.findFirst()
     

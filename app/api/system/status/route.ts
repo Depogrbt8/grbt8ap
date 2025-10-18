@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     if (adminCheck) {
       return adminCheck
     }
-  try {
+
     // Veritabanı bağlantısını test et
     await prisma.$connect()
     

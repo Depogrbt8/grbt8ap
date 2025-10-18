@@ -13,7 +13,8 @@ export async function POST(request: NextRequest) {
     if (adminCheck) {
       return adminCheck
     }
-  // Rate limit
+
+    // Rate limit
   const rl = await rateLimit(request as any)
   if ((rl as any)?.status === 429) {
     try {
