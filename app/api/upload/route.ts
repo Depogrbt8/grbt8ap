@@ -6,6 +6,7 @@ import { createRateLimit } from '@/lib/rateLimit'
 import { prisma } from '@/app/lib/prisma'
 import config from '@/app/lib/config'
 import { requireAdmin } from '@/lib/authMiddleware'
+import { validateFileUpload, sanitizeText } from '@/lib/xssProtection'
 
 // CORS middleware
 function corsMiddleware(response: NextResponse) {
@@ -57,6 +58,16 @@ export async function POST(request: NextRequest) {
       ))
     }
 
+    // 🛡️ File Upload Validation - Güvenlik kontrolü
+    const fileValidation = validateFileUpload(file)
+    if (!fileValidation.isValid) {
+      console.log('❌ [SECURITY] File validation hatası:', fileValidation.error)
+      return corsMiddleware(NextResponse.json(
+        { success: false, error: fileValidation.error },
+        { status: 400 }
+      ))
+    }
+
     // Dosya boyutu kontrolü (2MB) - Base64 encoding %33 artırır
     const maxSize = 2 * 1024 * 1024 // 2MB
     if (file.size > maxSize) {
@@ -66,14 +77,26 @@ export async function POST(request: NextRequest) {
       ))
     }
 
-    // Dosya tipi kontrolü
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
-    if (!allowedTypes.includes(file.type)) {
+    // Dosya tipi kontrolü - Sadece resim dosyaları
+    const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+    if (!allowedImageTypes.includes(file.type)) {
       return corsMiddleware(NextResponse.json(
         { success: false, error: 'Sadece resim dosyaları kabul edilir (JPG, PNG, WEBP, GIF)' },
         { status: 400 }
       ))
     }
+
+    // Dosya uzantısı kontrolü
+    const fileExtension = file.name.split('.').pop()?.toLowerCase()
+    const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp', 'gif']
+    if (!fileExtension || !allowedExtensions.includes(fileExtension)) {
+      return corsMiddleware(NextResponse.json(
+        { success: false, error: 'Geçersiz dosya uzantısı' },
+        { status: 400 }
+      ))
+    }
+
+    console.log('✅ [SECURITY] File upload validation tamamlandı')
 
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)

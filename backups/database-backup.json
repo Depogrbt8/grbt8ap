@@ -1,13 +1,13 @@
 {
   "metadata": {
-    "timestamp": "2025-10-18T15:21:55.449Z",
+    "timestamp": "2025-10-18T15:34:05.547Z",
     "version": "2.0",
     "type": "incremental",
     "changes": {
-      "newUsers": 25,
+      "newUsers": 0,
       "newReservations": 0,
       "newPayments": 0,
-      "updatedRecords": 2,
+      "updatedRecords": 0,
       "deletedRecords": 0
     },
     "totalRecords": 65

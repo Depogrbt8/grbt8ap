@@ -3,6 +3,7 @@ import resendService from '@/app/lib/resend'
 import { prisma } from '@/app/lib/prisma'
 import { createRateLimit } from '@/lib/rateLimit'
 import { requireAdmin } from '@/lib/authMiddleware'
+import { sanitizeText, sanitizeEmail, sanitizeHTML } from '@/lib/xssProtection'
 
 const rateLimit = createRateLimit({ windowMs: 10 * 60 * 1000, maxRequests: 50 })
 
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { 
+    let { 
       recipientType, 
       recipientEmail, 
       recipientEmails,
@@ -51,6 +52,44 @@ export async function POST(request: NextRequest) {
         success: false,
         error: 'Konu ve içerik zorunludur'
       }, { status: 400 })
+    }
+
+    // 🛡️ Input Validation - XSS koruması
+    try {
+      // Email validations
+      if (recipientEmail) recipientEmail = sanitizeEmail(recipientEmail)
+      if (to) to = sanitizeEmail(to)
+      if (cc) cc = sanitizeEmail(cc)
+      if (bcc) bcc = sanitizeEmail(bcc)
+      
+      // Text sanitization
+      subject = sanitizeText(subject)
+      
+      // HTML içerik için özel sanitization (email template'ler için güvenli HTML'e izin ver)
+      content = sanitizeHTML(content, {
+        allowedTags: ['b', 'i', 'em', 'strong', 'p', 'br', 'ul', 'ol', 'li', 'a', 'h1', 'h2', 'h3', 'div', 'span'],
+        allowedAttributes: {
+          'a': ['href', 'title', 'target'],
+          'div': ['style'],
+          'span': ['style'],
+          'p': ['style']
+        },
+        allowedSchemes: ['http', 'https', 'mailto'],
+        stripHtml: false,
+        maxLength: 50000 // Email içeriği için daha yüksek limit
+      })
+      
+      console.log('✅ [SECURITY] Email input sanitization tamamlandı')
+    } catch (validationError: any) {
+      console.log('❌ [SECURITY] Email validation hatası:', validationError.message)
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Geçersiz email formatı',
+          details: validationError.message
+        },
+        { status: 400 }
+      )
     }
 
     // Alıcı email'leri belirle

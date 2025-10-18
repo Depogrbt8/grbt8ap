@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { requireAdmin } from '@/lib/authMiddleware'
+import { sanitizeText, sanitizeEmail } from '@/lib/xssProtection'
 
 export async function GET(
   request: NextRequest,
@@ -120,6 +121,34 @@ export async function PUT(
     const userId = params.id
     const body = await request.json()
     console.log('📝 [UPDATE DEBUG] Request body:', JSON.stringify(body, null, 2))
+
+    // 🛡️ Input Validation - XSS koruması
+    try {
+      // Email validation
+      if (body.email) {
+        body.email = sanitizeEmail(body.email)
+      }
+      
+      // Text sanitization
+      if (body.firstName) body.firstName = sanitizeText(body.firstName)
+      if (body.lastName) body.lastName = sanitizeText(body.lastName)
+      if (body.phone) body.phone = sanitizeText(body.phone)
+      if (body.countryCode) body.countryCode = sanitizeText(body.countryCode)
+      if (body.identityNumber) body.identityNumber = sanitizeText(body.identityNumber)
+      if (body.gender) body.gender = sanitizeText(body.gender)
+      
+      console.log('✅ [SECURITY] Input sanitization tamamlandı')
+    } catch (validationError: any) {
+      console.log('❌ [SECURITY] Input validation hatası:', validationError.message)
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Geçersiz veri formatı',
+          details: validationError.message
+        },
+        { status: 400 }
+      )
+    }
 
     // Transaction ile kullanıcı ve ilk yolcu bilgilerini güncelle
     console.log('🔄 [UPDATE DEBUG] Transaction başlatılıyor...')
