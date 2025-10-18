@@ -1,11 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import resendService from '@/app/lib/resend'
 import { prisma } from '@/app/lib/prisma'
 import { createRateLimit } from '@/lib/rateLimit'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 const rateLimit = createRateLimit({ windowMs: 10 * 60 * 1000, maxRequests: 50 })
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  try {
+    // Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      return adminCheck
+    }
   // Rate limit
   const rl = await rateLimit(request as any)
   if ((rl as any)?.status === 429) {

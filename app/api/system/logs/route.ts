@@ -1,7 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getLogs, createLog } from '@/app/lib/logger'
+import { requireAdmin } from '@/lib/authMiddleware'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  try {
+    // Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      return adminCheck
+    }
   try {
     // Log isteğini kaydet
     await createLog({

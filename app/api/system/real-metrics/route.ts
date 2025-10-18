@@ -1,6 +1,13 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/authMiddleware'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  try {
+    // Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      return adminCheck
+    }
   try {
     // Vercel serverless ortamında gerçek sistem metrikleri
     const metrics = {

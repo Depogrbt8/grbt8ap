@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../lib/prisma'
 import { createLog } from '../../lib/logger'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 // GET - SEO ayarlarını getir
-export async function GET() {
+export async function GET(request: NextRequest) {
+  try {
+    // Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      return adminCheck
+    }
   try {
     // SEO ayarlarını veritabanından getir
     let seoSettings = await prisma.seoSettings.findFirst()

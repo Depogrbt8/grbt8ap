@@ -5,6 +5,7 @@ import { existsSync } from 'fs'
 import { createRateLimit } from '@/lib/rateLimit'
 import { prisma } from '@/app/lib/prisma'
 import config from '@/app/lib/config'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 // CORS middleware
 function corsMiddleware(response: NextResponse) {
@@ -23,6 +24,12 @@ export async function OPTIONS() {
 const rateLimit = createRateLimit({ windowMs: 5 * 60 * 1000, maxRequests: 20 })
 
 export async function POST(request: NextRequest) {
+  try {
+    // Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      return adminCheck
+    }
   // Rate limit
   const rl = await rateLimit(request)
   if ((rl as any)?.status === 429) {
