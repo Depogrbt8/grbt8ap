@@ -32,22 +32,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limit
-  const rl = await rateLimit(request)
-  if ((rl as any)?.status === 429) {
-    try {
-      await prisma.systemLog.create({
-        data: {
-          level: 'warn',
-          message: 'Rate limit blocked',
-          source: 'rate_limit_block',
-          metadata: JSON.stringify({ path: '/api/upload', ip: request.headers.get('x-forwarded-for') || 'unknown' })
-        }
-      })
-    } catch {}
-    return rl as NextResponse
-  }
+    const rl = await rateLimit(request)
+    if ((rl as any)?.status === 429) {
+      try {
+        await prisma.systemLog.create({
+          data: {
+            level: 'warn',
+            message: 'Rate limit blocked',
+            source: 'rate_limit_block',
+            metadata: JSON.stringify({ path: '/api/upload', ip: request.headers.get('x-forwarded-for') || 'unknown' })
+          }
+        })
+      } catch {}
+      return rl as NextResponse
+    }
 
-  try {
     const data = await request.formData()
     const file: File | null = data.get('file') as unknown as File
 
