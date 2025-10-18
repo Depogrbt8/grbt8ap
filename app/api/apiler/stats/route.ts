@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
       data: {
         apis,
         totalApis: apis.length,
-        categories: [...new Set(apis.map(a => a.category))].sort((a, b) => a.localeCompare(b, 'tr'))
+        categories: Array.from(new Set(apis.map(a => a.category))).sort((a, b) => a.localeCompare(b, 'tr'))
       }
     })
 
