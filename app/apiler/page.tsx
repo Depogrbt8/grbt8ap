@@ -88,33 +88,35 @@ export default function ApilerPage() {
             </div>
 
             {/* Kategori Filtre */}
-            <div className="mb-4 flex items-center gap-2 text-xs">
-              <button
-                onClick={() => setSelectedCategory('Tümü')}
-                className={`px-2 py-1 rounded ${
-                  selectedCategory === 'Tümü'
-                    ? 'bg-gray-800 text-white'
-                    : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                Tümü ({apiData.totalApis})
-              </button>
-              {apiData.categories.map(cat => {
-                const count = apiData.apis.filter(a => a.category === cat).length
-                return (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-2 py-1 rounded ${
-                      selectedCategory === cat
-                        ? 'bg-gray-800 text-white'
-                        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-                    }`}
-                  >
-                    {cat} ({count})
-                  </button>
-                )
-              })}
+            <div className="mb-4 text-xs">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => setSelectedCategory('Tümü')}
+                  className={`px-2 py-1 rounded ${
+                    selectedCategory === 'Tümü'
+                      ? 'bg-gray-800 text-white'
+                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  Tümü ({apiData.totalApis})
+                </button>
+                {apiData.categories.map(cat => {
+                  const count = apiData.apis.filter(a => a.category === cat).length
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-2 py-1 rounded ${
+                        selectedCategory === cat
+                          ? 'bg-gray-800 text-white'
+                          : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {cat} ({count})
+                    </button>
+                  )
+                })}
+              </div>
             </div>
 
             {/* Tablo */}
