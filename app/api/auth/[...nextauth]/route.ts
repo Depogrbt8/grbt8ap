@@ -23,14 +23,40 @@ const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Admin'i veritabanından bul
-          console.log('🔍 [AUTH DEBUG] Admin aranıyor:', credentials.email)
-          const admin = await prisma.admin.findUnique({
+          // Önce Admin tablosunda ara
+          console.log('🔍 [AUTH DEBUG] Admin tablosunda aranıyor:', credentials.email)
+          let admin = await prisma.admin.findUnique({
             where: { email: credentials.email }
           })
 
+          // Admin tablosunda yoksa User tablosunda ara
           if (!admin) {
-            console.log('❌ [AUTH DEBUG] Admin bulunamadı:', credentials.email)
+            console.log('🔍 [AUTH DEBUG] Admin tablosunda bulunamadı, User tablosunda aranıyor:', credentials.email)
+            const user = await prisma.user.findUnique({
+              where: { email: credentials.email }
+            })
+            
+            if (user && user.role === 'admin') {
+              console.log('✅ [AUTH DEBUG] User tablosunda admin bulundu:', user.email)
+              admin = {
+                id: user.id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                password: user.password,
+                role: user.role,
+                status: user.status,
+                permissions: {},
+                lastLoginAt: user.lastLoginAt,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+                createdBy: null
+              }
+            }
+          }
+
+          if (!admin) {
+            console.log('❌ [AUTH DEBUG] Hiçbir tabloda admin bulunamadı:', credentials.email)
             return null
           }
 
