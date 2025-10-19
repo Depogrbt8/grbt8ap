@@ -13,7 +13,9 @@ export async function middleware(request: NextRequest) {
     '/api/health',
     '/api/database-backup/github',
     '/api/database-backup/gitlab',
-    '/api/database-backup/cron'
+    '/api/database-backup/cron',
+    '/api/database-backup/sources',
+    '/api/database-backup/status'
   ]
 
   // Exact match için root path kontrolü - root path her zaman public
