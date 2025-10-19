@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/authMiddleware'
 import { glob } from 'glob'
 import path from 'path'
 import fs from 'fs'
@@ -10,6 +11,9 @@ interface ApiEndpoint {
 }
 
 export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     // Gerçek API dosyalarını tara
     const apiDir = path.join(process.cwd(), 'app', 'api')

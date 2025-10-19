@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 // BiletDukkani API entegrasyonu örneği
 export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     const { searchParams } = new URL(request.url)
     const from = searchParams.get('from')
@@ -78,6 +82,9 @@ export async function GET(request: NextRequest) {
 
 // Rezervasyon oluşturma örneği
 export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     const body = await request.json()
     const { flightId, passengerInfo, paymentInfo } = body

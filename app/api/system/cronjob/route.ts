@@ -1,6 +1,14 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/authMiddleware'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi veya Vercel cron
+  const isVercelCron = request.headers.get('authorization') === `Bearer ${process.env.CRON_SECRET}`
+  
+  if (!isVercelCron) {
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) return adminCheck
+  }
   try {
     console.log('🕐 Cron job başlatıldı:', new Date().toISOString())
 

@@ -3,6 +3,22 @@ import { prisma } from '../../lib/prisma'
 import bcrypt from 'bcryptjs'
 
 export async function GET(request: NextRequest) {
+  // GÜVENLIK: Production'da devre dışı bırak
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Bu endpoint production ortamında devre dışıdır' 
+    }, { status: 403 })
+  }
+  
+  // Admin sayısını kontrol et - Eğer admin varsa çalışmasın
+  const adminCount = await prisma.admin.count()
+  if (adminCount > 0) {
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Sistemde zaten admin kullanıcı bulunmaktadır' 
+    }, { status: 403 })
+  }
   try {
     // İlk admin kullanıcısını oluştur
     const hashedPassword = await bcrypt.hash('admin123', 12)

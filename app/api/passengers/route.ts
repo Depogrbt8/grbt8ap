@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { requireAuth } from '@/lib/authMiddleware'
 
 export async function GET(request: NextRequest) {
+  // GÜVENLIK: Kullanıcı authentication gerekli
+  const authCheck = await requireAuth(request)
+  if (authCheck) return authCheck
   try {
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')

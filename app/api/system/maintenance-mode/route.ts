@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createLog } from '@/app/lib/logger'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 // Basit in-memory bakım modu durumu (gerçek uygulamada veritabanı kullanılır)
 let maintenanceMode = false
@@ -9,7 +10,10 @@ let maintenanceData = {
   duration: ''
 }
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     console.log('Bakım modu işlemi başlatıldı')
     
@@ -59,7 +63,10 @@ export async function POST() {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     return NextResponse.json({
       success: true,

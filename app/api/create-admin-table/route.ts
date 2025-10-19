@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../lib/prisma'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     // Admin tablosunu oluştur
     await prisma.$executeRaw`

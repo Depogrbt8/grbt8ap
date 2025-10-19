@@ -1,8 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { requireAdmin, getAuthUser } from '@/lib/authMiddleware'
 
 export async function POST(request: NextRequest) {
   try {
+    // 🔒 Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) return adminCheck
+
+    // 🔒 SADECE Super Admin database restore yapabilir
+    const user = await getAuthUser(request)
+    if (user?.role !== 'Super Admin') {
+      return NextResponse.json({
+        success: false,
+        error: 'Database restore sadece Super Admin yapabilir'
+      }, { status: 403 })
+    }
+
+    // 🔒 Güvenlik logu
+    await prisma.systemLog.create({
+      data: {
+        level: 'critical',
+        message: `Database restore başlatıldı - Admin: ${user.email}`,
+        source: 'restore_api',
+        userId: user.id,
+        metadata: JSON.stringify({ 
+          ip: request.ip || request.headers.get('x-forwarded-for'),
+          userAgent: request.headers.get('user-agent')
+        })
+      }
+    })
+
     const body = await request.json()
     const { backupData } = body
 

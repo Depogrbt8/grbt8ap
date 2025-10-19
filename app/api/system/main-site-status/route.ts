@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/authMiddleware';
 
 const MAIN_SITE_URL = 'http://localhost:4000';
 
 export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     // Ana siteden sistem durumu bilgilerini çek
     const [statusResponse, healthResponse, usersResponse] = await Promise.allSettled([

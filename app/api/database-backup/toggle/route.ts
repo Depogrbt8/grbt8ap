@@ -1,6 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/authMiddleware'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     // Bu endpoint sadece environment variable durumunu kontrol eder
     // Gerçek cron job kontrolü Vercel dashboard'dan yapılır

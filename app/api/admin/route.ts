@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../lib/prisma'
 import bcrypt from 'bcryptjs'
+import { requireAdmin, getAuthUser } from '@/lib/authMiddleware'
 
 export async function GET(request: NextRequest) {
   try {
+    // 🔒 Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) return adminCheck
+
     const admins = await prisma.admin.findMany({
       select: {
         id: true,
@@ -63,6 +68,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // 🔒 Admin yetkisi kontrolü
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) return adminCheck
+
+    // 🔒 Sadece Super Admin yeni admin oluşturabilir
+    const user = await getAuthUser(request)
+    if (user?.role !== 'Super Admin') {
+      return NextResponse.json({
+        success: false,
+        error: 'Sadece Super Admin yeni admin oluşturabilir'
+      }, { status: 403 })
+    }
+
     const body = await request.json()
     const { firstName, lastName, email, password, role, permissions } = body
 

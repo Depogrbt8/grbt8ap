@@ -1,22 +1,37 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { requireAuth, getAuthUser } from '@/lib/authMiddleware'
 
 // GET - Kullanıcının fatura bilgilerini getir
 export async function GET(request: NextRequest) {
+  // GÜVENLIK: Kullanıcı authentication gerekli
+  const authCheck = await requireAuth(request)
+  if (authCheck) return authCheck
+  
+  // Kullanıcı sadece kendi verilerine erişebilir
+  const user = await getAuthUser(request)
   try {
     const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
+    const requestedUserId = searchParams.get('userId')
 
-    if (!userId) {
+    if (!requestedUserId) {
       return NextResponse.json(
         { success: false, message: 'Kullanıcı ID gereklidir' },
         { status: 400 }
       )
     }
+    
+    // Kullanıcı sadece kendi verilerine erişebilir (admin hariç)
+    if (user?.id !== requestedUserId && user?.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: 'Bu bilgilere erişim yetkiniz yok' },
+        { status: 403 }
+      )
+    }
 
     const billingInfos = await prisma.billingInfo.findMany({
       where: { 
-        userId: userId,
+        userId: requestedUserId,
         isActive: true 
       },
       orderBy: [
@@ -41,6 +56,11 @@ export async function GET(request: NextRequest) {
 
 // POST - Yeni fatura bilgisi ekle
 export async function POST(request: NextRequest) {
+  // GÜVENLIK: Kullanıcı authentication gerekli
+  const authCheck = await requireAuth(request)
+  if (authCheck) return authCheck
+  
+  const user = await getAuthUser(request)
   try {
     const body = await request.json()
     const {
@@ -62,6 +82,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { success: false, message: 'Gerekli alanlar eksik' },
         { status: 400 }
+      )
+    }
+    
+    // Kullanıcı sadece kendi verilerini ekleyebilir (admin hariç)
+    if (user?.id !== userId && user?.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, message: 'Bu işlemi yapmaya yetkiniz yok' },
+        { status: 403 }
       )
     }
 

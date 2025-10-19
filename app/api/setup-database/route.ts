@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../lib/prisma'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 export async function GET(request: NextRequest) {
+  // GÜVENLIK: Production'da devre dışı bırak
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Bu endpoint production ortamında devre dışıdır' 
+    }, { status: 403 })
+  }
+  
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     // Admin tablosunu oluştur
     await prisma.$executeRaw`

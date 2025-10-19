@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 interface ExternalApiConfig {
   id: string
@@ -51,6 +52,10 @@ const externalApis: ExternalApiConfig[] = [
 ]
 
 export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     const { searchParams } = new URL(request.url)
     const apiId = searchParams.get('api')
@@ -150,6 +155,10 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     const { searchParams } = new URL(request.url)
     const apiId = searchParams.get('api')

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { requireAdmin } from '@/lib/authMiddleware'
 import fs from 'fs'
 import path from 'path'
 
@@ -7,6 +8,13 @@ const prisma = new PrismaClient()
 
 // Vercel Cron Jobs için - Her 2 saatte bir çalışır
 export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi veya Vercel cron
+  const isVercelCron = request.headers.get('authorization') === `Bearer ${process.env.CRON_SECRET}`
+  
+  if (!isVercelCron) {
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) return adminCheck
+  }
   try {
     console.log('🤖 Otomatik database backup tetiklendi')
     

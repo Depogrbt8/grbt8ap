@@ -1,7 +1,11 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createLog } from '@/app/lib/logger'
+import { requireAdmin } from '@/lib/authMiddleware'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     // Cache temizleme işlemi simülasyonu
     console.log('Cache temizleme işlemi başlatıldı')

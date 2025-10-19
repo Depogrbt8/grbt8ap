@@ -1,8 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 // Template'leri getir
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     // Veritabanından gerçek template'leri çek
     const dbTemplates = await prisma.emailTemplate.findMany({
@@ -302,7 +306,10 @@ export async function GET() {
 }
 
 // Yeni template oluştur
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     const body = await request.json()
     const { name, subject, content, type, language, variables } = body

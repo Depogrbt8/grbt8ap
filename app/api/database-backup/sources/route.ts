@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/authMiddleware'
 import fs from 'fs'
 import path from 'path'
 import { PrismaClient } from '@prisma/client'
@@ -13,7 +14,10 @@ interface SourceStatus {
   pulledInfo: string
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
   try {
     // Önce local sistem log'larından en güncel backup zamanını al (anlık ve güvenilir)
     const lastBackup = await getLastBackupDate()

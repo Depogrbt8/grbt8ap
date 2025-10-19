@@ -1,8 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
+import { requireAdmin, getAuthUser } from '@/lib/authMiddleware'
 
 export async function PUT(request: NextRequest) {
   try {
+    // 🔒 Admin yetkisi kontrolü (Double check)
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) return adminCheck
+
+    // 🔒 Güvenlik logu
+    const user = await getAuthUser(request)
+    await prisma.systemLog.create({
+      data: {
+        level: 'warn',
+        message: `Bulk user update attempt - Admin: ${user?.email}`,
+        source: 'bulk_api',
+        userId: user?.id,
+        metadata: JSON.stringify({ 
+          ip: request.ip || request.headers.get('x-forwarded-for'),
+          userAgent: request.headers.get('user-agent')
+        })
+      }
+    })
+
     const body = await request.json()
     const { action, userIds } = body
 
