@@ -94,7 +94,7 @@ export async function requireAdmin(request: NextRequest) {
   const user = await getAuthUser(request)
   console.log('👤 [AUTH DEBUG] User:', user?.email, 'Role:', user?.role)
   
-  if (!user || user.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'Super Admin' && user.role !== 'Admin')) {
     console.log('❌ [AUTH DEBUG] Admin yetkisi yok:', user?.role)
     return NextResponse.json(
       { 
