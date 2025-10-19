@@ -47,6 +47,6 @@ export async function POST(request: NextRequest) {
 }
 
 // Cron job için GET endpoint
-export async function GET() {
-  return POST() // Aynı işlemi yap
+export async function GET(request: NextRequest) {
+  return POST(request) // Aynı işlemi yap
 }
