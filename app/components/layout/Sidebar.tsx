@@ -23,17 +23,22 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         },
       })
       
-      if (response.ok) {
-        // Ana sayfaya yönlendir
-        window.location.href = 'https://www.grbt8.store/'
-      } else {
-        // Hata durumunda da yönlendir
-        window.location.href = 'https://www.grbt8.store/'
-      }
+      // Session temizlendikten sonra localStorage'ı da temizle
+      localStorage.clear()
+      sessionStorage.clear()
+      
+      // Cookie'leri temizle
+      document.cookie.split(";").forEach(function(c) { 
+        document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+      })
+      
+      // Ana sayfaya yönlendir (hard redirect)
+      window.location.replace('https://www.grbt8.store/')
+      
     } catch (error) {
       console.error('Logout error:', error)
       // Hata durumunda da yönlendir
-      window.location.href = 'https://www.grbt8.store/'
+      window.location.replace('https://www.grbt8.store/')
     }
   }
   

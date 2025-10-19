@@ -13,9 +13,14 @@ export async function middleware(request: NextRequest) {
     '/api/health'
   ]
 
-  // Exact match için root path kontrolü
+  // Exact match için root path kontrolü - root path her zaman public
   const isRootPath = pathname === '/' || pathname === '/login'
   const isPublicPath = isRootPath || publicPaths.some(path => pathname.startsWith(path))
+
+  // Root path için özel kontrol - authentication kontrolü yapma
+  if (isRootPath) {
+    return NextResponse.next()
+  }
 
   // Admin paneli veya API rotaları için kontrol
   if (
