@@ -1,7 +1,8 @@
 'use client'
-import { Calendar, Clock, User, Layout, Megaphone, CreditCard, FileText, Settings, BookOpen, BarChart3, Search, Mail, Code, Globe } from 'lucide-react'
+import { Calendar, Clock, User, Layout, Megaphone, CreditCard, FileText, Settings, BookOpen, BarChart3, Search, Mail, Code, Globe, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 
 interface SidebarProps {
   activeTab: string
@@ -10,6 +11,31 @@ interface SidebarProps {
 
 export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      // Session'ı temizle
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (response.ok) {
+        // Ana sayfaya yönlendir
+        window.location.href = 'https://www.grbt8.store/'
+      } else {
+        // Hata durumunda da yönlendir
+        window.location.href = 'https://www.grbt8.store/'
+      }
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Hata durumunda da yönlendir
+      window.location.href = 'https://www.grbt8.store/'
+    }
+  }
   
   return (
     <div className="w-64 bg-white shadow-lg flex flex-col h-full">
@@ -197,6 +223,15 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
             <Settings className="h-3 w-3" />
             <span>Ayarlar</span>
           </Link>
+          
+          {/* Çıkış Sekmesi */}
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors duration-200"
+          >
+            <LogOut className="h-3 w-3" />
+            <span>Çıkış</span>
+          </button>
         </nav>
       </div>
     </div>
