@@ -94,7 +94,7 @@ export async function requireAdmin(request: NextRequest) {
   const user = await getAuthUser(request)
   console.log('👤 [AUTH DEBUG] User:', user?.email, 'Role:', user?.role)
   
-  if (!user || (user.role !== 'admin' && user.role !== 'Super Admin' && user.role !== 'Admin')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'Super Admin' && user.role !== 'Admin' && user.role !== 'Temsilci' && user.role !== 'Moderator' && user.role !== 'Satış' && user.role !== 'Email Yöneticisi' && user.role !== 'API Yöneticisi' && user.role !== 'Viewer')) {
     console.log('❌ [AUTH DEBUG] Admin yetkisi yok:', user?.role)
     return NextResponse.json(
       { 

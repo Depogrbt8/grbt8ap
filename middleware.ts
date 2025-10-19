@@ -25,7 +25,7 @@ export async function middleware(request: NextRequest) {
     })
     
     // Eğer geçerli bir session varsa dashboard'a yönlendir
-    if (token && (token.role === 'admin' || token.role === 'Super Admin' || token.role === 'Admin')) {
+    if (token && (token.role === 'admin' || token.role === 'Super Admin' || token.role === 'Admin' || token.role === 'Temsilci' || token.role === 'Moderator' || token.role === 'Satış' || token.role === 'Email Yöneticisi' || token.role === 'API Yöneticisi' || token.role === 'Viewer')) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
     
@@ -71,7 +71,7 @@ export async function middleware(request: NextRequest) {
           )
         }
 
-        if (token.role !== 'admin' && token.role !== 'Super Admin' && token.role !== 'Admin') {
+        if (token.role !== 'admin' && token.role !== 'Super Admin' && token.role !== 'Admin' && token.role !== 'Temsilci' && token.role !== 'Moderator' && token.role !== 'Satış' && token.role !== 'Email Yöneticisi' && token.role !== 'API Yöneticisi' && token.role !== 'Viewer') {
           return NextResponse.json(
             { 
               success: false,
@@ -88,7 +88,7 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/', request.url))
         }
 
-        if (token.role !== 'admin' && token.role !== 'Super Admin' && token.role !== 'Admin') {
+        if (token.role !== 'admin' && token.role !== 'Super Admin' && token.role !== 'Admin' && token.role !== 'Temsilci' && token.role !== 'Moderator' && token.role !== 'Satış' && token.role !== 'Email Yöneticisi' && token.role !== 'API Yöneticisi' && token.role !== 'Viewer') {
           return NextResponse.redirect(new URL('/', request.url))
         }
       }
