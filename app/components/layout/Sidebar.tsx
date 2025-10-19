@@ -3,7 +3,8 @@ import { Calendar, Clock, User, Layout, Megaphone, CreditCard, FileText, Setting
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useRouter } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+import { signOut, useSession } from 'next-auth/react'
+import { useState, useEffect } from 'react'
 
 interface SidebarProps {
   activeTab: string
@@ -13,6 +14,66 @@ interface SidebarProps {
 export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { data: session } = useSession()
+  const [adminPermissions, setAdminPermissions] = useState<any>({})
+
+  // Admin yetkilerini yükle
+  useEffect(() => {
+    if (session?.user?.email) {
+      fetchAdminPermissions()
+    }
+  }, [session])
+
+  const fetchAdminPermissions = async () => {
+    try {
+      const response = await fetch('/api/admin/permissions')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success) {
+          setAdminPermissions(data.permissions || {})
+        }
+      }
+    } catch (error) {
+      console.error('Admin yetkileri yüklenemedi:', error)
+    }
+  }
+
+  // Sayfa yetkisi kontrolü
+  const hasPagePermission = (page: string) => {
+    return adminPermissions[page] === true
+  }
+
+  // Sayfa link'i render etme
+  const renderPageLink = (href: string, page: string, icon: any, label: string, onClick: () => void) => {
+    const hasPermission = hasPagePermission(page)
+    
+    if (!hasPermission) {
+      return (
+        <div 
+          className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md text-gray-400 cursor-not-allowed opacity-50"
+          title="Bu sayfaya erişim yetkiniz yok"
+        >
+          {icon}
+          <span>{label}</span>
+        </div>
+      )
+    }
+
+    return (
+      <Link 
+        href={href}
+        onClick={onClick}
+        className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
+          pathname === href 
+            ? 'text-gray-900 bg-blue-50' 
+            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+        }`}
+      >
+        {icon}
+        <span>{label}</span>
+      </Link>
+    )
+  }
 
   const handleLogout = async () => {
     try {
@@ -71,162 +132,19 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       {/* Sekmeler - Scrollable */}
       <div className="flex-1 overflow-y-auto">
         <nav className="p-3 admin-space-y-2">
-          <Link 
-            href="/dashboard"
-            onClick={() => setActiveTab('dashboard')}
-            className={`w-full flex items-center space-x-2 px-2 py-1 admin-text-xs rounded ${
-              pathname === '/dashboard' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <BarChart3 className="h-3 w-3" />
-            <span>Dashboard</span>
-          </Link>
-          <Link 
-            href="/sistem"
-            onClick={() => setActiveTab('sistem')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/sistem' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <Layout className="h-3 w-3" />
-            <span>Sistem</span>
-          </Link>
-          <Link 
-            href="/kullanici"
-            onClick={() => setActiveTab('users')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/kullanici' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <User className="h-3 w-3" />
-            <span>Kullanıcılar</span>
-          </Link>
-          <Link 
-            href="/seo"
-            onClick={() => setActiveTab('seo')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/seo' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <Search className="h-3 w-3" />
-            <span>SEO</span>
-          </Link>
-          <Link 
-            href="/email"
-            onClick={() => setActiveTab('email')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/email' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <Mail className="h-3 w-3" />
-            <span>Email</span>
-          </Link>
-          <Link 
-            href="/apiler"
-            onClick={() => setActiveTab('apiler')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/apiler' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <Code className="h-3 w-3" />
-            <span>API</span>
-          </Link>
-          <Link 
-            href="/dis-apiler"
-            onClick={() => setActiveTab('dis-apiler')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/dis-apiler' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <Globe className="h-3 w-3" />
-            <span>Dış API</span>
-          </Link>
-          <Link 
-            href="/rezervasyonlar"
-            onClick={() => setActiveTab('rezervasyonlar')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/rezervasyonlar' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <BookOpen className="h-3 w-3" />
-            <span>Rezervasyonlar</span>
-          </Link>
-          <Link 
-            href="/ucuslar"
-            onClick={() => setActiveTab('ucuslar')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/ucuslar' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <Calendar className="h-3 w-3" />
-            <span>Uçuşlar</span>
-          </Link>
-          <Link 
-            href="/odemeler"
-            onClick={() => setActiveTab('odemeler')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/odemeler' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <CreditCard className="h-3 w-3" />
-            <span>Ödemeler</span>
-          </Link>
-          <Link 
-            href="/raporlar"
-            onClick={() => setActiveTab('raporlar')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/raporlar' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <FileText className="h-3 w-3" />
-            <span>Raporlar</span>
-          </Link>
-          <Link 
-            href="/istatistikler"
-            onClick={() => setActiveTab('istatistikler')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/istatistikler' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <BarChart3 className="h-3 w-3" />
-            <span>İstatistikler</span>
-          </Link>
-          <Link 
-            href="/ayarlar"
-            onClick={() => setActiveTab('ayarlar')}
-            className={`w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium rounded-md ${
-              pathname === '/ayarlar' 
-                ? 'text-gray-900 bg-blue-50' 
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-            }`}
-          >
-            <Settings className="h-3 w-3" />
-            <span>Ayarlar</span>
-          </Link>
+          {renderPageLink('/dashboard', 'dashboard', <BarChart3 className="h-3 w-3" />, 'Dashboard', () => setActiveTab('dashboard'))}
+          {renderPageLink('/sistem', 'system', <Layout className="h-3 w-3" />, 'Sistem', () => setActiveTab('sistem'))}
+          {renderPageLink('/kullanici', 'users', <User className="h-3 w-3" />, 'Kullanıcılar', () => setActiveTab('users'))}
+          {renderPageLink('/seo', 'seo', <Search className="h-3 w-3" />, 'SEO', () => setActiveTab('seo'))}
+          {renderPageLink('/email', 'email', <Mail className="h-3 w-3" />, 'Email', () => setActiveTab('email'))}
+          {renderPageLink('/apiler', 'api', <Code className="h-3 w-3" />, 'API', () => setActiveTab('apiler'))}
+          {renderPageLink('/dis-apiler', 'externalApi', <Globe className="h-3 w-3" />, 'Dış API', () => setActiveTab('dis-apiler'))}
+          {renderPageLink('/rezervasyonlar', 'reservations', <BookOpen className="h-3 w-3" />, 'Rezervasyonlar', () => setActiveTab('rezervasyonlar'))}
+          {renderPageLink('/ucuslar', 'flights', <Calendar className="h-3 w-3" />, 'Uçuşlar', () => setActiveTab('ucuslar'))}
+          {renderPageLink('/odemeler', 'payments', <CreditCard className="h-3 w-3" />, 'Ödemeler', () => setActiveTab('odemeler'))}
+          {renderPageLink('/raporlar', 'reports', <FileText className="h-3 w-3" />, 'Raporlar', () => setActiveTab('raporlar'))}
+          {renderPageLink('/istatistikler', 'statistics', <BarChart3 className="h-3 w-3" />, 'İstatistikler', () => setActiveTab('istatistikler'))}
+          {renderPageLink('/ayarlar', 'settings', <Settings className="h-3 w-3" />, 'Ayarlar', () => setActiveTab('ayarlar'))}
           
           {/* Çıkış Sekmesi */}
           <button

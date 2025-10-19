@@ -58,7 +58,8 @@ export default function AdminForm({ onSubmit, onCancel, editingAdmin, isEdit = f
     const submitData = {
       ...formData,
       id: editingAdmin?.id,
-      name: `${formData.firstName} ${formData.lastName}`.trim()
+      name: `${formData.firstName} ${formData.lastName}`.trim(),
+      permissions: formData.pagePermissions
     }
     
     onSubmit(submitData)
