@@ -3,6 +3,7 @@ import { Calendar, Clock, User, Layout, Megaphone, CreditCard, FileText, Setting
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useRouter } from 'next/navigation'
+import { signOut } from 'next-auth/react'
 
 interface SidebarProps {
   activeTab: string
@@ -15,12 +16,10 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
 
   const handleLogout = async () => {
     try {
-      // Session'ı temizle
-      const response = await fetch('/api/auth/signout', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      // NextAuth'ın kendi signOut fonksiyonunu kullan
+      await signOut({ 
+        redirect: false,
+        callbackUrl: 'https://www.grbt8.store/'
       })
       
       // Session temizlendikten sonra localStorage'ı da temizle

@@ -17,8 +17,19 @@ export async function middleware(request: NextRequest) {
   const isRootPath = pathname === '/' || pathname === '/login'
   const isPublicPath = isRootPath || publicPaths.some(path => pathname.startsWith(path))
 
-  // Root path için özel kontrol - authentication kontrolü yapma
+  // Root path için özel kontrol - session varsa dashboard'a yönlendir
   if (isRootPath) {
+    const token = await getToken({
+      req: request as any,
+      secret: process.env.NEXTAUTH_SECRET
+    })
+    
+    // Eğer geçerli bir session varsa dashboard'a yönlendir
+    if (token && token.role === 'admin') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
+    
+    // Session yoksa root path'de kal
     return NextResponse.next()
   }
 

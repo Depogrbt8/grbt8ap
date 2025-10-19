@@ -103,9 +103,16 @@ const authOptions: NextAuthOptions = {
       return session
     },
     async redirect({ url, baseUrl }) {
+      // Çıkış işlemi için özel kontrol
+      if (url.includes('signout') || url.includes('logout')) {
+        return baseUrl
+      }
+      
+      // Root path için dashboard'a yönlendir
       if (url === baseUrl || url === `${baseUrl}/`) {
         return `${baseUrl}/dashboard`
       }
+      
       return url.startsWith(baseUrl) ? url : `${baseUrl}/dashboard`
     }
   },
