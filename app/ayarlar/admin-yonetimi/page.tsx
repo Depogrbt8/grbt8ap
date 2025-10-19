@@ -4,7 +4,6 @@ import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
 import AdminList from '../../components/admin/AdminList'
 import AdminForm from '../../components/admin/AdminForm'
-import PermissionManager from '../../components/admin/PermissionManager'
 
 export default function AdminYonetimiPage() {
   const [activeTab, setActiveTab] = useState('ayarlar')
@@ -192,16 +191,6 @@ export default function AdminYonetimiPage() {
                 >
                   Yeni Admin Ekle
                 </button>
-                <button
-                  onClick={() => setActiveAdminTab('yetkiler')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                    activeAdminTab === 'yetkiler'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  Yetki Yönetimi
-                </button>
               </nav>
             </div>
 
@@ -222,9 +211,6 @@ export default function AdminYonetimiPage() {
               />
             )}
 
-            {!loading && activeAdminTab === 'yetkiler' && (
-              <PermissionManager onSave={(roles) => console.log('Yetkiler kaydedildi:', roles)} />
-            )}
           </div>
         </main>
       </div>

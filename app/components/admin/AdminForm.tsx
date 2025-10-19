@@ -187,14 +187,7 @@ export default function AdminForm({ onSubmit, onCancel, editingAdmin, isEdit = f
               value={formData.role}
               onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
             >
-              <option value="Super Admin">Super Admin</option>
               <option value="Admin">Admin</option>
-              <option value="Moderator">Moderator</option>
-              <option value="Satış">Satış</option>
-              <option value="Temsilci">Temsilci</option>
-              <option value="Email Yöneticisi">Email Yöneticisi</option>
-              <option value="API Yöneticisi">API Yöneticisi</option>
-              <option value="Viewer">Viewer</option>
             </select>
           </div>
 
