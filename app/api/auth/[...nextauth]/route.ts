@@ -23,28 +23,28 @@ const authOptions: NextAuthOptions = {
         }
 
         try {
-          // Kullanıcıyı veritabanından bul
-          console.log('🔍 [AUTH DEBUG] Kullanıcı aranıyor:', credentials.email)
-          const user = await prisma.user.findUnique({
+          // Admin'i veritabanından bul
+          console.log('🔍 [AUTH DEBUG] Admin aranıyor:', credentials.email)
+          const admin = await prisma.admin.findUnique({
             where: { email: credentials.email }
           })
 
-          if (!user) {
-            console.log('❌ [AUTH DEBUG] Kullanıcı bulunamadı:', credentials.email)
+          if (!admin) {
+            console.log('❌ [AUTH DEBUG] Admin bulunamadı:', credentials.email)
             return null
           }
 
-          console.log('✅ [AUTH DEBUG] Kullanıcı bulundu:', user.email, 'Status:', user.status)
+          console.log('✅ [AUTH DEBUG] Admin bulundu:', admin.email, 'Status:', admin.status)
 
-          // Kullanıcı aktif mi?
-          if (user.status !== 'active') {
-            console.log('❌ [AUTH DEBUG] Kullanıcı aktif değil:', user.status)
+          // Admin aktif mi?
+          if (admin.status !== 'active') {
+            console.log('❌ [AUTH DEBUG] Admin aktif değil:', admin.status)
             return null
           }
 
           // Şifre kontrolü
           console.log('🔍 [AUTH DEBUG] Şifre kontrol ediliyor...')
-          const isValidPassword = await bcrypt.compare(credentials.password, user.password)
+          const isValidPassword = await bcrypt.compare(credentials.password, admin.password)
           console.log('✅ [AUTH DEBUG] Şifre kontrolü sonucu:', isValidPassword)
           
           if (!isValidPassword) {
@@ -52,19 +52,13 @@ const authOptions: NextAuthOptions = {
             return null
           }
 
-          // Admin rolü kontrolü
-          if (user.role !== 'admin') {
-            console.log('❌ [AUTH DEBUG] Admin yetkisi yok:', user.role)
-            return null
-          }
-
-          console.log('🎉 [AUTH DEBUG] Giriş başarılı! Kullanıcı döndürülüyor:', user.email)
+          console.log('🎉 [AUTH DEBUG] Giriş başarılı! Admin döndürülüyor:', admin.email)
           return {
-            id: user.id,
-            email: user.email,
-            name: `${user.firstName} ${user.lastName}`,
-            role: user.role,
-            status: user.status
+            id: admin.id,
+            email: admin.email,
+            name: `${admin.firstName} ${admin.lastName}`,
+            role: admin.role,
+            status: admin.status
           }
 
         } catch (error) {
