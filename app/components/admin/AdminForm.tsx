@@ -42,6 +42,8 @@ export default function AdminForm({ onSubmit, onCancel, editingAdmin, isEdit = f
         [page]: !prev.pagePermissions[page as keyof typeof prev.pagePermissions]
       }
     }))
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!isEdit && formData.password !== formData.confirmPassword) {
