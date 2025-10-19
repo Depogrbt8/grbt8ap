@@ -16,10 +16,33 @@ export default function AdminForm({ onSubmit, onCancel, editingAdmin, isEdit = f
     password: '',
     confirmPassword: '',
     role: editingAdmin?.role || 'Admin',
-    permissions: {}
+    permissions: {},
+    pagePermissions: {
+      dashboard: true,
+      system: false,
+      users: false,
+      seo: false,
+      email: false,
+      api: false,
+      externalApi: false,
+      reservations: false,
+      flights: false,
+      payments: false,
+      reports: false,
+      statistics: false,
+      settings: false
+    }
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handlePagePermissionChange = (page: string) => {
+    setFormData(prev => ({
+      ...prev,
+      pagePermissions: {
+        ...prev.pagePermissions,
+        [page]: !prev.pagePermissions[page as keyof typeof prev.pagePermissions]
+      }
+    }))
+  }
     e.preventDefault()
     if (!isEdit && formData.password !== formData.confirmPassword) {
       alert('Şifreler eşleşmiyor!')
@@ -173,6 +196,142 @@ export default function AdminForm({ onSubmit, onCancel, editingAdmin, isEdit = f
             </select>
           </div>
 
+        </div>
+      </div>
+
+      {/* Sayfa Yetkileri */}
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">Sayfa Yetkileri</h3>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.dashboard}
+              onChange={() => handlePagePermissionChange('dashboard')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Dashboard</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.system}
+              onChange={() => handlePagePermissionChange('system')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Sistem</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.users}
+              onChange={() => handlePagePermissionChange('users')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Kullanıcılar</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.seo}
+              onChange={() => handlePagePermissionChange('seo')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">SEO</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.email}
+              onChange={() => handlePagePermissionChange('email')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Email</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.api}
+              onChange={() => handlePagePermissionChange('api')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">API</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.externalApi}
+              onChange={() => handlePagePermissionChange('externalApi')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Dış API</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.reservations}
+              onChange={() => handlePagePermissionChange('reservations')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Rezervasyonlar</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.flights}
+              onChange={() => handlePagePermissionChange('flights')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Uçuşlar</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.payments}
+              onChange={() => handlePagePermissionChange('payments')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Ödemeler</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.reports}
+              onChange={() => handlePagePermissionChange('reports')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Raporlar</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.statistics}
+              onChange={() => handlePagePermissionChange('statistics')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">İstatistikler</span>
+          </label>
+          
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.pagePermissions.settings}
+              onChange={() => handlePagePermissionChange('settings')}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm text-gray-700">Ayarlar</span>
+          </label>
         </div>
       </div>
 
