@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createLog, getLogs } from '@/app/lib/logger'
+import { requireAdmin } from '@/lib/authMiddleware'
 
-export async function POST() {
+export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     // Mevcut log sayısını kontrol et
     const existingLogs = await getLogs(1)

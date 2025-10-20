@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server'
 import { PrismaClient } from '@prisma/client'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 const prisma = new PrismaClient()
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     const recentLogs = await prisma.systemLog.findMany({
       orderBy: { timestamp: 'desc' },

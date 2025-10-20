@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createLog } from '@/app/lib/logger'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 // Basit in-memory bakım modu durumu (gerçek uygulamada veritabanı kullanılır)
 let maintenanceMode = false
@@ -9,7 +10,11 @@ let maintenanceData = {
   duration: ''
 }
 
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     console.log('Bakım modu kapatma işlemi başlatıldı')
     

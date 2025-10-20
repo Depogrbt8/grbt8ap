@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '../../../lib/prisma'
 import bcrypt from 'bcryptjs'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     const admin = await prisma.admin.findUnique({
       where: { id: params.id },
@@ -57,6 +62,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     const body = await request.json()
     const { firstName, lastName, email, password, role, status, permissions } = body
@@ -143,6 +152,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     // Mevcut admin kontrolü
     const existingAdmin = await prisma.admin.findUnique({

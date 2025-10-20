@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 // Neon PostgreSQL'den kullanıcının anket cevaplarını getir
-export async function GET(request: Request, { params }: { params: { userId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: { userId: string } }) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     const { userId } = params
 
@@ -108,7 +113,11 @@ export async function GET(request: Request, { params }: { params: { userId: stri
 }
 
 // Ana siteden gelen anket cevaplarını admin panelde kaydet
-export async function POST(request: Request, { params }: { params: { userId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: { userId: string } }) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     const { userId } = params
     const body = await request.json()
