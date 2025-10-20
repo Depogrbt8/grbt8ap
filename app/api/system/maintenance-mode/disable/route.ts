@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { createLog } from '@/app/lib/logger'
 import { requireAdmin } from '@/lib/authMiddleware'
 
