@@ -1,8 +1,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '../../../../lib/prisma'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 // Email açılma tracking
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+  
   try {
     const { searchParams } = new URL(request.url)
     const trackingId = searchParams.get('trackingId')
