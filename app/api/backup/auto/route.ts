@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { gzip, gunzip } from 'zlib'
 import { promisify } from 'util'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 const gzipAsync = promisify(gzip)
 const gunzipAsync = promisify(gunzip)
@@ -15,6 +16,14 @@ const BACKUP_REPO = 'grbt8yedek/apauto'
 const GITHUB_API = 'https://api.github.com'
 
 export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi veya Vercel cron
+  const isVercelCron = request.headers.get('authorization') === `Bearer ${process.env.CRON_SECRET}`
+  
+  if (!isVercelCron) {
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) return adminCheck
+  }
+
   try {
     console.log('🔄 GRBT8 Otomatik Yedekleme Başlatılıyor...')
     console.log('🌐 Site: https://www.grbt8.store/')
@@ -518,6 +527,10 @@ async function deleteFromGitHub(filePath: string, sha: string) {
 
 // Manuel tetikleme için POST endpoint
 export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+
   console.log('🎛️ Manuel yedekleme tetiklendi')
   return GET(request)
 }
