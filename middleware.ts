@@ -6,6 +6,37 @@ import { addSecurityHeaders } from '@/lib/authMiddleware'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
+  // CSRF Protection: Origin Header Kontrolü
+  const origin = request.headers.get('origin')
+  const referer = request.headers.get('referer')
+  
+  // Sadece kendi domain'imizden gelen istekleri kabul et
+  const allowedOrigins = [
+    'https://admin.grbt8.store',
+    'https://www.grbt8.store',
+    'http://localhost:3000', // development
+    'https://vercel.app' // Vercel preview
+  ]
+  
+  // POST, PUT, DELETE istekleri için origin kontrolü
+  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(request.method)) {
+    const isValidOrigin = origin && allowedOrigins.some(allowed => 
+      origin.startsWith(allowed) || referer?.startsWith(allowed)
+    )
+    
+    if (!isValidOrigin) {
+      console.log('🚨 CSRF Attempt blocked:', { origin, referer, method: request.method, pathname })
+      return NextResponse.json(
+        { 
+          success: false,
+          error: 'CSRF Protection: Invalid origin',
+          message: 'İstek güvenli kaynaktan gelmiyor'
+        },
+        { status: 403 }
+      )
+    }
+  }
+
   // Public paths that don't require authentication
   const publicPaths = [
     '/api/auth',
