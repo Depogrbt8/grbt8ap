@@ -10,12 +10,7 @@ export async function middleware(request: NextRequest) {
   const publicPaths = [
     '/api/auth',
     '/api/email/track',
-    '/api/health',
-    '/api/database-backup/github',
-    '/api/database-backup/gitlab',
-    '/api/database-backup/cron',
-    '/api/database-backup/sources',
-    '/api/database-backup/status'
+    '/api/health'
   ]
 
   // Exact match için root path kontrolü - root path her zaman public

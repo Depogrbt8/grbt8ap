@@ -5,7 +5,7 @@ import fs from 'fs'
 import path from 'path'
 
 export async function GET(request: NextRequest) {
-  // GÜVENLIK: Sadece admin erişimi
+  // GÜVENLIK: Sadece admin erişimi - middleware'den kaldırıldığı için burada kontrol ediliyor
   const adminCheck = await requireAdmin(request)
   if (adminCheck) return adminCheck
   try {
