@@ -25,7 +25,7 @@ const authOptions: NextAuthOptions = {
         try {
           // Önce Admin tablosunda ara
           console.log('🔍 [AUTH DEBUG] Admin tablosunda aranıyor:', credentials.email)
-          let admin = await prisma.admin.findUnique({
+          let admin: any = await prisma.admin.findUnique({
             where: { email: credentials.email }
           })
 
