@@ -1,7 +1,13 @@
 import { NextResponse } from 'next/server'
 import resendService from '@/app/lib/resend'
+import { requireAdmin } from '@/lib/authMiddleware'
+import { NextRequest } from 'next/server'
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+
   try {
     const body = await request.json()
     const { testEmail, testType = 'welcome' } = body
@@ -132,7 +138,11 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+
   // API Key durumunu kontrol et
   const hasApiKey = process.env.RESEND_API_KEY && process.env.RESEND_API_KEY !== 're_your_api_key_here'
   

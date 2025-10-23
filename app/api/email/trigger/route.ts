@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import resendService from '@/app/lib/resend'
+import { requireAdmin } from '@/lib/authMiddleware'
 
 export async function POST(request: NextRequest) {
+  // GÜVENLIK: Sadece admin erişimi
+  const adminCheck = await requireAdmin(request)
+  if (adminCheck) return adminCheck
+
   try {
     const body = await request.json()
     const { type, email, name, payload } = body
