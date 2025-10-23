@@ -1,10 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/app/lib/prisma'
 import { requireAdmin } from '@/lib/authMiddleware'
 import fs from 'fs'
 import path from 'path'
-
-const prisma = new PrismaClient()
 
 // GitHub backup bilgileri
 const GITHUB_TOKEN = process.env.GITHUB_BACKUP_TOKEN || ''

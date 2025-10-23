@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '@/app/lib/prisma'
 import crypto from 'crypto'
 import { createRateLimit, rateLimitConfigs } from '@/lib/rateLimit'
-
-const prisma = new PrismaClient()
 const rateLimit = createRateLimit({ windowMs: 60 * 1000, maxRequests: 20 })
 
 // GitHub Webhook: push events

@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/authMiddleware'
 import fs from 'fs'
 import path from 'path'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import { prisma } from '@/app/lib/prisma'
 
 interface SourceStatus {
   key: string
