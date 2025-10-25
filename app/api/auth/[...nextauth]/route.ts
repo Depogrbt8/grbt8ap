@@ -77,7 +77,7 @@ const authOptions: NextAuthOptions = {
             return null
           }
 
-          // 2FA Kontrolü (eğer etkinse)
+          // 2FA Kontrolü (Email tabanlı)
           if (admin.twoFactorEnabled) {
             console.log('🔐 [AUTH DEBUG] 2FA etkin, kontrol ediliyor...')
             
@@ -86,19 +86,27 @@ const authOptions: NextAuthOptions = {
               return null // 2FA kodu girilmemiş, login başarısız
             }
             
-            // Database'den secret'i al ve doğrula
-            const { authenticator } = await import('otplib')
-            const isValid2FA = authenticator.verify({
-              token: credentials.twoFactorCode,
-              secret: admin.twoFactorSecret
-            })
+            // Email tabanlı kod kontrolü
+            console.log('🔐 [AUTH DEBUG] Verifying 2FA code:', credentials.twoFactorCode)
+            console.log('🔐 [AUTH DEBUG] Stored code:', admin.twoFactorSecret)
             
-            console.log('✅ [AUTH DEBUG] 2FA kontrolü sonucu:', isValid2FA)
-            
-            if (!isValid2FA) {
+            if (admin.twoFactorSecret !== credentials.twoFactorCode) {
               console.log('❌ [AUTH DEBUG] 2FA kodu yanlış!')
               return null
             }
+            
+            // Süre kontrolü (10 dakika)
+            if (admin.twoFactorSetupAt) {
+              const expiry = new Date(admin.twoFactorSetupAt as any)
+              const now = new Date()
+              
+              if (now > expiry) {
+                console.log('❌ [AUTH DEBUG] 2FA kodu süresi dolmuş!')
+                return null
+              }
+            }
+            
+            console.log('✅ [AUTH DEBUG] 2FA kodu doğru!')
           }
 
           console.log('🎉 [AUTH DEBUG] Giriş başarılı! Admin döndürülüyor:', admin.email)

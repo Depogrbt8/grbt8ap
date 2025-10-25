@@ -15,11 +15,9 @@ export async function middleware(request: NextRequest) {
     '/api/email/track',
     '/api/health',
     '/api/create-admin-emergency',
-    '/api/admin/2fa' // 2FA setup ve verify endpoint'leri
+    '/api/auth/send-2fa-code',
+    '/api/auth/verify-2fa-code'
   ]
-
-  // 2FA setup path'i public olsun
-  const is2FASetupPath = pathname === '/setup/2fa'
 
   // Exact match için root path kontrolü - root path her zaman public
   const isRootPath = pathname === '/' || pathname === '/login'
@@ -100,9 +98,6 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL('/', request.url))
         }
 
-        // Dashboard'a erişim kontrolü - 2FA setup kontrolü
-        // NOT: 2FA kontrolü client-side'da yapılacak, middleware'de yapılmayacak
-        // Çünkü Prisma Client middleware'de çalışmıyor
       }
     }
 

@@ -40,7 +40,21 @@ export default function LoginPage() {
         // Şifre doğru ama 2FA kodu girilmemiş
         if (result.error === 'CredentialsSignin') {
           setNeeds2FA(true)
-          setError('🔐 2FA kodu gerekli. Lütfen Google Authenticator\'dan 6 haneli kodu girin.')
+          
+          // Email'e kod gönder
+          try {
+            await fetch('/api/auth/send-2fa-code', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ email }),
+            })
+            
+            setError('🔐 2FA kodu email\'inize gönderildi. Lütfen 6 haneli kodu girin.')
+          } catch (error) {
+            setError('🔐 2FA kodu gerekli. Email\'inize gönderilmedi, lütfen tekrar deneyin.')
+          }
         } else {
           setError('Geçersiz email veya şifre')
         }
@@ -147,11 +161,11 @@ export default function LoginPage() {
                   value={twoFactorCode}
                   onChange={(e) => setTwoFactorCode(e.target.value)}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
-                  placeholder="Google Authenticator'dan 6 haneli kodu girin"
+                  placeholder="Email'inize gelen 6 haneli kodu girin"
                   maxLength={6}
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  Google Authenticator uygulamasından 6 haneli kodu girin
+                  Email'inize gönderilen 6 haneli kodu girin (10 dakika geçerli)
                 </p>
               </div>
             )}

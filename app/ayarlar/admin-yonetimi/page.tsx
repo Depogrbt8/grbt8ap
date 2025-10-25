@@ -5,7 +5,6 @@ import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
 import AdminList from '../../components/admin/AdminList'
 import AdminForm from '../../components/admin/AdminForm'
-import TwoFactorSetup from '../../components/admin/TwoFactorSetup'
 
 export default function AdminYonetimiPage() {
   const { data: session } = useSession()
@@ -16,26 +15,6 @@ export default function AdminYonetimiPage() {
 
   const [admins, setAdmins] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [currentAdmin, setCurrentAdmin] = useState<any>(null)
-
-  // Mevcut admin bilgisini al
-  const fetchCurrentAdmin = async () => {
-    if (!session?.user?.email) return
-    
-    try {
-      const response = await fetch('/api/admin')
-      const data = await response.json()
-      
-      if (data.success) {
-        const currentAdminData = data.data.find((admin: any) => admin.email === session.user.email)
-        if (currentAdminData) {
-          setCurrentAdmin(currentAdminData)
-        }
-      }
-    } catch (error) {
-      console.error('Mevcut admin bilgisi alınamadı:', error)
-    }
-  }
 
   // Admin listesini yükle
   const fetchAdmins = async () => {
@@ -58,8 +37,7 @@ export default function AdminYonetimiPage() {
 
   useEffect(() => {
     fetchAdmins()
-    fetchCurrentAdmin()
-  }, [session])
+  }, [])
 
   // Admin işlemleri
   const handleAddAdmin = async (adminData: any) => {
@@ -215,16 +193,6 @@ export default function AdminYonetimiPage() {
                 >
                   Yeni Admin Ekle
                 </button>
-                <button
-                  onClick={() => setActiveAdminTab('2fa')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
-                    activeAdminTab === '2fa'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  🔐 2FA Ayarları
-                </button>
               </nav>
             </div>
 
@@ -245,15 +213,6 @@ export default function AdminYonetimiPage() {
               />
             )}
 
-            {!loading && activeAdminTab === '2fa' && (
-              <TwoFactorSetup 
-                adminId={currentAdmin?.id || ''}
-                isEnabled={currentAdmin?.twoFactorEnabled || false}
-                onToggle={(enabled) => {
-                  setCurrentAdmin(prev => prev ? { ...prev, twoFactorEnabled: enabled } : null)
-                }}
-              />
-            )}
 
           </div>
         </main>
