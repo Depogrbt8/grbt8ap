@@ -38,6 +38,7 @@ export async function POST(request: NextRequest) {
     // 2FA token'ı doğrula
     console.log('🔐 [2FA DEBUG] Verifying token:', token)
     console.log('🔐 [2FA DEBUG] Secret:', admin.twoFactorSecret?.substring(0, 10) + '...')
+    console.log('🔐 [2FA DEBUG] Current time:', new Date())
     
     const isValid = authenticator.verify({
       token,
@@ -45,6 +46,12 @@ export async function POST(request: NextRequest) {
     })
 
     console.log('🔐 [2FA DEBUG] Verification result:', isValid)
+    
+    // Eğer başarısız olduysa, doğru token'ı da logla
+    if (!isValid) {
+      const correctToken = authenticator.generate({ secret: admin.twoFactorSecret })
+      console.log('🔐 [2FA DEBUG] Expected token:', correctToken)
+    }
 
     if (isValid) {
       return NextResponse.json({
