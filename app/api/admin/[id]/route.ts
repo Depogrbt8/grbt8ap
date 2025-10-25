@@ -22,14 +22,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
         lastLoginAt: true,
         createdAt: true,
         updatedAt: true,
-        createdBy: true,
-        creator: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        }
+        createdBy: true
       }
     })
 
