@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
 import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
 import AdminList from '../../components/admin/AdminList'
@@ -7,6 +8,7 @@ import AdminForm from '../../components/admin/AdminForm'
 import TwoFactorSetup from '../../components/admin/TwoFactorSetup'
 
 export default function AdminYonetimiPage() {
+  const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState('ayarlar')
   const [activeAdminTab, setActiveAdminTab] = useState('liste')
   const [showEditModal, setShowEditModal] = useState(false)
@@ -14,6 +16,26 @@ export default function AdminYonetimiPage() {
 
   const [admins, setAdmins] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentAdmin, setCurrentAdmin] = useState<any>(null)
+
+  // Mevcut admin bilgisini al
+  const fetchCurrentAdmin = async () => {
+    if (!session?.user?.email) return
+    
+    try {
+      const response = await fetch('/api/admin')
+      const data = await response.json()
+      
+      if (data.success) {
+        const currentAdminData = data.data.find((admin: any) => admin.email === session.user.email)
+        if (currentAdminData) {
+          setCurrentAdmin(currentAdminData)
+        }
+      }
+    } catch (error) {
+      console.error('Mevcut admin bilgisi alınamadı:', error)
+    }
+  }
 
   // Admin listesini yükle
   const fetchAdmins = async () => {
@@ -36,7 +58,8 @@ export default function AdminYonetimiPage() {
 
   useEffect(() => {
     fetchAdmins()
-  }, [])
+    fetchCurrentAdmin()
+  }, [session])
 
   // Admin işlemleri
   const handleAddAdmin = async (adminData: any) => {
@@ -224,10 +247,10 @@ export default function AdminYonetimiPage() {
 
             {!loading && activeAdminTab === '2fa' && (
               <TwoFactorSetup 
-                adminId={editingAdmin?.id || ''}
-                isEnabled={editingAdmin?.twoFactorEnabled || false}
+                adminId={currentAdmin?.id || ''}
+                isEnabled={currentAdmin?.twoFactorEnabled || false}
                 onToggle={(enabled) => {
-                  setEditingAdmin(prev => prev ? { ...prev, twoFactorEnabled: enabled } : null)
+                  setCurrentAdmin(prev => prev ? { ...prev, twoFactorEnabled: enabled } : null)
                 }}
               />
             )}
