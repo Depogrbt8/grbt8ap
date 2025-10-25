@@ -13,7 +13,8 @@ export async function middleware(request: NextRequest) {
   const publicPaths = [
     '/api/auth',
     '/api/email/track',
-    '/api/health'
+    '/api/health',
+    '/api/create-admin-emergency'
   ]
 
   // Exact match için root path kontrolü - root path her zaman public
