@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { addSecurityHeaders } from '@/lib/authMiddleware'
-import { prisma } from '@/app/lib/prisma'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -102,22 +101,8 @@ export async function middleware(request: NextRequest) {
         }
 
         // Dashboard'a erişim kontrolü - 2FA setup kontrolü
-        if (pathname === '/dashboard' && token.sub) {
-          try {
-            const admin = await prisma.admin.findUnique({
-              where: { id: token.sub },
-              select: { twoFactorEnabled: true }
-            })
-
-            // Eğer 2FA setup sayfasına gidiyorsa izin ver
-            if (!is2FASetupPath && !admin?.twoFactorEnabled) {
-              // 2FA kurulmamışsa setup sayfasına yönlendir
-              return NextResponse.redirect(new URL('/setup/2fa', request.url))
-            }
-          } catch (error) {
-            console.error('2FA check error:', error)
-          }
-        }
+        // NOT: 2FA kontrolü client-side'da yapılacak, middleware'de yapılmayacak
+        // Çünkü Prisma Client middleware'de çalışmıyor
       }
     }
 

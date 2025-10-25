@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { BarChart3, Users, Mail, CreditCard, Calendar, FileText, Settings, Search, Globe, Briefcase, BookOpen, Megaphone, Code, RefreshCw } from 'lucide-react'
 import Sidebar from '../components/layout/Sidebar'
 import Header from '../components/layout/Header'
+import { useSession } from 'next-auth/react'
 
 interface DashboardStats {
   totalUsers: number
@@ -18,6 +20,8 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
+  const { data: session } = useSession()
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState('dashboard')
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
@@ -31,6 +35,40 @@ export default function DashboardPage() {
     lastUpdated: new Date().toISOString()
   })
   const [loading, setLoading] = useState(true)
+  const [checking2FA, setChecking2FA] = useState(true)
+
+  // 2FA kontrolü
+  useEffect(() => {
+    const check2FAStatus = async () => {
+      if (session?.user?.id) {
+        try {
+          const response = await fetch('/api/admin', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+
+          const data = await response.json()
+          
+          if (data.success) {
+            const currentAdmin = data.data.find((admin: any) => admin.id === session.user.id)
+            
+            // Eğer 2FA kurulmamışsa setup sayfasına yönlendir
+            if (currentAdmin && !currentAdmin.twoFactorEnabled) {
+              router.push('/setup/2fa')
+            }
+          }
+        } catch (error) {
+          console.error('2FA kontrolü hatası:', error)
+        } finally {
+          setChecking2FA(false)
+        }
+      }
+    }
+
+    check2FAStatus()
+  }, [session, router])
 
   const fetchStats = async () => {
     try {
