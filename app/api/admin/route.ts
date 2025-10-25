@@ -19,14 +19,7 @@ export async function GET(request: NextRequest) {
         status: true,
         lastLoginAt: true,
         createdAt: true,
-        createdBy: true,
-        creator: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true
-          }
-        }
+        createdBy: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -49,7 +42,7 @@ export async function GET(request: NextRequest) {
           })
         : 'Henüz giriş yapmadı',
       createdAt: admin.createdAt.toLocaleDateString('tr-TR'),
-      createdBy: admin.creator ? `${admin.creator.firstName} ${admin.creator.lastName}` : 'Sistem'
+      createdBy: admin.createdBy || 'Sistem'
     }))
 
     return NextResponse.json({
