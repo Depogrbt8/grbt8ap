@@ -46,27 +46,32 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Tüm tabloları yedekle
-    const currentData = {
-      users: await prisma.user.findMany(),
-      reservations: await prisma.reservation.findMany(),
-      payments: await prisma.payment.findMany(),
-      passengers: await prisma.passenger.findMany(),
-      priceAlerts: await prisma.priceAlert.findMany(),
-      searchFavorites: await prisma.searchFavorite.findMany(),
-      surveyResponses: await prisma.surveyResponse.findMany()
+    // Optimize edilmiş şekilde tabloları yedekle
+    console.log('📊 Optimize edilmiş incremental backup başlatılıyor...')
+    
+    const { createOptimizedDatabaseBackup, monitorBackupProgress } = await import('@/lib/backupOptimizer')
+    
+    const backupResult = await monitorBackupProgress(async () => {
+      return await createOptimizedDatabaseBackup()
+    })
+    
+    if (!backupResult.result.success) {
+      throw new Error(backupResult.result.error || 'Database backup başarısız')
     }
+    
+    const currentData = backupResult.result.data.tables
+    console.log(`🧠 Memory kullanımı: ${backupResult.memory.diff.heapUsed}MB artış`)
 
     // Değişiklikleri hesapla
     if (existingBackup && existingBackup.data) {
-      // Yeni kayıtları bul
-      changes.newUsers = currentData.users.length - existingBackup.data.users.length
-      changes.newReservations = currentData.reservations.length - existingBackup.data.reservations.length
-      changes.newPayments = currentData.payments.length - existingBackup.data.payments.length
+      // Yeni kayıtları bul (güvenli erişim)
+      changes.newUsers = (currentData.users?.length || 0) - (existingBackup.data.users?.length || 0)
+      changes.newReservations = (currentData.reservations?.length || 0) - (existingBackup.data.reservations?.length || 0)
+      changes.newPayments = (currentData.payments?.length || 0) - (existingBackup.data.payments?.length || 0)
       
-      // Güncellenen kayıtları bul (updatedAt'e göre)
-      const updatedUsers = currentData.users.filter((user: any) => {
-        const existingUser = existingBackup.data.users.find((u: any) => u.id === user.id)
+      // Güncellenen kayıtları bul (updatedAt'e göre) - güvenli erişim
+      const updatedUsers = (currentData.users || []).filter((user: any) => {
+        const existingUser = (existingBackup.data.users || []).find((u: any) => u.id === user.id)
         return existingUser && new Date(user.updatedAt) > new Date(existingUser.updatedAt)
       })
       
@@ -75,9 +80,9 @@ export async function GET(request: NextRequest) {
       console.log(`📊 Değişiklikler: +${changes.newUsers} kullanıcı, +${changes.newReservations} rezervasyon, +${changes.newPayments} ödeme, ${changes.updatedRecords} güncellenen`)
     } else {
       // İlk backup
-      changes.newUsers = currentData.users.length
-      changes.newReservations = currentData.reservations.length
-      changes.newPayments = currentData.payments.length
+      changes.newUsers = currentData.users?.length || 0
+      changes.newReservations = currentData.reservations?.length || 0
+      changes.newPayments = currentData.payments?.length || 0
       console.log('🆕 İlk backup oluşturuluyor')
     }
 
@@ -88,7 +93,9 @@ export async function GET(request: NextRequest) {
         version: '2.0',
         type: 'incremental',
         changes,
-        totalRecords: Object.values(currentData).reduce((sum, table) => sum + (Array.isArray(table) ? table.length : 0), 0)
+        totalRecords: Object.values(currentData).reduce((sum, table) => sum + (Array.isArray(table) ? table.length : 0), 0),
+        optimization_stats: backupResult.result.stats,
+        memory_usage: backupResult.memory
       },
       data: currentData,
       schema: {

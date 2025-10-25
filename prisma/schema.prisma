@@ -71,14 +71,12 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  // Security fields
-  ipAddress    String?
-  userAgent    String?
   createdAt    DateTime @default(now())
-  lastUsed     DateTime @default(now())
+  ipAddress    String?
   isActive     Boolean  @default(true)
+  lastUsed     DateTime @default(now())
+  userAgent    String?
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -378,26 +376,18 @@ model SeoSettings {
 }
 
 model Admin {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   firstName   String
   lastName    String
-  email       String   @unique
+  email       String    @unique
   password    String
-  role        String   @default("Admin")
-  status      String   @default("active")
-  permissions Json     @default("{}")
+  role        String    @default("Admin")
+  status      String    @default("active")
+  permissions Json      @default("{}")
   lastLoginAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   createdBy   String?
-  creator     Admin?   @relation("AdminCreator", fields: [createdBy], references: [id])
-  createdAdmins Admin[] @relation("AdminCreator")
-  
-  // 2FA (Two-Factor Authentication) fields
-  twoFactorEnabled Boolean   @default(false)
-  twoFactorSecret  String?
-  twoFactorBackupCodes String? // JSON array of backup codes
-  twoFactorSetupAt DateTime?
 
   @@index([email])
   @@index([status])

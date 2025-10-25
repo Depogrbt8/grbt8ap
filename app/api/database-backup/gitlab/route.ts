@@ -26,26 +26,21 @@ export async function GET(request: NextRequest) {
     const backupDate = new Date().toLocaleDateString('tr-TR')
     const backupTime = new Date().toLocaleTimeString('tr-TR')
 
-    // 1. Database'den tüm verileri al
-    console.log('📊 Database verileri toplanıyor...')
-    const databaseData = {
-      users: await prisma.user.findMany(),
-      passengers: await prisma.passenger.findMany(),
-      reservations: await prisma.reservation.findMany(),
-      payments: await prisma.payment.findMany(),
-      priceAlerts: await prisma.priceAlert.findMany(),
-      searchFavorites: await prisma.searchFavorite.findMany(),
-      surveyResponses: await prisma.surveyResponse.findMany(),
-      campaigns: await prisma.campaign.findMany(),
-      systemSettings: await prisma.systemSettings.findMany(),
-      systemLogs: await prisma.systemLog.findMany(),
-      emailTemplates: await prisma.emailTemplate.findMany(),
-      emailQueue: await prisma.emailQueue.findMany(),
-      emailLogs: await prisma.emailLog.findMany(),
-      emailSettings: await prisma.emailSettings.findMany(),
-      billingInfos: await prisma.billingInfo.findMany(),
-      seoSettings: await prisma.seoSettings.findMany(),
+    // 1. Database'den optimize edilmiş şekilde verileri al
+    console.log('📊 Optimize edilmiş database verileri toplanıyor...')
+    
+    const { createOptimizedDatabaseBackup, monitorBackupProgress } = await import('@/lib/backupOptimizer')
+    
+    const backupResult = await monitorBackupProgress(async () => {
+      return await createOptimizedDatabaseBackup()
+    })
+    
+    if (!backupResult.result.success) {
+      throw new Error(backupResult.result.error || 'Database backup başarısız')
     }
+    
+    const databaseData = backupResult.result.data.tables
+    console.log(`🧠 Memory kullanımı: ${backupResult.memory.diff.heapUsed}MB artış`)
 
     // 2. Prisma schema'yı oku
     console.log('📋 Prisma schema okunuyor...')
@@ -71,22 +66,24 @@ export async function GET(request: NextRequest) {
         hash: await getSchemaHash(schemaContent)
       },
       statistics: {
-        totalUsers: databaseData.users.length,
-        totalPassengers: databaseData.passengers.length,
-        totalReservations: databaseData.reservations.length,
-        totalPayments: databaseData.payments.length,
-        totalPriceAlerts: databaseData.priceAlerts.length,
-        totalSearchFavorites: databaseData.searchFavorites.length,
-        totalSurveyResponses: databaseData.surveyResponses.length,
-        totalCampaigns: databaseData.campaigns.length,
-        totalSystemSettings: databaseData.systemSettings.length,
-        totalSystemLogs: databaseData.systemLogs.length,
-        totalEmailTemplates: databaseData.emailTemplates.length,
-        totalEmailQueue: databaseData.emailQueue.length,
-        totalEmailLogs: databaseData.emailLogs.length,
-        totalEmailSettings: databaseData.emailSettings.length,
-        totalBillingInfos: databaseData.billingInfos.length,
-        totalSeoSettings: databaseData.seoSettings.length,
+        totalUsers: databaseData.users?.length || 0,
+        totalPassengers: databaseData.passengers?.length || 0,
+        totalReservations: databaseData.reservations?.length || 0,
+        totalPayments: databaseData.payments?.length || 0,
+        totalPriceAlerts: databaseData.priceAlerts?.length || 0,
+        totalSearchFavorites: databaseData.searchFavorites?.length || 0,
+        totalSurveyResponses: databaseData.surveyResponses?.length || 0,
+        totalCampaigns: databaseData.campaigns?.length || 0,
+        totalSystemSettings: databaseData.systemSettings?.length || 0,
+        totalSystemLogs: databaseData.systemLogs?.length || 0,
+        totalEmailTemplates: databaseData.emailTemplates?.length || 0,
+        totalEmailQueue: databaseData.emailQueue?.length || 0,
+        totalEmailLogs: databaseData.emailLogs?.length || 0,
+        totalEmailSettings: databaseData.emailSettings?.length || 0,
+        totalBillingInfos: databaseData.billingInfos?.length || 0,
+        totalSeoSettings: databaseData.seoSettings?.length || 0,
+        optimization_stats: backupResult.result.stats,
+        memory_usage: backupResult.memory
       }
     }
 

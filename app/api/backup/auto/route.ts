@@ -185,49 +185,32 @@ ${new Date(Date.now() + 6 * 60 * 60 * 1000).toLocaleString('tr-TR')}
   }
 }
 
-// Database yedekleme fonksiyonu
+// Database yedekleme fonksiyonu - OPTIMIZE EDİLDİ
 async function createDatabaseBackup() {
   try {
-    console.log('📋 Tüm tablolar yedekleniyor...')
+    console.log('📋 Optimize edilmiş database backup başlatılıyor...')
     
-    const backup = {
-      timestamp: new Date().toISOString(),
-      source: 'https://www.grbt8.store/',
-      database: 'production',
-      tables: {
-        // Kullanıcı tabloları
-        users: await prisma.user.findMany(),
-        accounts: await prisma.account.findMany(),
-        sessions: await prisma.session.findMany(),
-        
-        // Rezervasyon tabloları
-        reservations: await prisma.reservation.findMany(),
-        payments: await prisma.payment.findMany(),
-        passengers: await prisma.passenger.findMany(),
-        
-        // Diğer tablolar
-        priceAlerts: await prisma.priceAlert.findMany(),
-        searchFavorites: await prisma.searchFavorite.findMany(),
-        surveyResponses: await prisma.surveyResponse.findMany()
-      }
+    // Optimize edilmiş backup kullan
+    const { createOptimizedDatabaseBackup, monitorBackupProgress } = await import('@/lib/backupOptimizer')
+    
+    const result = await monitorBackupProgress(async () => {
+      return await createOptimizedDatabaseBackup()
+    })
+    
+    if (!result.result.success) {
+      throw new Error(result.result.error || 'Backup başarısız')
     }
     
-    // İstatistikleri hesapla
-    const stats = {
-      total_tables: Object.keys(backup.tables).length,
-      total_records: Object.values(backup.tables).reduce((sum, table) => sum + (Array.isArray(table) ? table.length : 0), 0),
-      users: backup.tables.users.length,
-      reservations: backup.tables.reservations.length,
-      payments: backup.tables.payments.length,
-      passengers: backup.tables.passengers.length
-    }
-    
-    console.log(`✅ Database yedeklendi: ${stats.total_tables} tablo, ${stats.total_records} kayıt`)
+    console.log(`✅ Database yedeklendi: ${result.result.stats.total_tables} tablo, ${result.result.stats.total_records} kayıt`)
+    console.log(`🧠 Memory kullanımı: ${result.memory.diff.heapUsed}MB artış`)
     
     return {
       success: true,
-      data: backup,
-      stats
+      data: result.result.data,
+      stats: {
+        ...result.result.stats,
+        memory_usage: result.memory
+      }
     }
     
   } catch (error) {
