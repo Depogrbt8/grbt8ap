@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
     console.log(`⬆️ Backup dosyası GitLab'a yükleniyor: ${backupFileName}`)
     await uploadToGitLab(`database/${backupFileName}`, backupContent, `Daily full backup - ${backupDate} ${backupTime}`)
 
-    const totalRecords = Object.values(databaseData).reduce((sum, table) => sum + (Array.isArray(table) ? table.length : 0), 0)
+    const totalRecords = Object.values(databaseData).reduce((sum: number, table) => sum + (Array.isArray(table) ? table.length : 0), 0)
     const fileSize = (Buffer.byteLength(backupContent, 'utf8') / 1024).toFixed(1)
 
     console.log(`✅ GitLab backup başarıyla tamamlandı: ${fileSize} KB`)
