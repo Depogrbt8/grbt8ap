@@ -40,7 +40,7 @@ export default function LoginPage() {
         // Şifre doğru ama 2FA kodu girilmemiş
         if (result.error === 'CredentialsSignin') {
           setNeeds2FA(true)
-          setError('🔐 2FA kodu gerekli. Lütfen Google Authenticator'dan 6 haneli kodu girin.')
+          setError('🔐 2FA kodu gerekli. Lütfen Google Authenticator\'dan 6 haneli kodu girin.')
         } else {
           setError('Geçersiz email veya şifre')
         }
