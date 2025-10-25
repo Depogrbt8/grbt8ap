@@ -27,13 +27,16 @@ export async function POST(request: NextRequest) {
       }, { status: 404 })
     }
 
-    // 2FA etkin mi kontrol et
-    if (!admin.twoFactorEnabled || !admin.twoFactorSecret) {
+    // 2FA secret var mı kontrol et (setup yapıldıysa)
+    if (!admin.twoFactorSecret) {
       return NextResponse.json({
         success: false,
-        error: '2FA etkinleştirilmemiş'
+        error: '2FA setup yapılmamış'
       }, { status: 400 })
     }
+
+    // Eğer 2FA henüz etkin değilse, setup aşamasındayız demektir
+    const isSetupMode = !admin.twoFactorEnabled
 
     // 2FA token'ı doğrula
     console.log('🔐 [2FA DEBUG] Verifying token:', token)
@@ -54,6 +57,19 @@ export async function POST(request: NextRequest) {
     }
 
     if (isValid) {
+      // Eğer setup modundaysa, 2FA'yı aktif et
+      if (isSetupMode) {
+        await prisma.admin.update({
+          where: { id: adminId },
+          data: {
+            twoFactorEnabled: true,
+            twoFactorSetupAt: new Date()
+          }
+        })
+        
+        console.log('✅ [2FA DEBUG] 2FA başarıyla aktif edildi')
+      }
+      
       return NextResponse.json({
         success: true,
         message: '2FA kodu doğru'
