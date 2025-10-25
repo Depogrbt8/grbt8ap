@@ -35,14 +35,13 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // 2FA token'ı doğrula (window parametresi ile daha esnek)
+    // 2FA token'ı doğrula
     console.log('🔐 [2FA DEBUG] Verifying token:', token)
     console.log('🔐 [2FA DEBUG] Secret:', admin.twoFactorSecret?.substring(0, 10) + '...')
     
     const isValid = authenticator.verify({
       token,
-      secret: admin.twoFactorSecret,
-      window: 2 // 2 periyod tolerans ver (60 saniye)
+      secret: admin.twoFactorSecret
     })
 
     console.log('🔐 [2FA DEBUG] Verification result:', isValid)
