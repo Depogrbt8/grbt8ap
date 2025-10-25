@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { verifyTwoFactorToken } from '@/lib/authSecurity'
+import { prisma } from '@/app/lib/prisma'
+import { authenticator } from 'otplib'
 
 // 2FA Token doğrulama endpoint'i
 export async function POST(request: NextRequest) {
@@ -14,8 +15,31 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
+    // Admin'i database'den al
+    const admin = await prisma.admin.findUnique({
+      where: { id: adminId }
+    })
+
+    if (!admin) {
+      return NextResponse.json({
+        success: false,
+        error: 'Admin bulunamadı'
+      }, { status: 404 })
+    }
+
+    // 2FA etkin mi kontrol et
+    if (!admin.twoFactorEnabled || !admin.twoFactorSecret) {
+      return NextResponse.json({
+        success: false,
+        error: '2FA etkinleştirilmemiş'
+      }, { status: 400 })
+    }
+
     // 2FA token'ı doğrula
-    const isValid = verifyTwoFactorToken(adminId, token)
+    const isValid = authenticator.verify({
+      token,
+      secret: admin.twoFactorSecret
+    })
 
     if (isValid) {
       return NextResponse.json({
