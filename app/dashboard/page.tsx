@@ -37,43 +37,13 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
   const [checking2FA, setChecking2FA] = useState(true)
 
-  // 2FA kontrolü - sadece bir kez çalışsın
+  // 2FA kontrolü - GEÇİCİ OLARAK DEVRE DIŞI
   useEffect(() => {
-    const check2FAStatus = async () => {
-      if (session?.user?.id && checking2FA) {
-        try {
-          const response = await fetch('/api/admin', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          })
-
-          const data = await response.json()
-          
-          if (data.success) {
-            const currentAdmin = data.data.find((admin: any) => admin.id === session.user.id)
-            
-            // Eğer 2FA kurulmamışsa setup sayfasına yönlendir
-            if (currentAdmin && !currentAdmin.twoFactorEnabled) {
-              console.log('🔐 2FA kurulmamış, setup sayfasına yönlendiriliyor...')
-              router.push('/setup/2fa')
-            } else {
-              console.log('✅ 2FA kurulu, dashboard görüntüleniyor')
-            }
-          }
-        } catch (error) {
-          console.error('2FA kontrolü hatası:', error)
-        } finally {
-          setChecking2FA(false)
-        }
-      }
-    }
-
-    if (checking2FA) {
-      check2FAStatus()
-    }
-  }, [session?.user?.id])
+    setChecking2FA(false)
+    
+    // TODO: 2FA kontrolü kısa süre içinde tekrar aktif edilecek
+    // Şu an için dashboard'a erişim veriliyor
+  }, [])
 
   const fetchStats = async () => {
     try {
