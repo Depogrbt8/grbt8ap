@@ -11,27 +11,6 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient({
     db: {
       url: process.env.DATABASE_URL
     }
-  },
-  // Connection pool optimizasyonları
-  __internal: {
-    engine: {
-      // Connection pool ayarları
-      connectionLimit: 10,        // Maksimum connection sayısı
-      poolTimeout: 20000,         // Pool timeout (20 saniye)
-      connectTimeout: 10000,      // Connection timeout (10 saniye)
-      queryTimeout: 30000,       // Query timeout (30 saniye)
-      
-      // Retry ayarları
-      maxRetries: 3,
-      retryDelay: 1000,
-      
-      // Health check
-      healthCheckInterval: 30000, // 30 saniye
-      
-      // Error handling
-      enableRetryOnConnectionError: true,
-      enableRetryOnTimeout: true
-    }
   }
 })
 
