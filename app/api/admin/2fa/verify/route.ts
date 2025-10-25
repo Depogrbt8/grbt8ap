@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
     
     // Eğer başarısız olduysa, doğru token'ı da logla
     if (!isValid) {
-      const correctToken = authenticator.generate({ secret: admin.twoFactorSecret })
+      const correctToken = authenticator.generate(admin.twoFactorSecret)
       console.log('🔐 [2FA DEBUG] Expected token:', correctToken)
     }
 
