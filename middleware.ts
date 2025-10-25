@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 import { addSecurityHeaders } from '@/lib/authMiddleware'
+import { prisma } from '@/app/lib/prisma'
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -14,8 +15,12 @@ export async function middleware(request: NextRequest) {
     '/api/auth',
     '/api/email/track',
     '/api/health',
-    '/api/create-admin-emergency'
+    '/api/create-admin-emergency',
+    '/api/admin/2fa' // 2FA setup ve verify endpoint'leri
   ]
+
+  // 2FA setup path'i public olsun
+  const is2FASetupPath = pathname === '/setup/2fa'
 
   // Exact match için root path kontrolü - root path her zaman public
   const isRootPath = pathname === '/' || pathname === '/login'
@@ -94,6 +99,24 @@ export async function middleware(request: NextRequest) {
 
         if (token.role !== 'admin' && token.role !== 'Super Admin' && token.role !== 'Admin' && token.role !== 'Temsilci' && token.role !== 'Moderator' && token.role !== 'Satış' && token.role !== 'Email Yöneticisi' && token.role !== 'API Yöneticisi' && token.role !== 'Viewer') {
           return NextResponse.redirect(new URL('/', request.url))
+        }
+
+        // Dashboard'a erişim kontrolü - 2FA setup kontrolü
+        if (pathname === '/dashboard' && token.sub) {
+          try {
+            const admin = await prisma.admin.findUnique({
+              where: { id: token.sub },
+              select: { twoFactorEnabled: true }
+            })
+
+            // Eğer 2FA setup sayfasına gidiyorsa izin ver
+            if (!is2FASetupPath && !admin?.twoFactorEnabled) {
+              // 2FA kurulmamışsa setup sayfasına yönlendir
+              return NextResponse.redirect(new URL('/setup/2fa', request.url))
+            }
+          } catch (error) {
+            console.error('2FA check error:', error)
+          }
         }
       }
     }
