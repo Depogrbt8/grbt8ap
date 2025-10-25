@@ -78,19 +78,27 @@ const authOptions: NextAuthOptions = {
           }
 
           // 2FA Kontrolü (eğer etkinse)
-          if (admin.twoFactorEnabled && credentials.twoFactorCode) {
-            console.log('🔐 [AUTH DEBUG] 2FA kontrol ediliyor...')
-            const { verifyTwoFactorToken } = await import('@/lib/authSecurity')
-            const isValid2FA = verifyTwoFactorToken(admin.id, credentials.twoFactorCode)
+          if (admin.twoFactorEnabled) {
+            console.log('🔐 [AUTH DEBUG] 2FA etkin, kontrol ediliyor...')
+            
+            if (!credentials.twoFactorCode) {
+              console.log('⚠️ [AUTH DEBUG] 2FA etkin ama kod girilmemiş! 2FA kodu gerekli')
+              return null // 2FA kodu girilmemiş, login başarısız
+            }
+            
+            // Database'den secret'i al ve doğrula
+            const { authenticator } = await import('otplib')
+            const isValid2FA = authenticator.verify({
+              token: credentials.twoFactorCode,
+              secret: admin.twoFactorSecret
+            })
+            
             console.log('✅ [AUTH DEBUG] 2FA kontrolü sonucu:', isValid2FA)
             
             if (!isValid2FA) {
               console.log('❌ [AUTH DEBUG] 2FA kodu yanlış!')
               return null
             }
-          } else if (admin.twoFactorEnabled && !credentials.twoFactorCode) {
-            console.log('⚠️ [AUTH DEBUG] 2FA etkin ama kod girilmemiş!')
-            return null
           }
 
           console.log('🎉 [AUTH DEBUG] Giriş başarılı! Admin döndürülüyor:', admin.email)

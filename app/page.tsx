@@ -37,17 +37,23 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        if (result.error.includes('2FA')) {
+        // Şifre doğru ama 2FA kodu girilmemiş
+        if (result.error === 'CredentialsSignin') {
           setNeeds2FA(true)
-          setError('2FA kodu gerekli')
+          setError('🔐 2FA kodu gerekli. Lütfen Google Authenticator'dan 6 haneli kodu girin.')
         } else {
           setError('Geçersiz email veya şifre')
         }
       } else if (result?.ok) {
         router.push('/dashboard')
       }
-    } catch (err) {
-      setError('Giriş sırasında bir hata oluştu')
+    } catch (err: any) {
+      if (err.message === '2FA_REQUIRED') {
+        setNeeds2FA(true)
+        setError('2FA kodu gerekli')
+      } else {
+        setError('Giriş sırasında bir hata oluştu')
+      }
     } finally {
       setIsLoading(false)
     }
