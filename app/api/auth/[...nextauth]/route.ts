@@ -9,7 +9,8 @@ const authOptions: NextAuthOptions = {
       name: 'credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
+        twoFactorCode: { label: '2FA Code', type: 'text' }
       },
       async authorize(credentials) {
         console.log('🔍 [AUTH DEBUG] Authorize çağrıldı')
@@ -73,6 +74,22 @@ const authOptions: NextAuthOptions = {
           
           if (!isValidPassword) {
             console.log('❌ [AUTH DEBUG] Şifre yanlış!')
+            return null
+          }
+
+          // 2FA Kontrolü (eğer etkinse)
+          if (admin.twoFactorEnabled && credentials.twoFactorCode) {
+            console.log('🔐 [AUTH DEBUG] 2FA kontrol ediliyor...')
+            const { verifyTwoFactorToken } = await import('@/lib/authSecurity')
+            const isValid2FA = verifyTwoFactorToken(admin.id, credentials.twoFactorCode)
+            console.log('✅ [AUTH DEBUG] 2FA kontrolü sonucu:', isValid2FA)
+            
+            if (!isValid2FA) {
+              console.log('❌ [AUTH DEBUG] 2FA kodu yanlış!')
+              return null
+            }
+          } else if (admin.twoFactorEnabled && !credentials.twoFactorCode) {
+            console.log('⚠️ [AUTH DEBUG] 2FA etkin ama kod girilmemiş!')
             return null
           }
 

@@ -388,6 +388,14 @@ model Admin {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   createdBy   String?
+  creator     Admin?    @relation("AdminCreator", fields: [createdBy], references: [id])
+  createdAdmins Admin[] @relation("AdminCreator")
+  
+  // 2FA (Two-Factor Authentication) fields
+  twoFactorEnabled Boolean   @default(false)
+  twoFactorSecret  String?
+  twoFactorBackupCodes String? // JSON array of backup codes
+  twoFactorSetupAt DateTime?
 
   @@index([email])
   @@index([status])

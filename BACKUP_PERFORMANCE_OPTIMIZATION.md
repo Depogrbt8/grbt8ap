@@ -191,3 +191,5 @@ Bu optimizasyon ile:
 6. **Otomatik performance önerileri**
 
 Backup sistemi artık büyük veri setlerinde bile güvenli ve hızlı çalışacak! 🎉
+
+

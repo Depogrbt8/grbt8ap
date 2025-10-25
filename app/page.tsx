@@ -8,9 +8,11 @@ import { useRouter } from 'next/navigation'
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [twoFactorCode, setTwoFactorCode] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [needs2FA, setNeeds2FA] = useState(false)
   const { data: session, status } = useSession()
   const router = useRouter()
 
@@ -30,11 +32,17 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
+        twoFactorCode: needs2FA ? twoFactorCode : undefined,
         redirect: false,
       })
 
       if (result?.error) {
-        setError('Geçersiz email veya şifre')
+        if (result.error.includes('2FA')) {
+          setNeeds2FA(true)
+          setError('2FA kodu gerekli')
+        } else {
+          setError('Geçersiz email veya şifre')
+        }
       } else if (result?.ok) {
         router.push('/dashboard')
       }
@@ -118,6 +126,29 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
+            {/* 2FA Kodu */}
+            {needs2FA && (
+              <div>
+                <label htmlFor="twoFactorCode" className="block text-sm font-medium text-gray-700 mb-1">
+                  🔐 2FA Kodu
+                </label>
+                <input
+                  id="twoFactorCode"
+                  name="twoFactorCode"
+                  type="text"
+                  required
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 placeholder-gray-500"
+                  placeholder="Google Authenticator'dan 6 haneli kodu girin"
+                  maxLength={6}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Google Authenticator uygulamasından 6 haneli kodu girin
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Giriş Butonu */}

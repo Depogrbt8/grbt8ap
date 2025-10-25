@@ -4,6 +4,7 @@ import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
 import AdminList from '../../components/admin/AdminList'
 import AdminForm from '../../components/admin/AdminForm'
+import TwoFactorSetup from '../../components/admin/TwoFactorSetup'
 
 export default function AdminYonetimiPage() {
   const [activeTab, setActiveTab] = useState('ayarlar')
@@ -191,6 +192,16 @@ export default function AdminYonetimiPage() {
                 >
                   Yeni Admin Ekle
                 </button>
+                <button
+                  onClick={() => setActiveAdminTab('2fa')}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                    activeAdminTab === '2fa'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                  }`}
+                >
+                  🔐 2FA Ayarları
+                </button>
               </nav>
             </div>
 
@@ -208,6 +219,16 @@ export default function AdminYonetimiPage() {
               <AdminForm 
                 onSubmit={handleAddAdmin}
                 onCancel={() => setActiveAdminTab('liste')}
+              />
+            )}
+
+            {!loading && activeAdminTab === '2fa' && (
+              <TwoFactorSetup 
+                adminId={editingAdmin?.id || ''}
+                isEnabled={editingAdmin?.twoFactorEnabled || false}
+                onToggle={(enabled) => {
+                  setEditingAdmin(prev => prev ? { ...prev, twoFactorEnabled: enabled } : null)
+                }}
               />
             )}
 
