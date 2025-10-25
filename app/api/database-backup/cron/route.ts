@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
         version: '2.0',
         type: 'incremental',
         changes,
-        totalRecords: Object.values(currentData).reduce((sum, table) => sum + (Array.isArray(table) ? table.length : 0), 0),
+        totalRecords: Object.values(currentData).reduce((sum: number, table) => sum + (Array.isArray(table) ? table.length : 0), 0),
         optimization_stats: backupResult.result.stats,
         memory_usage: backupResult.memory
       },
