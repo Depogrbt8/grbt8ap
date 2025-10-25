@@ -6,7 +6,8 @@ import { addSecurityHeaders } from '@/lib/authMiddleware'
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
-  // CSRF Protection: Origin Header Kontrolü
+  // CSRF Protection: Origin Header Kontrolü - GEÇICI OLARAK PASİF
+  /* CSRF koruması kapatıldı - debug için
   const origin = request.headers.get('origin')
   const referer = request.headers.get('referer')
   
@@ -36,6 +37,7 @@ export async function middleware(request: NextRequest) {
       )
     }
   }
+  */
 
   // Public paths that don't require authentication
   const publicPaths = [
