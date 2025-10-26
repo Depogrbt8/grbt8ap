@@ -15,30 +15,20 @@ interface AuthUser {
 // Get user from JWT token
 export async function getAuthUser(request: NextRequest): Promise<AuthUser | null> {
   try {
-    console.log('🔍 [AUTH DEBUG] getAuthUser çağrıldı')
-    
     const token = await getToken({ 
       req: request as any,
       secret: process.env.NEXTAUTH_SECRET 
     })
 
-    console.log('🎫 [AUTH DEBUG] Token:', token ? 'Mevcut' : 'Yok')
-    console.log('🎫 [AUTH DEBUG] Token sub:', token?.sub)
-    console.log('🎫 [AUTH DEBUG] Token role:', token?.role)
-    console.log('🎫 [AUTH DEBUG] Token status:', token?.status)
-
     if (!token || !token.sub || !token.role || !token.status) {
-      console.log('❌ [AUTH DEBUG] Token eksik veya geçersiz')
       return null
     }
 
     // Check if user status is active
     if (token.status !== 'active') {
-      console.log('❌ [AUTH DEBUG] Kullanıcı aktif değil:', token.status)
       return null
     }
 
-    console.log('✅ [AUTH DEBUG] Kullanıcı bilgileri alındı:', token.email)
     return {
       id: token.sub,
       email: token.email as string,
@@ -46,7 +36,7 @@ export async function getAuthUser(request: NextRequest): Promise<AuthUser | null
       status: token.status as string
     }
   } catch (error) {
-    console.log('💥 [AUTH DEBUG] getAuthUser hatası:', error.message)
+    console.error('getAuthUser error:', error)
     return null
   }
 }
@@ -83,19 +73,14 @@ export async function requireAuth(request: NextRequest) {
 
 // Require admin role for API routes
 export async function requireAdmin(request: NextRequest) {
-  console.log('🔍 [AUTH DEBUG] requireAdmin çağrıldı')
-  
   const authError = await requireAuth(request)
   if (authError) {
-    console.log('❌ [AUTH DEBUG] requireAuth başarısız')
     return authError
   }
 
   const user = await getAuthUser(request)
-  console.log('👤 [AUTH DEBUG] User:', user?.email, 'Role:', user?.role)
   
   if (!user || (user.role !== 'admin' && user.role !== 'Super Admin' && user.role !== 'Admin' && user.role !== 'Temsilci' && user.role !== 'Moderator' && user.role !== 'Satış' && user.role !== 'Email Yöneticisi' && user.role !== 'API Yöneticisi' && user.role !== 'Viewer')) {
-    console.log('❌ [AUTH DEBUG] Admin yetkisi yok:', user?.role)
     return NextResponse.json(
       { 
         success: false,
@@ -106,7 +91,6 @@ export async function requireAdmin(request: NextRequest) {
     )
   }
 
-  console.log('✅ [AUTH DEBUG] Admin yetkisi onaylandı')
   return null // No error, user is admin
 }
 
