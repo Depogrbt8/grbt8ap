@@ -6,7 +6,6 @@ import AdminPanelStatus from '../components/dashboard/AdminPanelStatus'
 import MainSiteStatus from '../components/dashboard/MainSiteStatus'
 import DatabaseBackupSystem from '../components/system/DatabaseBackupSystem'
 import SystemAlerts from '../components/system/SystemAlerts'
-import SentryWidget from '../components/system/SentryWidget'
 
 export default function SistemPage() {
   const [activeTab, setActiveTab] = useState('sistem')
