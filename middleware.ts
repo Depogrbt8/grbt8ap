@@ -16,7 +16,8 @@ export async function middleware(request: NextRequest) {
     '/api/health',
     '/api/create-admin-emergency',
     '/api/auth/send-2fa-code',
-    '/api/auth/verify-2fa-code'
+    '/api/auth/verify-2fa-code',
+    '/api/admin/enable-2fa-test' // TEST: 2FA etkinleştirme
   ]
 
   // Exact match için root path kontrolü - root path her zaman public
