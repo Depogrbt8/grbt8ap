@@ -36,19 +36,24 @@ export default function LoginPage() {
         redirect: false,
       })
 
-      if (result?.error === 'CredentialsSignin' && !needs2FA) {
-        // İlk denemede şifre doğru ama 2FA kodu girilmemiş - email'e kod gönder
-        setNeeds2FA(true)
-        
-        try {
-          await fetch('/api/auth/send-2fa-code', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email }),
-          })
-          setError('🔐 2FA kodu email\'inize gönderildi. Lütfen 6 haneli kodu girin.')
-        } catch (error) {
-          setError('🔐 2FA kodu gönderilemedi. Lütfen tekrar deneyin.')
+      if (result?.error === 'CredentialsSignin') {
+        if (!needs2FA) {
+          // İlk denemede şifre doğru ama 2FA kodu girilmemiş - email'e kod gönder
+          setNeeds2FA(true)
+          
+          try {
+            await fetch('/api/auth/send-2fa-code', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+            })
+            setError('🔐 2FA kodu email\'inize gönderildi. Lütfen 6 haneli kodu girin.')
+          } catch (error) {
+            setError('🔐 2FA kodu gönderilemedi. Lütfen tekrar deneyin.')
+          }
+        } else {
+          // Kod girilmiş ama yanlış
+          setError('2FA kodu yanlış. Lütfen tekrar deneyin.')
         }
       } else if (result?.error) {
         setError('Geçersiz email veya şifre')
