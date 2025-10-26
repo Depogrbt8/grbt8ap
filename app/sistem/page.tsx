@@ -26,9 +26,6 @@ export default function SistemPage() {
             {/* Sistem Uyarıları */}
             <SystemAlerts className="flex justify-end" />
             
-            {/* Sentry Hataları */}
-            <SentryWidget className="mb-4" />
-            
             <MainSiteStatus />
             <AdminPanelStatus />
             <DatabaseBackupSystem />
