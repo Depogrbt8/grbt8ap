@@ -27,11 +27,11 @@ export default function SystemAlerts({ className = '' }: SystemAlertProps) {
     try {
       // 1. Güvenlik durumu kontrolü
       const securityRes = await fetch('/api/system/security/status')
-      if (securityRes.ok) {
+        if (securityRes.ok) {
         const security = await securityRes.json()
-        const data = security.data
+        const data = security?.data
 
-        if (data?.realTimeThreats?.activeAttacks > 10) {
+        if (data?.realTimeThreats?.activeAttacks && data.realTimeThreats.activeAttacks > 10) {
           risks.push({
             component: 'Güvenlik',
             metric: 'Aktif Saldırı',
@@ -42,7 +42,7 @@ export default function SystemAlerts({ className = '' }: SystemAlertProps) {
           })
         }
 
-        if (data?.rateLimitingStatus?.blockedRequests > 100) {
+        if (data?.rateLimitingStatus?.blockedRequests && data.rateLimitingStatus.blockedRequests > 100) {
           risks.push({
             component: 'Güvenlik',
             metric: 'Rate Limit',
@@ -53,7 +53,7 @@ export default function SystemAlerts({ className = '' }: SystemAlertProps) {
           })
         }
 
-        if (data?.overallScore < 70) {
+        if (data?.overallScore && data.overallScore < 70) {
           risks.push({
             component: 'Güvenlik',
             metric: 'Güvenlik Skoru',
@@ -112,7 +112,7 @@ export default function SystemAlerts({ className = '' }: SystemAlertProps) {
             })
           }
 
-          if (h.data.overall.score < 60) {
+          if (h?.data?.overall?.score && h.data.overall.score < 60) {
             risks.push({
               component: 'Admin Panel',
               metric: 'Sistem Sağlığı',
