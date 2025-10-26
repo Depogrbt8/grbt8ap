@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
     // Email gönder
     await sendEmail({
       to: email,
+      from: 'Gurbetbiz <noreply@grbt8.store>', // FROM field ekle
       subject: '🔐 Admin Panel 2FA Kodu',
       html: `
         <h2>2FA Kodu</h2>
