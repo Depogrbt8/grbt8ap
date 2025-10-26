@@ -82,8 +82,41 @@ const authOptions: NextAuthOptions = {
             console.log('🔐 [AUTH DEBUG] 2FA etkin, kontrol ediliyor...')
             
             if (!credentials.twoFactorCode) {
-              console.log('⚠️ [AUTH DEBUG] 2FA etkin ama kod girilmemiş! 2FA kodu gerekli')
-              return null // 2FA kodu girilmemiş, login başarısız
+              console.log('⚠️ [AUTH DEBUG] 2FA etkin ama kod girilmemiş! ÖNCE EMAIL\'E KOD GÖNDER')
+              
+              // EMAIL'E KOD GÖNDER
+              const { generateRandomCode } = await import('@/lib/authSecurity')
+              const { sendEmail } = await import('@/app/lib/resend')
+              
+              const twoFactorCode = generateRandomCode(6)
+              const expiry = new Date(Date.now() + 10 * 60 * 1000) // 10 dakika
+              
+              // Kodu database'e kaydet
+              await prisma.admin.update({
+                where: { id: admin.id },
+                data: {
+                  twoFactorSecret: twoFactorCode,
+                  twoFactorSetupAt: expiry
+                }
+              })
+              
+              // Email gönder
+              await sendEmail({
+                to: admin.email,
+                subject: 'GRBT8 Admin Panel - 2FA Doğrulama Kodunuz',
+                html: `
+                  <p>Merhaba ${admin.firstName},</p>
+                  <p>Admin paneline giriş yapmak için 2FA doğrulama kodunuz:</p>
+                  <h2 style="color: #007bff; font-size: 32px; text-align: center; margin: 20px 0;">${twoFactorCode}</h2>
+                  <p>Bu kod 10 dakika boyunca geçerlidir.</p>
+                  <p>Eğer bu isteği siz yapmadıysanız, lütfen bu e-postayı dikkate almayın.</p>
+                  <p>Saygılarımızla,</p>
+                  <p>GRBT8 Admin Ekibi</p>
+                `
+              })
+              
+              console.log('✅ [AUTH DEBUG] 2FA kodu email\'e gönderildi')
+              throw new Error('2FA_CODE_SENT') // Frontend'e bildir
             }
             
             // Email tabanlı kod kontrolü
