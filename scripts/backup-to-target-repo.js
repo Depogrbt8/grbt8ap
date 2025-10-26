@@ -29,12 +29,12 @@ async function backupToTargetRepo() {
     // GitHub token kontrolü
     const githubToken = process.env.GITHUB_BACKUP_TOKEN
     if (!githubToken) {
-      throw new Error('GITHUB_BACKUP_TOKEN environment variable bulunamadı!')
+      throw new Error('GITHUB_BACKUP_TOKEN bulunamadı!')
     }
     
     // Hedef repository bilgileri
-    const repoOwner = 'Depogrbt8'
-    const repoName = 'admydk2609d1654h'
+    const repoOwner = 'grbt8yedek'
+    const repoName = 'admydk2610D1043H'
     const repoUrl = `https://github.com/${repoOwner}/${repoName}.git`
     
     console.log(`🔗 Hedef Repository: ${repoUrl}`)
