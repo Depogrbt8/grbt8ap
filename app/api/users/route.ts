@@ -11,8 +11,33 @@ export async function GET(request: NextRequest) {
       return adminCheck
     }
 
-    // Tüm kullanıcıları getir
+    // Pagination parametreleri
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = Math.min(parseInt(searchParams.get('limit') || '25'), 100) // Max 100, default 25
+    const search = searchParams.get('search') || ''
+    const statusFilter = searchParams.get('status')
+    
+    // Toplam sayı
+    const whereConditions: any = {}
+    
+    if (search) {
+      whereConditions.OR = [
+        { email: { contains: search, mode: 'insensitive' } },
+        { firstName: { contains: search, mode: 'insensitive' } },
+        { lastName: { contains: search, mode: 'insensitive' } }
+      ]
+    }
+    
+    if (statusFilter) {
+      whereConditions.status = statusFilter
+    }
+
+    const totalCount = await prisma.user.count({ where: whereConditions })
+
+    // Sayfalanmış kullanıcıları getir
     const users = await prisma.user.findMany({
+      where: whereConditions,
       select: {
         id: true,
         email: true,
@@ -48,7 +73,9 @@ export async function GET(request: NextRequest) {
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      skip: (page - 1) * limit,
+      take: limit
     })
 
     // Kullanıcı verilerini formatla
@@ -90,7 +117,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: formattedUsers,
-      count: formattedUsers.length
+      count: formattedUsers.length,
+      pagination: {
+        page,
+        limit,
+        total: totalCount,
+        totalPages: Math.ceil(totalCount / limit)
+      }
     })
 
   } catch (error) {
