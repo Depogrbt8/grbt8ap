@@ -36,24 +36,28 @@ export default function LoginPage() {
         redirect: false,
       })
 
-      if (result?.error) {
-        // Şifre doğru ama 2FA kodu girilmemiş
-        if (result.error === 'CredentialsSignin') {
-          setNeeds2FA(true)
+      if (result?.error === 'CredentialsSignin' && !needs2FA) {
+        // İlk denemede şifre doğru ama 2FA kodu girilmemiş - email'e kod gönder
+        setNeeds2FA(true)
+        
+        try {
+          await fetch('/api/auth/send-2fa-code', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          })
           setError('🔐 2FA kodu email\'inize gönderildi. Lütfen 6 haneli kodu girin.')
-        } else {
-          setError('Geçersiz email veya şifre')
+        } catch (error) {
+          setError('🔐 2FA kodu gönderilemedi. Lütfen tekrar deneyin.')
         }
+      } else if (result?.error) {
+        setError('Geçersiz email veya şifre')
       } else if (result?.ok) {
         router.push('/dashboard')
       }
     } catch (err: any) {
-      if (err.message === '2FA_CODE_SENT' || err.message === '2FA_REQUIRED') {
-        setNeeds2FA(true)
-        setError('🔐 2FA kodu email\'inize gönderildi. Lütfen 6 haneli kodu girin.')
-      } else {
-        setError('Giriş sırasında bir hata oluştu')
-      }
+      console.error('Login error:', err)
+      setError('Giriş sırasında bir hata oluştu')
     } finally {
       setIsLoading(false)
     }
