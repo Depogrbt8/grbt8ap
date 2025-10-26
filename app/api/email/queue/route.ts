@@ -41,18 +41,39 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Kuyruk istatistikleri - gerçek verilerden hesapla
-    const allQueueItems = await prisma.emailQueue.findMany()
+    // Kuyruk istatistikleri - COUNT ile optimize edilmiş query
+    const [
+      totalResult,
+      pendingResult,
+      processingResult,
+      failedResult,
+      completedResult,
+      highPriorityResult,
+      normalPriorityResult,
+      lowPriorityResult,
+      retryNeededResult
+    ] = await Promise.all([
+      prisma.emailQueue.count(),
+      prisma.emailQueue.count({ where: { status: 'pending' } }),
+      prisma.emailQueue.count({ where: { status: 'processing' } }),
+      prisma.emailQueue.count({ where: { status: 'failed' } }),
+      prisma.emailQueue.count({ where: { status: 'completed' } }),
+      prisma.emailQueue.count({ where: { priority: 'high' } }),
+      prisma.emailQueue.count({ where: { priority: 'normal' } }),
+      prisma.emailQueue.count({ where: { priority: 'low' } }),
+      prisma.emailQueue.count({ where: { status: 'failed', retryCount: { lt: 3 } } })
+    ])
+    
     const queueStats = {
-      total: allQueueItems.length,
-      pending: allQueueItems.filter((item: any) => item.status === 'pending').length,
-      processing: allQueueItems.filter((item: any) => item.status === 'processing').length,
-      failed: allQueueItems.filter((item: any) => item.status === 'failed').length,
-      completed: allQueueItems.filter((item: any) => item.status === 'completed').length,
-      highPriority: allQueueItems.filter((item: any) => item.priority === 'high').length,
-      normalPriority: allQueueItems.filter((item: any) => item.priority === 'normal').length,
-      lowPriority: allQueueItems.filter((item: any) => item.priority === 'low').length,
-      retryNeeded: allQueueItems.filter((item: any) => item.status === 'failed' && item.retryCount < 3).length
+      total: totalResult,
+      pending: pendingResult,
+      processing: processingResult,
+      failed: failedResult,
+      completed: completedResult,
+      highPriority: highPriorityResult,
+      normalPriority: normalPriorityResult,
+      lowPriority: lowPriorityResult,
+      retryNeeded: retryNeededResult
     }
 
     // Mock data yerine gerçek data formatla

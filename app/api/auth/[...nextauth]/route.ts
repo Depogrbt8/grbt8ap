@@ -68,30 +68,43 @@ const authOptions: NextAuthOptions = {
           }
 
           // Şifre kontrolü
-          console.log('🔍 [AUTH DEBUG] Şifre kontrol ediliyor...')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔍 [AUTH DEBUG] Şifre kontrol ediliyor...')
+          }
           const isValidPassword = await bcrypt.compare(credentials.password, admin.password)
-          console.log('✅ [AUTH DEBUG] Şifre kontrolü sonucu:', isValidPassword)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ [AUTH DEBUG] Şifre kontrolü sonucu:', isValidPassword)
+          }
           
           if (!isValidPassword) {
-            console.log('❌ [AUTH DEBUG] Şifre yanlış!')
+            if (process.env.NODE_ENV === 'development') {
+              console.log('❌ [AUTH DEBUG] Şifre yanlış!')
+            }
             return null
           }
 
           // 2FA Kontrolü (Email tabanlı)
           if (admin.twoFactorEnabled) {
-            console.log('🔐 [AUTH DEBUG] 2FA etkin, kontrol ediliyor...')
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🔐 [AUTH DEBUG] 2FA etkin, kontrol ediliyor...')
+            }
             
             if (!credentials.twoFactorCode) {
-              console.log('⚠️ [AUTH DEBUG] 2FA etkin ama kod girilmemiş! Frontend email\'e kod gönderecek')
+              if (process.env.NODE_ENV === 'development') {
+                console.log('⚠️ [AUTH DEBUG] 2FA etkin ama kod girilmemiş!')
+              }
               return null // Frontend'e hata döndür, o email gönderir
             }
             
-            // Email tabanlı kod kontrolü
-            console.log('🔐 [AUTH DEBUG] Verifying 2FA code:', credentials.twoFactorCode)
-            console.log('🔐 [AUTH DEBUG] Stored code:', admin.twoFactorSecret)
+            // Email tabanlı kod kontrolü (GÜVENLIK: Production'da loglanmaz!)
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🔐 [AUTH DEBUG] Verifying 2FA code')
+            }
             
             if (admin.twoFactorSecret !== credentials.twoFactorCode) {
-              console.log('❌ [AUTH DEBUG] 2FA kodu yanlış!')
+              if (process.env.NODE_ENV === 'development') {
+                console.log('❌ [AUTH DEBUG] 2FA kodu yanlış!')
+              }
               return null
             }
             
@@ -167,6 +180,39 @@ const authOptions: NextAuthOptions = {
       return url.startsWith(baseUrl) ? url : `${baseUrl}/dashboard`
     }
   },
+  cookies: {
+    sessionToken: {
+      name: `__Secure-next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'strict', // CSRF koruması için strict
+        path: '/',
+        secure: process.env.NODE_ENV === 'production', // Production'da HTTPS zorunlu
+        maxAge: 86400, // 24 hours
+      },
+    },
+    callbackUrl: {
+      name: `__Secure-next-auth.callback-url`,
+      options: {
+        httpOnly: true,
+        sameSite: 'strict',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 3600, // 1 hour
+      },
+    },
+    csrfToken: {
+      name: `__Host-next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'strict',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 3600, // 1 hour
+      },
+    },
+  },
+  useSecureCookies: process.env.NODE_ENV === 'production',
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development'
 }
