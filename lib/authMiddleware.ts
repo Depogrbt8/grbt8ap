@@ -73,6 +73,12 @@ export async function requireAuth(request: NextRequest) {
 
 // Require admin role for API routes
 export async function requireAdmin(request: NextRequest) {
+  // Rate limiting kontrolü (15 dakikada 50 istek)
+  const rateLimitError = checkApiRateLimit(request, 50, 15 * 60 * 1000)
+  if (rateLimitError) {
+    return rateLimitError
+  }
+
   const authError = await requireAuth(request)
   if (authError) {
     return authError
