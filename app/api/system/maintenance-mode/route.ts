@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({
       success: false,
-      error: `Bakım modu işlemi başarısız: ${errorInfo.message}`,
+      error: 'Bakım modu işlemi başarısız oldu',
       errorType: errorInfo.type,
       retryable: errorInfo.retryable,
       timestamp: new Date().toISOString()
