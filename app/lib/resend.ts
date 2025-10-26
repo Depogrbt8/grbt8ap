@@ -11,7 +11,7 @@ export interface EmailOptions {
 
 export class ResendEmailService {
   private static instance: ResendEmailService
-  private defaultFrom: string = process.env.RESEND_FROM || 'Gurbetbiz <noreply@grbt8.store>'
+  private defaultFrom: string = process.env.RESEND_FROM || 'Gurbetbiz <noreply@grbt8.store>' // Doğru format: "Name <email@domain.com>"
 
   private constructor() {}
 
