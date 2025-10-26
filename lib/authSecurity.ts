@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server'
 import { randomBytes, createHash } from 'crypto'
 import { authenticator } from 'otplib'
 
+// Random kod oluştur (2FA için)
+export function generateRandomCode(length: number = 6): string {
+  return Math.floor(Math.random() * Math.pow(10, length))
+    .toString()
+    .padStart(length, '0')
+}
+
 // Brute force koruması için store
 const loginAttempts = new Map<string, { count: number; lastAttempt: number; blockedUntil?: number }>()
 
