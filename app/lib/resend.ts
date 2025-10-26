@@ -277,3 +277,9 @@ export class ResendEmailService {
 }
 
 export default ResendEmailService.getInstance()
+
+// sendEmail fonksiyonunu da export et
+export const sendEmail = async (options: EmailOptions) => {
+  const service = ResendEmailService.getInstance()
+  return service.sendEmail(options)
+}
