@@ -29,45 +29,21 @@ export default function LoginPage() {
     setError('')
 
     try {
+      // GEÇİCİ OLARAK 2FA DEVRE DIŞI
       const result = await signIn('credentials', {
         email,
         password,
-        twoFactorCode: needs2FA ? twoFactorCode : undefined,
+        twoFactorCode: undefined, // 2FA kodu geçici olarak devre dışı
         redirect: false,
       })
 
       if (result?.error) {
-        // Şifre doğru ama 2FA kodu girilmemiş
-        if (result.error === 'CredentialsSignin') {
-          setNeeds2FA(true)
-          
-          // Email'e kod gönder
-          try {
-            await fetch('/api/auth/send-2fa-code', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ email }),
-            })
-            
-            setError('🔐 2FA kodu email\'inize gönderildi. Lütfen 6 haneli kodu girin.')
-          } catch (error) {
-            setError('🔐 2FA kodu gerekli. Email\'inize gönderilmedi, lütfen tekrar deneyin.')
-          }
-        } else {
-          setError('Geçersiz email veya şifre')
-        }
+        setError('Geçersiz email veya şifre')
       } else if (result?.ok) {
         router.push('/dashboard')
       }
     } catch (err: any) {
-      if (err.message === '2FA_REQUIRED') {
-        setNeeds2FA(true)
-        setError('2FA kodu gerekli')
-      } else {
-        setError('Giriş sırasında bir hata oluştu')
-      }
+      setError('Giriş sırasında bir hata oluştu')
     } finally {
       setIsLoading(false)
     }

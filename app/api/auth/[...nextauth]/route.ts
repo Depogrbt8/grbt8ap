@@ -77,37 +77,38 @@ const authOptions: NextAuthOptions = {
             return null
           }
 
-          // 2FA Kontrolü (Email tabanlı)
-          if (admin.twoFactorEnabled) {
-            console.log('🔐 [AUTH DEBUG] 2FA etkin, kontrol ediliyor...')
-            
-            if (!credentials.twoFactorCode) {
-              console.log('⚠️ [AUTH DEBUG] 2FA etkin ama kod girilmemiş! 2FA kodu gerekli')
-              return null // 2FA kodu girilmemiş, login başarısız
-            }
-            
-            // Email tabanlı kod kontrolü
-            console.log('🔐 [AUTH DEBUG] Verifying 2FA code:', credentials.twoFactorCode)
-            console.log('🔐 [AUTH DEBUG] Stored code:', admin.twoFactorSecret)
-            
-            if (admin.twoFactorSecret !== credentials.twoFactorCode) {
-              console.log('❌ [AUTH DEBUG] 2FA kodu yanlış!')
-              return null
-            }
-            
-            // Süre kontrolü (10 dakika)
-            if (admin.twoFactorSetupAt) {
-              const expiry = new Date(admin.twoFactorSetupAt as any)
-              const now = new Date()
-              
-              if (now > expiry) {
-                console.log('❌ [AUTH DEBUG] 2FA kodu süresi dolmuş!')
-                return null
-              }
-            }
-            
-            console.log('✅ [AUTH DEBUG] 2FA kodu doğru!')
-          }
+          // 2FA Kontrolü - GEÇİCİ OLARAK DEVRE DIŞI
+          // TODO: Email tabanlı 2FA kısa süre içinde tekrar aktif edilecek
+          // if (admin.twoFactorEnabled) {
+          //   console.log('🔐 [AUTH DEBUG] 2FA etkin, kontrol ediliyor...')
+          //   
+          //   if (!credentials.twoFactorCode) {
+          //     console.log('⚠️ [AUTH DEBUG] 2FA etkin ama kod girilmemiş! 2FA kodu gerekli')
+          //     return null
+          //   }
+          //   
+          //   // Email tabanlı kod kontrolü
+          //   console.log('🔐 [AUTH DEBUG] Verifying 2FA code:', credentials.twoFactorCode)
+          //   console.log('🔐 [AUTH DEBUG] Stored code:', admin.twoFactorSecret)
+          //   
+          //   if (admin.twoFactorSecret !== credentials.twoFactorCode) {
+          //     console.log('❌ [AUTH DEBUG] 2FA kodu yanlış!')
+          //     return null
+          //   }
+          //   
+          //   // Süre kontrolü (10 dakika)
+          //   if (admin.twoFactorSetupAt) {
+          //     const expiry = new Date(admin.twoFactorSetupAt as any)
+          //     const now = new Date()
+          //     
+          //     if (now > expiry) {
+          //       console.log('❌ [AUTH DEBUG] 2FA kodu süresi dolmuş!')
+          //       return null
+          //     }
+          //   }
+          //   
+          //   console.log('✅ [AUTH DEBUG] 2FA kodu doğru!')
+          // }
 
           console.log('🎉 [AUTH DEBUG] Giriş başarılı! Admin döndürülüyor:', admin.email)
           return {
