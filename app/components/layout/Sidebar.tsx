@@ -16,6 +16,38 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   const router = useRouter()
   const { data: session } = useSession()
   const [adminPermissions, setAdminPermissions] = useState<any>({})
+  const [currentDateTime, setCurrentDateTime] = useState({ date: '', time: '' })
+
+  // Tarih ve saati güncelle
+  useEffect(() => {
+    const updateDateTime = () => {
+      const now = new Date()
+      // Avrupa/Türkiye zaman dilimi (GMT+3)
+      const europeTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }))
+      
+      const dateStr = europeTime.toLocaleDateString('tr-TR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      })
+      
+      const timeStr = europeTime.toLocaleTimeString('tr-TR', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      })
+      
+      setCurrentDateTime({ date: dateStr, time: timeStr })
+    }
+
+    // İlk güncelleme
+    updateDateTime()
+
+    // Her saniye güncelle
+    const interval = setInterval(updateDateTime, 1000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   // Admin yetkilerini yükle
   useEffect(() => {
@@ -108,11 +140,11 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
       <div className="p-3 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center space-x-2 text-gray-600">
           <Calendar className="h-3 w-3" />
-          <span className="admin-text-xs">19 Temmuz 2024</span>
+          <span className="admin-text-xs">{currentDateTime.date}</span>
         </div>
         <div className="flex items-center space-x-2 text-gray-600 mt-1">
           <Clock className="h-3 w-3" />
-          <span className="admin-text-xs">18:30</span>
+          <span className="admin-text-xs">{currentDateTime.time}</span>
         </div>
       </div>
 
