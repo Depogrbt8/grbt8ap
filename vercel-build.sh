@@ -3,10 +3,6 @@
 # Vercel Build Script for Prisma
 echo "🔧 Vercel Build Script Starting..."
 
-# Environment check
-echo "🔍 Checking environment..."
-node vercel-env-check.js
-
 # Prisma generate
 echo "📦 Generating Prisma client..."
 npx prisma generate

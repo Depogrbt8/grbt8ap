@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAdmin } from '@/lib/authMiddleware';
+import { PrismaClient } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
   // GÜVENLIK: Sadece admin erişimi
