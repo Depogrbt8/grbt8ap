@@ -11,9 +11,7 @@ const GITHUB_API = 'https://api.github.com'
 
 // Her saatte bir çalışacak GitHub backup sistemi
 export async function GET(request: NextRequest) {
-  // GÜVENLIK: Sadece admin erişimi - middleware'den kaldırıldığı için burada kontrol ediliyor
-  const adminCheck = await requireAdmin(request)
-  if (adminCheck) return adminCheck
+  // Middleware'de public path olarak ayarlandı, admin kontrolü gerekmiyor
   try {
     console.log('🤖 GitHub backup sistemi tetiklendi - Her saatte bir')
     

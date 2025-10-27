@@ -11,9 +11,7 @@ const GITLAB_API = 'https://gitlab.com/api/v4'
 
 // Gece saat 4'te çalışacak GitLab backup sistemi
 export async function GET(request: NextRequest) {
-  // GÜVENLIK: Sadece admin erişimi - middleware'den kaldırıldığı için burada kontrol ediliyor
-  const adminCheck = await requireAdmin(request)
-  if (adminCheck) return adminCheck
+  // Middleware'de public path olarak ayarlandı, admin kontrolü gerekmiyor
   try {
     console.log('🤖 GitLab backup sistemi tetiklendi - Gece saat 4:00')
 
