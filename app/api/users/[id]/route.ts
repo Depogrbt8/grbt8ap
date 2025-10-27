@@ -33,6 +33,7 @@ export async function GET(
         identityNumber: true,
         address: true,
         city: true,
+        isForeigner: true,
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -82,7 +83,10 @@ export async function GET(
       birthYear: user.birthYear || '',
       gender: user.gender || '',
       identityNumber: user.identityNumber || '',
-      countryCode: user.countryCode || '+90'
+      countryCode: user.countryCode || '+90',
+      city: user.city || '',
+      address: user.address || '',
+      isForeigner: user.isForeigner || false
     }
 
     return NextResponse.json({
@@ -136,6 +140,8 @@ export async function PUT(
       if (body.countryCode) body.countryCode = sanitizeText(body.countryCode)
       if (body.identityNumber) body.identityNumber = sanitizeText(body.identityNumber)
       if (body.gender) body.gender = sanitizeText(body.gender)
+      if (body.city) body.city = sanitizeText(body.city)
+      if (body.address) body.address = sanitizeText(body.address)
       
       console.log('✅ [SECURITY] Input sanitization tamamlandı')
     } catch (validationError: any) {
@@ -168,6 +174,9 @@ export async function PUT(
           birthYear: body.birthYear || null,
           gender: body.gender || null,
           identityNumber: body.identityNumber || null,
+          city: body.city || null,
+          address: body.address || null,
+          isForeigner: body.isForeigner || false,
           updatedAt: new Date()
         }
       })

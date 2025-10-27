@@ -62,7 +62,9 @@ export default function KullaniciDetayPage() {
     identityNumber: '',
     status: 'Aktif',
     role: 'Kullanıcı',
-    address: ''
+    address: '',
+    city: '',
+    isForeigner: false
   })
 
   useEffect(() => {
@@ -145,7 +147,9 @@ export default function KullaniciDetayPage() {
           identityNumber: data.data.identityNumber || '',
           status: data.data.status,
           role: data.data.role || 'Kullanıcı',
-          address: data.data.address || ''
+          address: data.data.address || '',
+          city: data.data.city || '',
+          isForeigner: data.data.isForeigner || false
         })
       } else {
         setError(data.error || 'Kullanıcı bulunamadı')
@@ -181,7 +185,10 @@ export default function KullaniciDetayPage() {
           gender: formData.gender,
           identityNumber: formData.identityNumber,
           status: formData.status,
-          role: formData.role
+          role: formData.role,
+          city: formData.city,
+          address: formData.address,
+          isForeigner: formData.isForeigner
         })
       })
 
@@ -415,6 +422,10 @@ export default function KullaniciDetayPage() {
                         <option value="+49">🇩🇪 DE (+49)</option>
                         <option value="+44">🇬🇧 UK (+44)</option>
                         <option value="+33">🇫🇷 FR (+33)</option>
+                        <option value="+32">🇧🇪 BE (+32)</option>
+                        <option value="+31">🇳🇱 NL (+31)</option>
+                        <option value="+43">🇦🇹 AT (+43)</option>
+                        <option value="+41">🇨🇭 CH (+41)</option>
                       </select>
                     </div>
                     <div className="w-36">
@@ -426,6 +437,15 @@ export default function KullaniciDetayPage() {
                         className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
                     </div>
+                    <div className="w-36">
+                      <input 
+                        type="text" 
+                        placeholder="Şehir"
+                        value={formData.city}
+                        onChange={(e) => handleInputChange('city', e.target.value)}
+                        className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      />
+                    </div>
                     <div className="flex-1">
                       <input 
                         type="text" 
@@ -434,6 +454,17 @@ export default function KullaniciDetayPage() {
                         onChange={(e) => handleInputChange('address', e.target.value)}
                         className="w-full px-2 py-1 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                       />
+                    </div>
+                  </div>
+                  <div className="flex gap-3 mt-2">
+                    <div className="flex items-center">
+                      <input 
+                        type="checkbox" 
+                        checked={formData.isForeigner}
+                        onChange={(e) => handleInputChange('isForeigner', e.target.checked.toString())}
+                        className="mr-2"
+                      />
+                      <label className="text-xs text-gray-600">Yabancı Uyruklu</label>
                     </div>
                   </div>
                 </div>
