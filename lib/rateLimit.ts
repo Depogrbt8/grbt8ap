@@ -1,7 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Rate limiting store (production'da Redis kullanılmalı)
+// Redis client (grbt8-redis'i kullan - ana site ile aynı!)
+let redis: any = null
+
+try {
+  const { Redis } = require('@upstash/redis')
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    })
+    console.log('✅ Redis connected')
+  } else {
+    console.log('⚠️ Redis env vars not found, using in-memory fallback')
+  }
+} catch (error) {
+  console.log('⚠️ Redis package not available, using in-memory fallback')
+}
+
+// Fallback: Redis yoksa in-memory kullan
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
+
+const KEY_PREFIX = 'grbt8ap' // Admin panel için ayrı prefix
 
 interface RateLimitConfig {
   windowMs: number // Zaman penceresi (ms)
@@ -13,7 +33,7 @@ interface RateLimitConfig {
 
 const defaultConfig: RateLimitConfig = {
   windowMs: 15 * 60 * 1000, // 15 dakika
-  maxRequests: 100, // 100 istek
+  maxRequests: 500, // ⬅️ Artırıldı: 100 → 500 (1000 bilet/gün desteği)
   skipSuccessfulRequests: false,
   skipFailedRequests: false,
   keyGenerator: (req: NextRequest) => {
@@ -24,64 +44,112 @@ const defaultConfig: RateLimitConfig = {
   }
 }
 
-export function createRateLimit(config: Partial<RateLimitConfig> = {}) {
+export async function createRateLimit(config: Partial<RateLimitConfig> = {}) {
   const finalConfig = { ...defaultConfig, ...config }
 
   return async function rateLimitMiddleware(req: NextRequest) {
     const key = finalConfig.keyGenerator!(req)
+    const redisKey = `${KEY_PREFIX}:ratelimit:${key}` // Ayırıcı prefix
     const now = Date.now()
-    const windowStart = now - finalConfig.windowMs
 
-    // Eski kayıtları temizle
+    let currentCount = 0
+    let resetTime = now + finalConfig.windowMs
+
+    // Redis varsa kullan, yoksa in-memory
+    if (redis) {
+      try {
+        const record = await redis.get(redisKey) as { count: number; resetTime: number } | null
+        
+        if (record && record.resetTime > now) {
+          currentCount = record.count
+          resetTime = record.resetTime
+        }
+
+        currentCount++
+
+        if (currentCount > finalConfig.maxRequests) {
+          const retryAfter = Math.ceil((resetTime - now) / 1000)
+          
+          return NextResponse.json(
+            {
+              error: 'Too Many Requests',
+              message: `Rate limit exceeded. Try again in ${retryAfter} seconds.`,
+              retryAfter
+            },
+            {
+              status: 429,
+              headers: {
+                'Retry-After': retryAfter.toString(),
+                'X-RateLimit-Limit': finalConfig.maxRequests.toString(),
+                'X-RateLimit-Remaining': '0',
+                'X-RateLimit-Reset': resetTime.toString()
+              }
+            }
+          )
+        }
+
+        // Redis'e kaydet
+        await redis.set(redisKey, {
+          count: currentCount,
+          resetTime: resetTime
+        }, { ex: Math.ceil(finalConfig.windowMs / 1000) })
+
+      } catch (error) {
+        console.error('Redis error, falling back to in-memory:', error)
+        // Redis hatası varsa in-memory'ye fallback
+        let record = rateLimitStore.get(key)
+        if (!record || record.resetTime < now) {
+          record = { count: 0, resetTime: now + finalConfig.windowMs }
+          rateLimitStore.set(key, record)
+        }
+        record.count++
+        currentCount = record.count
+        resetTime = record.resetTime
+
+        if (record.count > finalConfig.maxRequests) {
+          const retryAfter = Math.ceil((resetTime - now) / 1000)
+          return NextResponse.json(
+            { error: 'Too Many Requests', message: `Rate limit exceeded. Try again in ${retryAfter} seconds.`, retryAfter },
+            { status: 429, headers: { 'Retry-After': retryAfter.toString() } }
+          )
+        }
+      }
+    } else {
+      // In-memory fallback (eski kod)
+      let record = rateLimitStore.get(key)
+      if (!record || record.resetTime < now) {
+        record = { count: 0, resetTime: now + finalConfig.windowMs }
+        rateLimitStore.set(key, record)
+      }
+      record.count++
+      currentCount = record.count
+      resetTime = record.resetTime
+
+      if (record.count > finalConfig.maxRequests) {
+        const retryAfter = Math.ceil((resetTime - now) / 1000)
+        return NextResponse.json(
+          { error: 'Too Many Requests', message: `Rate limit exceeded. Try again in ${retryAfter} seconds.`, retryAfter },
+          { status: 429, headers: { 'Retry-After': retryAfter.toString() } }
+        )
+      }
+    }
+
+    // Eski kayıtları temizle (in-memory fallback için)
     rateLimitStore.forEach((v, k) => {
       if (v.resetTime < now) {
         rateLimitStore.delete(k)
       }
     })
 
-    // Mevcut kaydı al veya oluştur
-    let record = rateLimitStore.get(key)
-    if (!record || record.resetTime < now) {
-      record = { count: 0, resetTime: now + finalConfig.windowMs }
-      rateLimitStore.set(key, record)
-    }
-
-    // İstek sayısını artır
-    record.count++
-
-    // Rate limit kontrolü
-    if (record.count > finalConfig.maxRequests) {
-      const retryAfter = Math.ceil((record.resetTime - now) / 1000)
-      
-      return NextResponse.json(
-        {
-          error: 'Too Many Requests',
-          message: `Rate limit exceeded. Try again in ${retryAfter} seconds.`,
-          retryAfter
-        },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': retryAfter.toString(),
-            'X-RateLimit-Limit': finalConfig.maxRequests.toString(),
-            'X-RateLimit-Remaining': '0',
-            'X-RateLimit-Reset': record.resetTime.toString()
-          }
-        }
-      )
-    }
-
     // Başarılı yanıt için header'ları ekle
     const response = NextResponse.next()
     response.headers.set('X-RateLimit-Limit', finalConfig.maxRequests.toString())
-    response.headers.set('X-RateLimit-Remaining', (finalConfig.maxRequests - record.count).toString())
-    response.headers.set('X-RateLimit-Reset', record.resetTime.toString())
+    response.headers.set('X-RateLimit-Remaining', (finalConfig.maxRequests - currentCount).toString())
+    response.headers.set('X-RateLimit-Reset', resetTime.toString())
 
     return response
   }
 }
-
-// Legacy rate limit configs (removed to prevent duplication)
 
 // Yardımcı fonksiyon: Rate limit durumunu kontrol et
 export function checkRateLimit(key: string, config: RateLimitConfig): {
@@ -108,31 +176,30 @@ export const rateLimitConfigs = {
   // API calls
   api: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 100
+    maxRequests: 500 // ⬅️ Artırıldı: 100 → 500
   },
   
   // Admin operations
   admin: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 50
+    maxRequests: 300 // ⬅️ Artırıldı: 50 → 300
   },
   
   // Authentication
   auth: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 5
+    maxRequests: 5 // Güvenlik için aynı
   },
   
   // User operations
   user: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 20
+    maxRequests: 200 // ⬅️ Artırıldı: 20 → 200
   },
   
   // Strict (for sensitive operations)
   strict: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 3
+    maxRequests: 10 // ⬅️ Artırıldı: 3 → 10
   }
 }
-
