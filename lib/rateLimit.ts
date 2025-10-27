@@ -44,7 +44,7 @@ const defaultConfig: RateLimitConfig = {
   }
 }
 
-export async function createRateLimit(config: Partial<RateLimitConfig> = {}) {
+export function createRateLimit(config: Partial<RateLimitConfig> = {}) {
   const finalConfig = { ...defaultConfig, ...config }
 
   return async function rateLimitMiddleware(req: NextRequest) {

@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limit
-    const rateLimitMiddleware = await createRateLimit({ windowMs: 10 * 60 * 1000, maxRequests: 50 })
+    const rateLimitMiddleware = createRateLimit({ windowMs: 10 * 60 * 1000, maxRequests: 50 })
     const rl = await rateLimitMiddleware(request)
     if ((rl as any)?.status === 429) {
       try {

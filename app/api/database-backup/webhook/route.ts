@@ -6,7 +6,7 @@ import { createRateLimit, rateLimitConfigs } from '@/lib/rateLimit'
 // GitHub Webhook: push events
 export async function POST(request: NextRequest) {
   // Rate limit
-  const rateLimitMiddleware = await createRateLimit({ windowMs: 60 * 1000, maxRequests: 20 })
+  const rateLimitMiddleware = createRateLimit({ windowMs: 60 * 1000, maxRequests: 20 })
   const rl = await rateLimitMiddleware(request)
   if ((rl as any)?.status === 429) {
     try {
