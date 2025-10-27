@@ -99,6 +99,20 @@ const authOptions: NextAuthOptions = {
             return null
           }
 
+          // Son giriş zamanını güncelle
+          try {
+            await prisma.admin.update({
+              where: { id: admin.id },
+              data: { lastLoginAt: new Date() }
+            })
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ [AUTH DEBUG] lastLoginAt güncellendi')
+            }
+          } catch (updateError) {
+            console.error('⚠️ lastLoginAt güncellenemedi:', updateError)
+            // Hata olsa da login devam etsin
+          }
+
           // 2FA Kontrolü (Email tabanlı)
           if (admin.twoFactorEnabled) {
             if (process.env.NODE_ENV === 'development') {
