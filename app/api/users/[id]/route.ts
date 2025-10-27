@@ -8,11 +8,11 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // GEÇİCİ: Admin yetkisi kontrolü devre dışı (authentication sistemi düzeltilene kadar)
-    // const adminCheck = await requireAdmin(request)
-    // if (adminCheck) {
-    //   return adminCheck
-    // }
+    // ✅ Admin yetkisi kontrolü aktif
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      return adminCheck
+    }
 
     const userId = params.id
 
@@ -111,12 +111,12 @@ export async function PUT(
     console.log('🔍 [UPDATE DEBUG] PUT /api/users/[id] çağrıldı')
     console.log('🆔 [UPDATE DEBUG] User ID:', params.id)
     
-    // GEÇİCİ: Admin yetkisi kontrolü devre dışı (authentication sistemi düzeltilene kadar)
-    // const adminCheck = await requireAdmin(request)
-    // if (adminCheck) {
-    //   console.log('❌ [UPDATE DEBUG] Admin yetkisi yok')
-    //   return adminCheck
-    // }
+    // ✅ Admin yetkisi kontrolü aktif
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      console.log('❌ [UPDATE DEBUG] Admin yetkisi yok')
+      return adminCheck
+    }
 
     const userId = params.id
     const body = await request.json()
@@ -230,11 +230,11 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // GEÇİCİ: Admin yetkisi kontrolü devre dışı (authentication sistemi düzeltilene kadar)
-    // const adminCheck = await requireAdmin(request)
-    // if (adminCheck) {
-    //   return adminCheck
-    // }
+    // ✅ Admin yetkisi kontrolü aktif
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) {
+      return adminCheck
+    }
 
     const userId = params.id
     console.log('Silinecek kullanıcı ID:', userId)

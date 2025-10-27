@@ -11,7 +11,17 @@ const GITHUB_API = 'https://api.github.com'
 
 // Her saatte bir çalışacak GitHub backup sistemi
 export async function GET(request: NextRequest) {
-  // Middleware'de public path olarak ayarlandı, admin kontrolü gerekmiyor
+  // GÜVENLİK: Vercel cron'dan geliyorsa izin ver, yoksa admin kontrolü yap
+  const authHeader = request.headers.get('authorization')
+  const cronSecret = process.env.CRON_SECRET || 'default-secret-change-me'
+  const isVercelCron = authHeader === `Bearer ${cronSecret}`
+  
+  if (!isVercelCron) {
+    // Vercel cron değilse admin kontrolü yap
+    const adminCheck = await requireAdmin(request)
+    if (adminCheck) return adminCheck
+  }
+  
   try {
     console.log('🤖 GitHub backup sistemi tetiklendi - Her saatte bir')
     

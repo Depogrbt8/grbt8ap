@@ -13,30 +13,40 @@ const authOptions: NextAuthOptions = {
         twoFactorCode: { label: '2FA Code', type: 'text' }
       },
       async authorize(credentials) {
-        console.log('🔍 [AUTH DEBUG] Authorize çağrıldı')
-        console.log('📧 [AUTH DEBUG] Email:', credentials?.email)
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔍 [AUTH DEBUG] Authorize çağrıldı')
+          console.log('📧 [AUTH DEBUG] Email:', credentials?.email)
+        }
         
         if (!credentials?.email || !credentials?.password) {
-          console.log('❌ [AUTH DEBUG] Credentials eksik')
+          if (process.env.NODE_ENV === 'development') {
+            console.log('❌ [AUTH DEBUG] Credentials eksik')
+          }
           return null
         }
 
         try {
           // Önce Admin tablosunda ara
-          console.log('🔍 [AUTH DEBUG] Admin tablosunda aranıyor:', credentials.email)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🔍 [AUTH DEBUG] Admin tablosunda aranıyor:', credentials.email)
+          }
           let admin: any = await prisma.admin.findUnique({
             where: { email: credentials.email }
           })
 
           // Admin tablosunda yoksa User tablosunda ara
           if (!admin) {
-            console.log('🔍 [AUTH DEBUG] Admin tablosunda bulunamadı, User tablosunda aranıyor:', credentials.email)
+            if (process.env.NODE_ENV === 'development') {
+              console.log('🔍 [AUTH DEBUG] Admin tablosunda bulunamadı, User tablosunda aranıyor:', credentials.email)
+            }
             const user = await prisma.user.findUnique({
               where: { email: credentials.email }
             })
             
             if (user && user.role === 'admin') {
-              console.log('✅ [AUTH DEBUG] User tablosunda admin bulundu:', user.email)
+              if (process.env.NODE_ENV === 'development') {
+                console.log('✅ [AUTH DEBUG] User tablosunda admin bulundu:', user.email)
+              }
               admin = {
                 id: user.id,
                 firstName: user.firstName,
@@ -55,15 +65,21 @@ const authOptions: NextAuthOptions = {
           }
 
           if (!admin) {
-            console.log('❌ [AUTH DEBUG] Hiçbir tabloda admin bulunamadı:', credentials.email)
+            if (process.env.NODE_ENV === 'development') {
+              console.log('❌ [AUTH DEBUG] Hiçbir tabloda admin bulunamadı:', credentials.email)
+            }
             return null
           }
 
-          console.log('✅ [AUTH DEBUG] Admin bulundu:', admin.email, 'Status:', admin.status)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('✅ [AUTH DEBUG] Admin bulundu:', admin.email, 'Status:', admin.status)
+          }
 
           // Admin aktif mi?
           if (admin.status !== 'active') {
-            console.log('❌ [AUTH DEBUG] Admin aktif değil:', admin.status)
+            if (process.env.NODE_ENV === 'development') {
+              console.log('❌ [AUTH DEBUG] Admin aktif değil:', admin.status)
+            }
             return null
           }
 
@@ -114,15 +130,21 @@ const authOptions: NextAuthOptions = {
               const now = new Date()
               
               if (now > expiry) {
-                console.log('❌ [AUTH DEBUG] 2FA kodu süresi dolmuş!')
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('❌ [AUTH DEBUG] 2FA kodu süresi dolmuş!')
+                }
                 return null
               }
             }
             
-            console.log('✅ [AUTH DEBUG] 2FA kodu doğru!')
+            if (process.env.NODE_ENV === 'development') {
+              console.log('✅ [AUTH DEBUG] 2FA kodu doğru!')
+            }
           }
 
-          console.log('🎉 [AUTH DEBUG] Giriş başarılı! Admin döndürülüyor:', admin.email)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('🎉 [AUTH DEBUG] Giriş başarılı! Admin döndürülüyor:', admin.email)
+          }
           return {
             id: admin.id,
             email: admin.email,
@@ -132,7 +154,10 @@ const authOptions: NextAuthOptions = {
           }
 
         } catch (error) {
-          console.log('💥 [AUTH DEBUG] Hata oluştu:', error.message)
+          if (process.env.NODE_ENV === 'development') {
+            console.log('💥 [AUTH DEBUG] Hata oluştu:', error.message)
+          }
+          console.error('Authentication error:', error) // Production'da da önemli hataları logla
           return null
         }
       }
