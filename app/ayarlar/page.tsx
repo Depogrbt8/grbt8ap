@@ -105,9 +105,10 @@ export default function AyarlarPage() {
               <a
                 href="/ayarlar/admin-yonetimi"
                 className="admin-card hover:bg-gray-50 transition-colors block"
+                style={{ textAlign: 'center' }}
               >
-                <h2 className="admin-card-title mb-2">Admin Yönetimi</h2>
-                <p className="admin-text-xs">Admin kullanıcıları ve yetkileri yönetimi</p>
+                <h2 className="admin-card-title mb-2" style={{ textAlign: 'center' }}>Admin Yönetimi</h2>
+                <p className="admin-text-xs" style={{ textAlign: 'center' }}>Admin kullanıcıları ve yetkileri yönetimi</p>
               </a>
           </div>
         </div>
