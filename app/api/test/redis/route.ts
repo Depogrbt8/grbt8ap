@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Redis test endpoint
-export async function GET(request: NextRequest) {
+// Redis test endpoint - NO AUTH (for testing only)
+export async function GET() {
   try {
     const { Redis } = require('@upstash/redis')
     
