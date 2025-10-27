@@ -16,7 +16,8 @@ export async function middleware(request: NextRequest) {
     '/api/health',
     '/api/create-admin-emergency',
     '/api/auth/send-2fa-code',
-    '/api/auth/verify-2fa-code'
+    '/api/auth/verify-2fa-code',
+    '/api/test' // Test endpoint for Redis verification
   ]
 
   // Exact match için root path kontrolü - root path her zaman public
