@@ -22,16 +22,16 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
   useEffect(() => {
     const updateDateTime = () => {
       const now = new Date()
-      // Avrupa/Türkiye zaman dilimi (GMT+3)
-      const europeTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Istanbul' }))
+      // Paris/Fransa zaman dilimi (CET/CEST - GMT+1/+2)
+      const parisTime = new Date(now.toLocaleString('en-US', { timeZone: 'Europe/Paris' }))
       
-      const dateStr = europeTime.toLocaleDateString('tr-TR', {
+      const dateStr = parisTime.toLocaleDateString('tr-TR', {
         day: '2-digit',
         month: 'long',
         year: 'numeric'
       })
       
-      const timeStr = europeTime.toLocaleTimeString('tr-TR', {
+      const timeStr = parisTime.toLocaleTimeString('tr-TR', {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
