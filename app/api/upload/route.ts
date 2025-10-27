@@ -22,8 +22,6 @@ export async function OPTIONS() {
   return corsMiddleware(response)
 }
 
-const rateLimit = createRateLimit({ windowMs: 5 * 60 * 1000, maxRequests: 20 })
-
 export async function POST(request: NextRequest) {
   try {
     // Admin yetkisi kontrolü
@@ -33,7 +31,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limit
-    const rl = await rateLimit(request)
+    const rateLimitMiddleware = await createRateLimit({ windowMs: 5 * 60 * 1000, maxRequests: 20 })
+    const rl = await rateLimitMiddleware(request)
     if ((rl as any)?.status === 429) {
       try {
         await prisma.systemLog.create({

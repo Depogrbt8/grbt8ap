@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import crypto from 'crypto'
 import { createRateLimit, rateLimitConfigs } from '@/lib/rateLimit'
-const rateLimit = createRateLimit({ windowMs: 60 * 1000, maxRequests: 20 })
 
 // GitHub Webhook: push events
 export async function POST(request: NextRequest) {
   // Rate limit
-  const rl = await rateLimit(request)
+  const rateLimitMiddleware = await createRateLimit({ windowMs: 60 * 1000, maxRequests: 20 })
+  const rl = await rateLimitMiddleware(request)
   if ((rl as any)?.status === 429) {
     try {
       await prisma.systemLog.create({

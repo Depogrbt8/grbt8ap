@@ -5,8 +5,6 @@ import { createRateLimit } from '@/lib/rateLimit'
 import { requireAdmin } from '@/lib/authMiddleware'
 import { sanitizeText, sanitizeEmail, sanitizeHTML } from '@/lib/xssProtection'
 
-const rateLimit = createRateLimit({ windowMs: 10 * 60 * 1000, maxRequests: 50 })
-
 export async function POST(request: NextRequest) {
   try {
     // Admin yetkisi kontrolü
@@ -16,7 +14,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limit
-    const rl = await rateLimit(request as any)
+    const rateLimitMiddleware = await createRateLimit({ windowMs: 10 * 60 * 1000, maxRequests: 50 })
+    const rl = await rateLimitMiddleware(request)
     if ((rl as any)?.status === 429) {
       try {
         await prisma.systemLog.create({
