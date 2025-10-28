@@ -810,7 +810,7 @@ export default function KullaniciDetayPage() {
 
 // Yolcu düzenleme modalı
 // Not: Bu bileşen dosyanın sonunda render ediliyor
-export function PassengerEditModal({
+function PassengerEditModal({
   open,
   passenger,
   onClose,
