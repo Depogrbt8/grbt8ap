@@ -61,6 +61,58 @@ export default function KullaniciDetayPage() {
   const [selectedPassenger, setSelectedPassenger] = useState<any | null>(null)
   const [savingPassenger, setSavingPassenger] = useState(false)
   const [showPassengers, setShowPassengers] = useState(false)
+  // Inline payments-style tabs state and mock data (same structure as Ödemeler sayfası)
+  const [paymentsInlineTab, setPaymentsInlineTab] = useState<'odemeler' | 'bakiyeler' | 'iadeler'>('odemeler')
+  const balances = [
+    {
+      id: '1',
+      agencyId: 'agency-1',
+      agencyName: 'DEMO SEYAHAT',
+      amount: 5000.0,
+      currency: 'EUR',
+      status: 'active',
+      createdAt: '2024-01-15T10:30:00Z',
+      description: 'Başlangıç bakiyesi'
+    },
+    {
+      id: '2',
+      agencyId: 'agency-2',
+      agencyName: 'TEST ACENTE',
+      amount: 2500.0,
+      currency: 'EUR',
+      status: 'active',
+      createdAt: '2024-01-10T14:20:00Z',
+      description: 'Test bakiyesi'
+    }
+  ] as any[]
+  const refunds = [
+    {
+      id: 'refund-1',
+      orderId: 'order-123',
+      agencyId: 'agency-1',
+      agencyName: 'DEMO SEYAHAT',
+      customerName: 'Ahmet Yılmaz',
+      amount: 150.0,
+      currency: 'EUR',
+      reason: 'Müşteri talebi - İptal',
+      status: 'pending',
+      createdAt: '2024-01-20T09:15:00Z'
+    },
+    {
+      id: 'refund-2',
+      orderId: 'order-456',
+      agencyId: 'agency-2',
+      agencyName: 'TEST ACENTE',
+      customerName: 'Fatma Demir',
+      amount: 75.5,
+      currency: 'EUR',
+      reason: 'Uçuş iptali',
+      status: 'approved',
+      createdAt: '2024-01-18T14:30:00Z',
+      processedAt: '2024-01-19T10:00:00Z',
+      processedBy: 'admin@demo.com'
+    }
+  ] as any[]
 
   // Form state
   const [formData, setFormData] = useState({
@@ -607,6 +659,156 @@ export default function KullaniciDetayPage() {
                 {/* İşlemler */}
                 <div>
                   <h3 className="text-xs font-medium text-gray-900 mb-2">İşlemler</h3>
+                  {/* Ödemeler sayfasındaki yapı - inline kart */}
+                  <div className="admin-card">
+                    <div className="border-b border-gray-200">
+                      <nav className="-mb-px flex space-x-8 px-6">
+                        <button
+                          onClick={() => setPaymentsInlineTab('odemeler')}
+                          className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                            paymentsInlineTab === 'odemeler'
+                              ? 'border-blue-500 text-blue-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          Ödemeler
+                        </button>
+                        <button
+                          onClick={() => setPaymentsInlineTab('bakiyeler')}
+                          className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                            paymentsInlineTab === 'bakiyeler'
+                              ? 'border-blue-500 text-blue-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          Bakiyeler ({balances.length})
+                        </button>
+                        <button
+                          onClick={() => setPaymentsInlineTab('iadeler')}
+                          className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                            paymentsInlineTab === 'iadeler'
+                              ? 'border-blue-500 text-blue-600'
+                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          İadeler ({refunds.length})
+                        </button>
+                      </nav>
+                    </div>
+
+                    <div className="p-6">
+                      {paymentsInlineTab === 'odemeler' && (
+                        <div>
+                          <h3 className="admin-text-sm mb-3">Ödeme Yönetimi</h3>
+                          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                            <div className="flex">
+                              <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                </svg>
+                              </div>
+                              <div className="ml-3">
+                                <p className="admin-text-xs text-yellow-800">
+                                  <strong>Geliştirme Aşamasında:</strong> Ödeme yönetimi özellikleri yakında eklenecek.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {paymentsInlineTab === 'bakiyeler' && (
+                        <div>
+                          <h3 className="admin-text-sm mb-3">Bakiye Yönetimi</h3>
+                          <div className="space-y-4">
+                            {balances.map((balance: any) => (
+                              <div key={balance.id} className="admin-card-small">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-3">
+                                      <h4 className="admin-text-sm">{balance.agencyName}</h4>
+                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${balance.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        {balance.status === 'active' ? 'Aktif' : 'Pasif'}
+                                      </span>
+                                    </div>
+                                    <p className="admin-text-xs mt-1">Acente ID: {balance.agencyId}</p>
+                                    {balance.description && (
+                                      <p className="admin-text-xs mt-1">{balance.description}</p>
+                                    )}
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="admin-text-lg">
+                                      {balance.currency} {Number(balance.amount).toFixed(2)}
+                                    </p>
+                                    <p className="admin-text-xs mt-1">
+                                      Oluşturulma: {new Date(balance.createdAt).toLocaleString('tr-TR')}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {paymentsInlineTab === 'iadeler' && (
+                        <div>
+                          <h3 className="admin-text-sm mb-3">Manuel İade Yönetimi</h3>
+                          <div className="space-y-4">
+                            {refunds.map((refund: any) => (
+                              <div key={refund.id} className="admin-card-small">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex-1">
+                                    <div className="flex items-center space-x-3 mb-2">
+                                      <h4 className="admin-text-sm">{refund.customerName}</h4>
+                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                        refund.status === 'pending'
+                                          ? 'bg-yellow-100 text-yellow-800'
+                                          : refund.status === 'approved'
+                                          ? 'bg-blue-100 text-blue-800'
+                                          : refund.status === 'rejected'
+                                          ? 'bg-red-100 text-red-800'
+                                          : 'bg-green-100 text-green-800'
+                                      }`}>
+                                        {refund.status === 'pending'
+                                          ? 'Beklemede'
+                                          : refund.status === 'approved'
+                                          ? 'Onaylandı'
+                                          : refund.status === 'rejected'
+                                          ? 'Reddedildi'
+                                          : 'Tamamlandı'}
+                                      </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4 admin-text-xs">
+                                      <div>
+                                        <p><strong>Acente:</strong> {refund.agencyName}</p>
+                                        <p><strong>Sipariş ID:</strong> {refund.orderId}</p>
+                                        <p><strong>Sebep:</strong> {refund.reason}</p>
+                                      </div>
+                                      <div>
+                                        <p><strong>Oluşturulma:</strong> {new Date(refund.createdAt).toLocaleString('tr-TR')}</p>
+                                        {refund.processedAt && (
+                                          <p><strong>İşlenme:</strong> {new Date(refund.processedAt).toLocaleString('tr-TR')}</p>
+                                        )}
+                                        {refund.processedBy && (
+                                          <p><strong>İşleyen:</strong> {refund.processedBy}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="text-right ml-4">
+                                    <p className="admin-text-lg">
+                                      {refund.currency} {Number(refund.amount).toFixed(2)}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
