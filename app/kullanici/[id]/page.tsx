@@ -142,11 +142,6 @@ export default function KullaniciDetayPage() {
   useEffect(() => {
     fetchUser()
     fetchSurveyResponse()
-    // Yorumları localStorage'dan yükle
-    const savedComments = localStorage.getItem(`user_comments_${params.id}`)
-    if (savedComments) {
-      setComments(savedComments)
-    }
   }, [params.id])
 
   const fetchBillingInfos = async () => {
@@ -286,8 +281,6 @@ export default function KullaniciDetayPage() {
       const data = await res.json()
       if (data?.success) {
         alert('Yorumlar başarıyla kaydedildi!')
-        // Yorumları localStorage'a da kaydet (backend yoksa)
-        localStorage.setItem(`user_comments_${params.id}`, comments)
       }
     } catch (e) {
       console.error('Yorumlar kaydedilemedi:', e)
@@ -338,6 +331,7 @@ export default function KullaniciDetayPage() {
       if (data.success) {
         setUser(data.data)
         setReservations(data.reservations || [])
+        setComments(data.data.comments || '')
         // Form verilerini doldur
         setFormData({
           firstName: data.data.firstName || data.data.name?.split(' ')[0] || '',

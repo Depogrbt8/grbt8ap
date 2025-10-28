@@ -35,6 +35,7 @@ export async function GET(
         address: true,
         city: true,
         isForeigner: true,
+        comments: true,
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -122,7 +123,8 @@ export async function GET(
       countryCode: user.countryCode || '+90',
       city: user.city || '',
       address: user.address || '',
-      isForeigner: user.isForeigner || false
+      isForeigner: user.isForeigner || false,
+      comments: user.comments || ''
     }
 
     return NextResponse.json({
@@ -216,6 +218,7 @@ export async function PUT(
           city: body.city || null,
           address: body.address || null,
           isForeigner: body.isForeigner || false,
+          comments: body.comments || null,
           updatedAt: new Date()
         }
       })
