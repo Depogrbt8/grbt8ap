@@ -603,8 +603,8 @@ export default function KullaniciDetayPage() {
 
             {/* Fiyat Alarmı - Tek satır, sürekli görünür */}
             <div className="border-t border-gray-200">
-              <div className="w-full flex items-center justify-between p-4">
-                <div className="flex items-center space-x-2">
+              <div className="w-full flex items-center p-4">
+                <div className="flex items-center space-x-2 mr-3">
                   <span className="text-gray-400">🔔</span>
                   <span className="text-sm font-medium text-gray-900">Fiyat Alarmı :</span>
                 </div>
@@ -624,8 +624,8 @@ export default function KullaniciDetayPage() {
 
             {/* Favori Arama U. - Tek satır, sürekli görünür */}
             <div className="border-t border-gray-200">
-              <div className="w-full flex items-center justify-between p-4">
-                <div className="flex items-center space-x-2">
+              <div className="w-full flex items-center p-4">
+                <div className="flex items-center space-x-2 mr-3">
                   <span className="text-gray-400">🔎</span>
                   <span className="text-sm font-medium text-gray-900">Favori Arama U. :</span>
                 </div>
