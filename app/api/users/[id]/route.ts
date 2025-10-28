@@ -183,6 +183,7 @@ export async function PUT(
       if (body.gender) body.gender = sanitizeText(body.gender)
       if (body.city) body.city = sanitizeText(body.city)
       if (body.address) body.address = sanitizeText(body.address)
+      if (body.comments) body.comments = sanitizeText(body.comments)
       
       console.log('✅ [SECURITY] Input sanitization tamamlandı')
     } catch (validationError: any) {

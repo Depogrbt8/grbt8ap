@@ -273,6 +273,7 @@ export default function KullaniciDetayPage() {
     if (!params.id) return
     try {
       setSavingComments(true)
+      console.log('💾 Yorumlar kaydediliyor:', comments)
       const res = await fetch(`/api/users/${params.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
