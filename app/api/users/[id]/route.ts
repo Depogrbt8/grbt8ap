@@ -202,56 +202,32 @@ export async function PUT(
     console.log('🔄 [UPDATE DEBUG] Transaction başlatılıyor...')
     const result = await prisma.$transaction(async (tx) => {
       console.log('👤 [UPDATE DEBUG] Kullanıcı güncelleniyor...')
+      
+      // Eğer sadece comments güncelleniyorsa, diğer alanları atlama
+      const updateData: any = { updatedAt: new Date() }
+      
+      // Sadece gönderilen alanları güncelle
+      if (body.firstName !== undefined) updateData.firstName = body.firstName || ''
+      if (body.lastName !== undefined) updateData.lastName = body.lastName || ''
+      if (body.email !== undefined) updateData.email = body.email
+      if (body.phone !== undefined) updateData.phone = body.phone
+      if (body.countryCode !== undefined) updateData.countryCode = body.countryCode
+      if (body.birthDay !== undefined) updateData.birthDay = body.birthDay || null
+      if (body.birthMonth !== undefined) updateData.birthMonth = body.birthMonth || null
+      if (body.birthYear !== undefined) updateData.birthYear = body.birthYear || null
+      if (body.gender !== undefined) updateData.gender = body.gender || null
+      if (body.identityNumber !== undefined) updateData.identityNumber = body.identityNumber || null
+      if (body.city !== undefined) updateData.city = body.city || null
+      if (body.address !== undefined) updateData.address = body.address || null
+      if (body.isForeigner !== undefined) updateData.isForeigner = body.isForeigner
+      if (body.comments !== undefined) updateData.comments = body.comments || null
+      
       // Kullanıcıyı güncelle
       const updatedUser = await tx.user.update({
         where: { id: userId },
-        data: {
-          firstName: body.firstName || '',
-          lastName: body.lastName || '',
-          email: body.email,
-          phone: body.phone,
-          countryCode: body.countryCode,
-          birthDay: body.birthDay || null,
-          birthMonth: body.birthMonth || null,
-          birthYear: body.birthYear || null,
-          gender: body.gender || null,
-          identityNumber: body.identityNumber || null,
-          city: body.city || null,
-          address: body.address || null,
-          isForeigner: body.isForeigner || false,
-          comments: body.comments || null,
-          updatedAt: new Date()
-        }
+        data: updateData
       })
       console.log('✅ [UPDATE DEBUG] Kullanıcı güncellendi:', updatedUser.email)
-
-      // İlk yolcu (hesap sahibi) bilgilerini güncelle
-      // İlk yolcu genellikle en eski tarihli yolcu olur
-      const firstPassenger = await tx.passenger.findFirst({
-        where: { userId: userId },
-        orderBy: { createdAt: 'asc' }
-      })
-
-      if (firstPassenger) {
-        await tx.passenger.update({
-          where: { id: firstPassenger.id },
-          data: {
-            firstName: body.firstName || '',
-            lastName: body.lastName || '',
-            phone: body.phone,
-            countryCode: body.countryCode,
-            birthDay: body.birthDay || null,
-            birthMonth: body.birthMonth || null,
-            birthYear: body.birthYear || null,
-            gender: body.gender || null,
-            identityNumber: body.identityNumber || null,
-            updatedAt: new Date()
-          }
-        })
-        console.log(`✅ İlk yolcu bilgileri güncellendi: ${firstPassenger.id}`)
-      } else {
-        console.log('⚠️ İlk yolcu bulunamadı, sadece kullanıcı güncellendi')
-      }
 
       return updatedUser
     })
