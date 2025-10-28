@@ -33,6 +33,7 @@ model User {
   status           String           @default("active")
   role             String           @default("user")
   canDelete        Boolean          @default(true)
+  customerNo       String?          @unique
   accounts         Account[]
   billingInfos     BillingInfo[]
   campaigns        Campaign[]
@@ -376,26 +377,24 @@ model SeoSettings {
 }
 
 model Admin {
-  id          String    @id @default(cuid())
-  firstName   String
-  lastName    String
-  email       String    @unique
-  password    String
-  role        String    @default("Admin")
-  status      String    @default("active")
-  permissions Json      @default("{}")
-  lastLoginAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  createdBy   String?
-  creator     Admin?    @relation("AdminCreator", fields: [createdBy], references: [id])
-  createdAdmins Admin[] @relation("AdminCreator")
-  
-  // 2FA (Two-Factor Authentication) fields
-  twoFactorEnabled Boolean   @default(false)
-  twoFactorSecret  String?
-  twoFactorBackupCodes String? // JSON array of backup codes
-  twoFactorSetupAt DateTime?
+  id                   String    @id @default(cuid())
+  firstName            String
+  lastName             String
+  email                String    @unique
+  password             String
+  role                 String    @default("Admin")
+  status               String    @default("active")
+  permissions          Json      @default("{}")
+  lastLoginAt          DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  createdBy            String?
+  twoFactorBackupCodes String?
+  twoFactorEnabled     Boolean   @default(false)
+  twoFactorSecret      String?
+  twoFactorSetupAt     DateTime?
+  creator              Admin?    @relation("AdminCreator", fields: [createdBy], references: [id])
+  createdAdmins        Admin[]   @relation("AdminCreator")
 
   @@index([email])
   @@index([status])

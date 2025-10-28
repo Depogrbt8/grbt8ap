@@ -108,35 +108,42 @@ export default function KullaniciPage() {
   const handleBulkAction = async (action: string, userIds: string[]) => {
     try {
       switch (action) {
-        case 'activate':
-          // Kullanıcıları aktif yap
-          setUsers(prevUsers => 
-            prevUsers.map(user => 
-              userIds.includes(user.id) 
-                ? { ...user, status: 'Aktif' }
-                : user
-            )
-          )
-          alert(`${userIds.length} kullanıcı aktif yapıldı!`)
+        case 'activate': {
+          const res = await fetch('/api/users/bulk', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'activate', userIds })
+          })
+          const data = await res.json()
+          if (!data.success) throw new Error(data.error || 'Aktifleştirme başarısız')
+          await fetchUsers()
+          alert(`${data.updatedCount || userIds.length} kullanıcı aktif yapıldı!`)
           break
+        }
           
-        case 'deactivate':
-          // Kullanıcıları pasif yap
-          setUsers(prevUsers => 
-            prevUsers.map(user => 
-              userIds.includes(user.id) 
-                ? { ...user, status: 'Pasif' }
-                : user
-            )
-          )
-          alert(`${userIds.length} kullanıcı pasif yapıldı!`)
+        case 'deactivate': {
+          const res = await fetch('/api/users/bulk', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'deactivate', userIds })
+          })
+          const data = await res.json()
+          if (!data.success) throw new Error(data.error || 'Pasifleştirme başarısız')
+          await fetchUsers()
+          alert(`${data.updatedCount || userIds.length} kullanıcı pasif yapıldı!`)
           break
+        }
           
-        case 'delete':
-          // Kullanıcıları sil
-          setUsers(prevUsers => prevUsers.filter(user => !userIds.includes(user.id)))
-          alert(`${userIds.length} kullanıcı silindi!`)
+        case 'delete': {
+          // Tek tek soft delete uygula
+          const results = await Promise.allSettled(
+            userIds.map((id) => fetch(`/api/users/${id}`, { method: 'DELETE' }))
+          )
+          const okCount = results.filter(r => r.status === 'fulfilled' && (r as PromiseFulfilledResult<Response>).value.ok).length
+          await fetchUsers()
+          alert(`${okCount}/${userIds.length} kullanıcı silindi!`)
           break
+        }
           
         case 'export-csv':
           // Kullanıcıları CSV dışa aktar
