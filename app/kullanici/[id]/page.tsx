@@ -745,17 +745,29 @@ export default function KullaniciDetayPage() {
                     {passengers.map((p: any, idx: number) => (
                         <div key={p.id || idx} className="bg-gray-50 rounded px-3 py-2">
                           <div className="flex items-center justify-between">
-                            <div className="text-xs text-gray-800">
-                              <span className="font-medium">{p.firstName} {p.lastName}</span>
+                            <div className="text-xs text-gray-800 flex items-center flex-wrap gap-2">
+                              <span className="font-medium mr-1">{p.firstName} {p.lastName}</span>
                               {p.identityNumber ? (
-                                <span className="ml-2 text-gray-500">({p.identityNumber})</span>
+                                <span className="text-gray-500">({p.identityNumber})</span>
                               ) : null}
                               {idx === 0 && (
-                                <span className="ml-2 text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Hesap Sahibi</span>
+                                <span className="text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Hesap Sahibi</span>
                               )}
+                              {/* Doğum tarihi */}
+                              {(p.birthDay && p.birthMonth && p.birthYear) ? (
+                                <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
+                                  {String(p.birthDay).toString().padStart(2,'0')}/{String(p.birthMonth).toString().padStart(2,'0')}/{p.birthYear}
+                                </span>
+                              ) : (
+                                <span className="bg-gray-100 text-gray-400 px-2 py-0.5 rounded">Doğum: -</span>
+                              )}
+                              {/* Cinsiyet */}
+                              <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
+                                {p.gender === 'male' ? 'Erkek' : p.gender === 'female' ? 'Kadın' : 'Cinsiyet: -'}
+                              </span>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span className="text-xs text-gray-600">{(p.countryCode || '') + ' ' + (p.phone || '')}</span>
+                              <span className="text-xs text-gray-600 whitespace-nowrap">{(p.countryCode || '') + ' ' + (p.phone || '')}</span>
                               <button
                                 onClick={() => openPassengerModal(p.id)}
                                 className="text-xs px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
