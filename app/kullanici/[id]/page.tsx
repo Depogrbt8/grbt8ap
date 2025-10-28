@@ -55,6 +55,9 @@ export default function KullaniciDetayPage() {
   const [activeInlineTab, setActiveInlineTab] = useState<'none' | 'passengers'>('none')
   const [passengers, setPassengers] = useState<any[]>([])
   const [loadingPassengers, setLoadingPassengers] = useState(false)
+  const [showPassengerModal, setShowPassengerModal] = useState(false)
+  const [selectedPassenger, setSelectedPassenger] = useState<any | null>(null)
+  const [savingPassenger, setSavingPassenger] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -155,6 +158,53 @@ export default function KullaniciDetayPage() {
       setPassengers([])
     } finally {
       setLoadingPassengers(false)
+    }
+  }
+
+  const openPassengerModal = async (passengerId: string) => {
+    try {
+      setSelectedPassenger(null)
+      const res = await fetch(`/api/passengers/${passengerId}`)
+      const data = await res.json()
+      if (data?.success) {
+        setSelectedPassenger(data.data)
+        setShowPassengerModal(true)
+      }
+    } catch (e) {
+      console.error('Yolcu detay alınamadı:', e)
+    }
+  }
+
+  const handlePassengerSave = async () => {
+    if (!selectedPassenger?.id) return
+    try {
+      setSavingPassenger(true)
+      const res = await fetch(`/api/passengers/${selectedPassenger.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: selectedPassenger.firstName,
+          lastName: selectedPassenger.lastName,
+          phone: selectedPassenger.phone,
+          countryCode: selectedPassenger.countryCode,
+          identityNumber: selectedPassenger.identityNumber,
+          birthDay: selectedPassenger.birthDay,
+          birthMonth: selectedPassenger.birthMonth,
+          birthYear: selectedPassenger.birthYear,
+          gender: selectedPassenger.gender,
+          isForeigner: selectedPassenger.isForeigner,
+        })
+      })
+      const data = await res.json()
+      if (data?.success) {
+        // listeyi tazele
+        await fetchPassengers()
+        setShowPassengerModal(false)
+      }
+    } catch (e) {
+      console.error('Yolcu güncellenemedi:', e)
+    } finally {
+      setSavingPassenger(false)
     }
   }
 
@@ -693,20 +743,28 @@ export default function KullaniciDetayPage() {
                 ) : (
                   <div className="space-y-2">
                     {passengers.map((p: any, idx: number) => (
-                      <div key={p.id || idx} className="flex items-center justify-between bg-gray-50 rounded px-3 py-2">
-                        <div className="text-xs text-gray-800">
-                          <span className="font-medium">{p.firstName} {p.lastName}</span>
-                          {p.identityNumber ? (
-                            <span className="ml-2 text-gray-500">({p.identityNumber})</span>
-                          ) : null}
-                          {idx === 0 && (
-                            <span className="ml-2 text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Hesap Sahibi</span>
-                          )}
+                        <div key={p.id || idx} className="bg-gray-50 rounded px-3 py-2">
+                          <div className="flex items-center justify-between">
+                            <div className="text-xs text-gray-800">
+                              <span className="font-medium">{p.firstName} {p.lastName}</span>
+                              {p.identityNumber ? (
+                                <span className="ml-2 text-gray-500">({p.identityNumber})</span>
+                              ) : null}
+                              {idx === 0 && (
+                                <span className="ml-2 text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Hesap Sahibi</span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-gray-600">{(p.countryCode || '') + ' ' + (p.phone || '')}</span>
+                              <button
+                                onClick={() => openPassengerModal(p.id)}
+                                className="text-xs px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+                              >
+                                Düzenle
+                              </button>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-600">
-                          {(p.countryCode || '') + ' ' + (p.phone || '')}
-                        </div>
-                      </div>
                     ))}
                   </div>
                 )}
@@ -737,6 +795,68 @@ export default function KullaniciDetayPage() {
             </div>
           </div>
         </main>
+      </div>
+      <PassengerEditModal
+        open={showPassengerModal}
+        passenger={selectedPassenger}
+        onClose={() => setShowPassengerModal(false)}
+        onChange={(patch: any) => setSelectedPassenger((prev: any) => ({ ...prev, ...patch }))}
+        onSave={handlePassengerSave}
+        saving={savingPassenger}
+      />
+    </div>
+  )
+} 
+
+// Yolcu düzenleme modalı
+// Not: Bu bileşen dosyanın sonunda render ediliyor
+export function PassengerEditModal({
+  open,
+  passenger,
+  onClose,
+  onChange,
+  onSave,
+  saving
+}: any) {
+  if (!open || !passenger) return null
+  return (
+    <div className="admin-modal-overlay">
+      <div className="admin-modal max-w-xl w-full">
+        <div className="admin-modal-header">
+          <h3 className="admin-modal-title">Yolcu Düzenle</h3>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className="admin-modal-content">
+          <div className="grid grid-cols-2 gap-3">
+            <input className="admin-form-input" placeholder="Ad" value={passenger.firstName || ''} onChange={(e) => onChange({ firstName: e.target.value })} />
+            <input className="admin-form-input" placeholder="Soyad" value={passenger.lastName || ''} onChange={(e) => onChange({ lastName: e.target.value })} />
+            <div className="flex gap-2">
+              <input className="admin-form-input w-24" placeholder="Kod" value={passenger.countryCode || ''} onChange={(e) => onChange({ countryCode: e.target.value })} />
+              <input className="admin-form-input flex-1" placeholder="Telefon" value={passenger.phone || ''} onChange={(e) => onChange({ phone: e.target.value })} />
+            </div>
+            <input className="admin-form-input" placeholder="TC" value={passenger.identityNumber || ''} onChange={(e) => onChange({ identityNumber: e.target.value })} />
+            <input className="admin-form-input" placeholder="Gün" value={passenger.birthDay || ''} onChange={(e) => onChange({ birthDay: e.target.value })} />
+            <input className="admin-form-input" placeholder="Ay" value={passenger.birthMonth || ''} onChange={(e) => onChange({ birthMonth: e.target.value })} />
+            <input className="admin-form-input" placeholder="Yıl" value={passenger.birthYear || ''} onChange={(e) => onChange({ birthYear: e.target.value })} />
+            <select className="admin-form-select" value={passenger.gender || ''} onChange={(e) => onChange({ gender: e.target.value })}>
+              <option value="">Cinsiyet</option>
+              <option value="male">Erkek</option>
+              <option value="female">Kadın</option>
+            </select>
+            <label className="flex items-center text-xs text-gray-600">
+              <input type="checkbox" className="mr-2" checked={!!passenger.isForeigner} onChange={(e) => onChange({ isForeigner: e.target.checked })} />
+              Yabancı Uyruklu
+            </label>
+          </div>
+        </div>
+        <div className="admin-modal-footer">
+          <button className="admin-btn admin-btn-secondary" onClick={onClose} disabled={saving}>İptal</button>
+          <button className="admin-btn admin-btn-primary" onClick={onSave} disabled={saving}>{saving ? 'Kaydediliyor...' : 'Kaydet'}</button>
+        </div>
       </div>
     </div>
   )
