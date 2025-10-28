@@ -618,7 +618,7 @@ export default function KullaniciDetayPage() {
             </div>
 
             {/* Adres Bilgileri Bölümü */}
-            {activeInlineTab !== 'reservations' && (<>
+            {activeInlineTab !== 'reservations' && (
               <div className="border-t border-gray-200">
               <button
                 onClick={toggleAddresses}
