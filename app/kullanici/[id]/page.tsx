@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
-import { User, Calendar, Clock, Edit, Save, CreditCard, X, Mail, Phone, MapPin, ChevronDown, ChevronUp, Home, Building } from 'lucide-react'
+import { User, Calendar, Clock, Edit, Save, CreditCard, X, Mail, Phone, MapPin, ChevronDown, ChevronUp, Home, Building, Plane } from 'lucide-react'
 
 interface User {
   id: string
@@ -58,6 +58,7 @@ export default function KullaniciDetayPage() {
   const [showPassengerModal, setShowPassengerModal] = useState(false)
   const [selectedPassenger, setSelectedPassenger] = useState<any | null>(null)
   const [savingPassenger, setSavingPassenger] = useState(false)
+  const [showPassengers, setShowPassengers] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -205,6 +206,14 @@ export default function KullaniciDetayPage() {
       console.error('Yolcu güncellenemedi:', e)
     } finally {
       setSavingPassenger(false)
+    }
+  }
+
+  const togglePassengers = async () => {
+    const next = !showPassengers
+    setShowPassengers(next)
+    if (next && passengers.length === 0) {
+      await fetchPassengers()
     }
   }
 
@@ -419,9 +428,10 @@ export default function KullaniciDetayPage() {
                       className="text-center p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
                       onClick={async () => {
                         setActiveInlineTab('passengers')
+                        setShowPassengers(true)
                         await fetchPassengers()
                         setTimeout(() => {
-                          const el = document.getElementById('inline-passengers')
+                          const el = document.getElementById('section-passengers')
                           el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
                         }, 0)
                       }}
@@ -724,25 +734,29 @@ export default function KullaniciDetayPage() {
               </div>
             </div>
 
-            {/* Inline content below statistics */}
-            {activeInlineTab === 'passengers' && (
-              <div id="inline-passengers" className="mt-3 border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-medium text-gray-900">Yolcular</h4>
-                  <button
-                    onClick={() => setActiveInlineTab('none')}
-                    className="text-xs text-gray-500 hover:text-gray-700"
-                  >
-                    Kapat
-                  </button>
+            {/* Yolcular - Fatura adresleri gibi açılır kapalı bölüm */}
+            <div id="section-passengers" className="border-t border-gray-200">
+              <button
+                onClick={togglePassengers}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
+              >
+                <div className="flex items-center space-x-2">
+                  <Plane className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-900">Yolcular</span>
+                  <span className="text-xs text-gray-500">({passengers.length})</span>
                 </div>
-                {loadingPassengers ? (
-                  <div className="text-xs text-gray-500">Yükleniyor...</div>
-                ) : passengers.length === 0 ? (
-                  <div className="text-xs text-gray-500">Kayıtlı yolcu yok</div>
-                ) : (
-                  <div className="space-y-2">
-                    {passengers.map((p: any, idx: number) => (
+                {showPassengers ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+
+              {showPassengers && (
+                <div className="px-4 pb-4">
+                  {loadingPassengers ? (
+                    <div className="text-xs text-gray-500">Yükleniyor...</div>
+                  ) : passengers.length === 0 ? (
+                    <div className="text-xs text-gray-500">Kayıtlı yolcu yok</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {passengers.map((p: any, idx: number) => (
                         <div key={p.id || idx} className="bg-gray-50 rounded px-3 py-2">
                           <div className="flex items-center justify-between">
                             <div className="text-xs text-gray-800 flex items-center flex-wrap gap-2">
@@ -753,7 +767,6 @@ export default function KullaniciDetayPage() {
                               {idx === 0 && (
                                 <span className="text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Hesap Sahibi</span>
                               )}
-                              {/* Doğum tarihi */}
                               {(p.birthDay && p.birthMonth && p.birthYear) ? (
                                 <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
                                   {String(p.birthDay).toString().padStart(2,'0')}/{String(p.birthMonth).toString().padStart(2,'0')}/{p.birthYear}
@@ -761,7 +774,6 @@ export default function KullaniciDetayPage() {
                               ) : (
                                 <span className="bg-gray-100 text-gray-400 px-2 py-0.5 rounded">Doğum: -</span>
                               )}
-                              {/* Cinsiyet */}
                               <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded">
                                 {p.gender === 'male' ? 'Erkek' : p.gender === 'female' ? 'Kadın' : 'Cinsiyet: -'}
                               </span>
@@ -777,11 +789,12 @@ export default function KullaniciDetayPage() {
                             </div>
                           </div>
                         </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             {/* Modal Footer */}
             <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
