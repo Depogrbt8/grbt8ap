@@ -47,6 +47,9 @@ export default function KullaniciDetayPage() {
   const [showAddresses, setShowAddresses] = useState(false)
   const [billingInfos, setBillingInfos] = useState<any[]>([])
   const [loadingAddresses, setLoadingAddresses] = useState(false)
+  const [showPriceAlerts, setShowPriceAlerts] = useState(false)
+  const [priceAlerts, setPriceAlerts] = useState<any[]>([])
+  const [loadingPriceAlerts, setLoadingPriceAlerts] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -98,6 +101,35 @@ export default function KullaniciDetayPage() {
     setShowAddresses(!showAddresses)
     if (!showAddresses && billingInfos.length === 0) {
       fetchBillingInfos()
+    }
+  }
+
+  const fetchPriceAlerts = async () => {
+    if (!params.id) return
+    
+    try {
+      setLoadingPriceAlerts(true)
+      const response = await fetch(`/api/users/${params.id}`)
+      const data = await response.json()
+      
+      if (data.success && data.priceAlerts) {
+        setPriceAlerts(data.priceAlerts || [])
+      } else {
+        console.log('Fiyat alarmı bilgileri bulunamadı')
+        setPriceAlerts([])
+      }
+    } catch (error) {
+      console.error('Fiyat alarmı bilgileri yüklenirken hata:', error)
+      setPriceAlerts([])
+    } finally {
+      setLoadingPriceAlerts(false)
+    }
+  }
+
+  const togglePriceAlerts = () => {
+    setShowPriceAlerts(!showPriceAlerts)
+    if (!showPriceAlerts && priceAlerts.length === 0) {
+      fetchPriceAlerts()
     }
   }
 
@@ -557,6 +589,46 @@ export default function KullaniciDetayPage() {
                             </div>
                             <span className="text-xs text-gray-400">{new Date(billing.createdAt).toLocaleDateString('tr-TR')}</span>
                           </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Fiyat Alarmı Bölümü */}
+            <div className="border-t border-gray-200">
+              <button
+                onClick={togglePriceAlerts}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
+              >
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400">🔔</span>
+                  <span className="text-sm font-medium text-gray-900">Fiyat Alarmı :</span>
+                  {priceAlerts.length > 0 && (
+                    <span className="text-xs text-gray-500">({priceAlerts.length} alarm)</span>
+                  )}
+                </div>
+                {showPriceAlerts ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+              
+              {showPriceAlerts && (
+                <div className="px-4 pb-4">
+                  {loadingPriceAlerts ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                      <p className="mt-2 text-xs text-gray-500">Fiyat alarmları yükleniyor...</p>
+                    </div>
+                  ) : priceAlerts.length === 0 ? (
+                    <div className="text-center py-4">
+                      <p className="text-sm text-gray-500">Henüz fiyat alarmı eklenmemiş</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {priceAlerts.map((alert) => (
+                        <div key={alert.id} className="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">
+                          {alert.origin}-{alert.destination}
                         </div>
                       ))}
                     </div>
