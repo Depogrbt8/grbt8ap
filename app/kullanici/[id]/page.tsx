@@ -394,6 +394,7 @@ export default function KullaniciDetayPage() {
         <main className="flex-1 p-4 overflow-y-auto">
           <div className="bg-white rounded-lg shadow-xl max-w-6xl mx-auto">
             {/* Modal Content */}
+            {activeInlineTab !== 'reservations' && (
             <div className="p-6">
               <div className="space-y-6">
                 {/* Hesap Bilgileri - Başta */}
@@ -610,8 +611,10 @@ export default function KullaniciDetayPage() {
                 </div>
               </div>
             </div>
+            )}
 
             {/* Adres Bilgileri Bölümü */}
+            {activeInlineTab !== 'reservations' && (
             <div className="border-t border-gray-200">
               <button
                 onClick={toggleAddresses}
@@ -682,6 +685,7 @@ export default function KullaniciDetayPage() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Fiyat Alarmı - Tek satır, sürekli görünür */}
             <div className="border-t border-gray-200">
@@ -726,6 +730,7 @@ export default function KullaniciDetayPage() {
             </div>
 
             {/* Yolcular - Fatura adresleri gibi açılır kapalı bölüm */}
+            {activeInlineTab !== 'reservations' && (
             <div id="section-passengers" className="border-t border-gray-200">
               <button
                 onClick={togglePassengers}
@@ -786,6 +791,7 @@ export default function KullaniciDetayPage() {
                 </div>
               )}
             </div>
+            )}
 
             {/* Inline Detay Kartı - Rezervasyonlar sekmesi (sadece tıklanınca göster) */}
             {activeInlineTab === 'reservations' && (
