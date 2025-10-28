@@ -50,6 +50,7 @@ export default function KullaniciDetayPage() {
   const [showPriceAlerts, setShowPriceAlerts] = useState(false)
   const [priceAlerts, setPriceAlerts] = useState<any[]>([])
   const [loadingPriceAlerts, setLoadingPriceAlerts] = useState(false)
+  const [favoriteSearches, setFavoriteSearches] = useState<any[]>([])
 
   // Form state
   const [formData, setFormData] = useState({
@@ -183,8 +184,9 @@ export default function KullaniciDetayPage() {
           city: data.data.city || '',
           isForeigner: data.data.isForeigner || false
         })
-        // Fiyat alarmları
+        // Fiyat alarmları ve favori aramalar
         setPriceAlerts(data.priceAlerts || [])
+        setFavoriteSearches(data.searchFavorites || [])
       } else {
         setError(data.error || 'Kullanıcı bulunamadı')
       }
@@ -615,6 +617,27 @@ export default function KullaniciDetayPage() {
                     ))
                   ) : (
                     <span className="text-xs text-gray-500">Kayıtlı alarm yok</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Favori Arama U. - Tek satır, sürekli görünür */}
+            <div className="border-t border-gray-200">
+              <div className="w-full flex items-center justify-between p-4">
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400">🔎</span>
+                  <span className="text-sm font-medium text-gray-900">Favori Arama U. :</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {favoriteSearches && favoriteSearches.length > 0 ? (
+                    favoriteSearches.map((fav: any) => (
+                      <div key={fav.id} className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-md">
+                        {`${fav.origin}-${fav.destination}`}
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-500">Kayıtlı favori yok</span>
                   )}
                 </div>
               </div>

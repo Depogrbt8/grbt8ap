@@ -52,6 +52,15 @@ export async function GET(
             targetPrice: true,
             createdAt: true
           }
+        },
+        searchFavorites: {
+          select: {
+            id: true,
+            origin: true,
+            destination: true,
+            departureDate: true,
+            createdAt: true
+          }
         }
       }
     })
@@ -99,7 +108,8 @@ export async function GET(
     return NextResponse.json({
       success: true,
       data: formattedUser,
-      priceAlerts: user.priceAlerts || []
+      priceAlerts: user.priceAlerts || [],
+      searchFavorites: user.searchFavorites || []
     })
 
   } catch (error) {
