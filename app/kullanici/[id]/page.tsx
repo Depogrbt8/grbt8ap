@@ -451,7 +451,16 @@ export default function KullaniciDetayPage() {
                       <div className="text-lg font-bold text-yellow-600">{user?.favoriteCount || 0}</div>
                       <div className="text-xs text-gray-600">Favori Arama</div>
                     </div>
-                    <div className="text-center p-3 bg-purple-50 rounded-lg">
+                    <div 
+                      className="text-center p-3 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors"
+                      onClick={async () => {
+                        setShowReservations(true)
+                        setTimeout(() => {
+                          const el = document.getElementById('section-reservations')
+                          el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }, 0)
+                      }}
+                    >
                       <div className="text-lg font-bold text-purple-600">{user?.reservationCount || 0}</div>
                       <div className="text-xs text-gray-600">Rezervasyon</div>
                     </div>
@@ -786,7 +795,7 @@ export default function KullaniciDetayPage() {
             </div>
 
             {/* Rezervasyonlar - Fatura adresleri gibi açılır kapalı bölüm */}
-            <div className="border-t border-gray-200">
+            <div id="section-reservations" className="border-t border-gray-200">
               <button
                 onClick={() => setShowReservations(!showReservations)}
                 className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
