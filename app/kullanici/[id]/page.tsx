@@ -62,7 +62,7 @@ export default function KullaniciDetayPage() {
   const [savingPassenger, setSavingPassenger] = useState(false)
   const [showPassengers, setShowPassengers] = useState(false)
   // Inline payments-style tabs state and mock data (same structure as Ödemeler sayfası)
-  const [paymentsInlineTab, setPaymentsInlineTab] = useState<'rezervasyonlar' | 'bakiyeler' | 'iadeler'>('rezervasyonlar')
+  const [paymentsInlineTab, setPaymentsInlineTab] = useState<'rezervasyonlar' | 'odemeler' | 'iadeler'>('rezervasyonlar')
   const balances = [
     {
       id: '1',
@@ -674,14 +674,14 @@ export default function KullaniciDetayPage() {
                           Rezervasyonlar ({reservations.length})
                         </button>
                         <button
-                          onClick={() => setPaymentsInlineTab('bakiyeler')}
+                          onClick={() => setPaymentsInlineTab('odemeler')}
                           className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                            paymentsInlineTab === 'bakiyeler'
+                            paymentsInlineTab === 'odemeler'
                               ? 'border-blue-500 text-blue-600'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
-                          Bakiyeler ({balances.length})
+                          Ödemeler ({billingInfos.length})
                         </button>
                         <button
                           onClick={() => setPaymentsInlineTab('iadeler')}
@@ -753,37 +753,67 @@ export default function KullaniciDetayPage() {
                         )
                       )}
 
-                      {paymentsInlineTab === 'bakiyeler' && (
+                      {paymentsInlineTab === 'odemeler' && (
                         <div>
-                          <h3 className="admin-text-sm mb-3">Bakiye Yönetimi</h3>
-                          <div className="space-y-4">
-                            {balances.map((balance: any) => (
-                              <div key={balance.id} className="admin-card-small">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center space-x-3">
-                                      <h4 className="admin-text-sm">{balance.agencyName}</h4>
-                                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${balance.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                                        {balance.status === 'active' ? 'Aktif' : 'Pasif'}
-                                      </span>
-                                    </div>
-                                    <p className="admin-text-xs mt-1">Acente ID: {balance.agencyId}</p>
-                                    {balance.description && (
-                                      <p className="admin-text-xs mt-1">{balance.description}</p>
-                                    )}
-                                  </div>
-                                  <div className="text-right">
-                                    <p className="admin-text-lg">
-                                      {balance.currency} {Number(balance.amount).toFixed(2)}
-                                    </p>
-                                    <p className="admin-text-xs mt-1">
-                                      Oluşturulma: {new Date(balance.createdAt).toLocaleString('tr-TR')}
-                                    </p>
-                                  </div>
+                          <h3 className="admin-text-sm mb-3">Ödeme Bilgileri</h3>
+                          {loadingAddresses ? (
+                            <div className="text-center py-4">
+                              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
+                              <p className="mt-2 text-xs text-gray-500">Ödeme bilgileri yükleniyor...</p>
+                            </div>
+                          ) : billingInfos.length === 0 ? (
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                              <div className="flex">
+                                <div className="flex-shrink-0">
+                                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                                  </svg>
+                                </div>
+                                <div className="ml-3">
+                                  <p className="admin-text-xs text-yellow-800">
+                                    <strong>Bilgi:</strong> Henüz ödeme bilgisi eklenmemiş.
+                                  </p>
                                 </div>
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              {billingInfos.map((billing: any) => (
+                                <div key={billing.id} className="admin-card-small">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <div className="flex items-center space-x-2 mb-1">
+                                        {billing.type === 'corporate' ? (
+                                          <Building className="h-4 w-4 text-blue-500" />
+                                        ) : (
+                                          <Home className="h-4 w-4 text-green-500" />
+                                        )}
+                                        <span className="admin-text-sm font-medium">{billing.title}</span>
+                                        {billing.isDefault && (
+                                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Varsayılan</span>
+                                        )}
+                                      </div>
+                                      {billing.type === 'corporate' ? (
+                                        <div className="admin-text-xs space-y-1">
+                                          <p className="font-medium">{billing.companyName}</p>
+                                          <p>VN: {billing.taxNumber}</p>
+                                          <p>{billing.address}</p>
+                                          <p>{billing.city}, {billing.country}</p>
+                                        </div>
+                                      ) : (
+                                        <div className="admin-text-xs space-y-1">
+                                          <p className="font-medium">{billing.firstName} {billing.lastName}</p>
+                                          <p>{billing.address}</p>
+                                          <p>{billing.city}, {billing.country}</p>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <span className="text-xs text-gray-400">{new Date(billing.createdAt).toLocaleDateString('tr-TR')}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
 
