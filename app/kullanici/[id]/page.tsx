@@ -143,7 +143,7 @@ export default function KullaniciDetayPage() {
     if (!params.id) return
     try {
       setLoadingPassengers(true)
-      const res = await fetch(`/api/passengers?userId=${params.id}`)
+      const res = await fetch(`/api/passengers?userId=${String(params.id)}`)
       const data = await res.json()
       if (data?.success) {
         setPassengers(data.data || [])
@@ -370,6 +370,10 @@ export default function KullaniciDetayPage() {
                       onClick={async () => {
                         setActiveInlineTab('passengers')
                         await fetchPassengers()
+                        setTimeout(() => {
+                          const el = document.getElementById('inline-passengers')
+                          el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                        }, 0)
                       }}
                     >
                       <div className="text-lg font-bold text-blue-600">{user?.passengerCount || 0}</div>
@@ -672,7 +676,7 @@ export default function KullaniciDetayPage() {
 
             {/* Inline content below statistics */}
             {activeInlineTab === 'passengers' && (
-              <div className="mt-3 border border-gray-200 rounded-lg p-4">
+              <div id="inline-passengers" className="mt-3 border border-gray-200 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="text-sm font-medium text-gray-900">Yolcular</h4>
                   <button
