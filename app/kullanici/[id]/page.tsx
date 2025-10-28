@@ -815,27 +815,52 @@ export default function KullaniciDetayPage() {
                   ) : reservations.length === 0 ? (
                     <div className="text-xs text-gray-500">Kayıtlı rezervasyon yok</div>
                   ) : (
-                    <div className="space-y-2">
-                      {reservations.map((r: any) => (
-                        <div key={r.id} className="bg-gray-50 rounded px-3 py-2">
-                          <div className="flex items-center justify-between">
-                            <div className="text-xs text-gray-800 flex items-center flex-wrap gap-2">
-                              <span className="font-medium mr-1">{r.airline || '-'} {r.flightNumber || ''}</span>
-                              <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded">{r.origin || '-'} → {r.destination || '-'}</span>
-                              {r.departureTime && (
-                                <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded">{new Date(r.departureTime).toLocaleString('tr-TR')}</span>
-                              )}
-                              {r.pnr && (
-                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded">PNR: {r.pnr}</span>
-                              )}
-                              <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">Durum: {r.status}</span>
+                    <div className="w-full">
+                      <div className="grid grid-cols-7 text-xs text-gray-500 px-3 py-2">
+                        <div>Bilet</div>
+                        <div>Tarih</div>
+                        <div>Yolcu</div>
+                        <div>Tutar</div>
+                        <div>Seyahat</div>
+                        <div>Durum</div>
+                        <div className="text-right">Aksiyon</div>
+                      </div>
+                      <div className="divide-y divide-gray-200 bg-white rounded-lg border">
+                        {reservations.map((r: any) => {
+                          const tarih = r.departureTime ? new Date(r.departureTime) : null
+                          const yolcuSayisi = r.passengers ? (() => { try { const arr = JSON.parse(r.passengers); return Array.isArray(arr) ? arr.length : '-' } catch { return '-' } })() : '-'
+                          const seyahat = r.origin && r.destination ? `${r.origin}-${r.destination}` : (r.flightNumber || '-')
+                          const tutar = r.amount ? `${r.amount} ${r.currency || ''}` : '-'
+                          const pnr = r.pnr || (r.id ? r.id.slice(-8).toUpperCase() : '-')
+                          const badge = (s: string) => {
+                            const base = 'px-2 py-0.5 rounded text-xs'
+                            if (!s) return <span className={`${base} bg-gray-100 text-gray-600`}>Bilinmiyor</span>
+                            const map: Record<string,string> = {
+                              ready: 'bg-green-100 text-green-700',
+                              confirmed: 'bg-green-100 text-green-700',
+                              pending: 'bg-yellow-100 text-yellow-700',
+                              processing: 'bg-yellow-100 text-yellow-700',
+                              cancelled: 'bg-red-100 text-red-700',
+                              completed: 'bg-blue-100 text-blue-700',
+                            }
+                            const cls = map[s] || 'bg-gray-100 text-gray-700'
+                            return <span className={`${base} ${cls}`}>{s}</span>
+                          }
+                          return (
+                            <div key={r.id} className="grid grid-cols-7 items-center px-3 py-3">
+                              <div className="font-medium text-gray-900">{pnr}</div>
+                              <div className="text-gray-700">{tarih ? tarih.toLocaleDateString('tr-TR') : '-'}</div>
+                              <div className="text-gray-700">{yolcuSayisi}</div>
+                              <div className="text-gray-900 font-medium">{tutar}</div>
+                              <div className="text-gray-700">{seyahat}</div>
+                              <div>{badge(r.status)}</div>
+                              <div className="text-right">
+                                <button className="text-xs px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">Görüntüle</button>
+                              </div>
                             </div>
-                            <div className="flex items-center gap-3">
-                              <span className="text-xs text-gray-600 whitespace-nowrap">{r.amount ? `${r.amount} ${r.currency || ''}` : '-'}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                          )
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
