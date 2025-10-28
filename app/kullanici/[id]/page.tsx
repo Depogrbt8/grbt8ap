@@ -839,9 +839,13 @@ function PassengerEditModal({
               <input className="admin-form-input flex-1" placeholder="Telefon" value={passenger.phone || ''} onChange={(e) => onChange({ phone: e.target.value })} />
             </div>
             <input className="admin-form-input" placeholder="TC" value={passenger.identityNumber || ''} onChange={(e) => onChange({ identityNumber: e.target.value })} />
-            <input className="admin-form-input" placeholder="Gün" value={passenger.birthDay || ''} onChange={(e) => onChange({ birthDay: e.target.value })} />
-            <input className="admin-form-input" placeholder="Ay" value={passenger.birthMonth || ''} onChange={(e) => onChange({ birthMonth: e.target.value })} />
-            <input className="admin-form-input" placeholder="Yıl" value={passenger.birthYear || ''} onChange={(e) => onChange({ birthYear: e.target.value })} />
+            <div className="col-span-2 flex items-center gap-2">
+              <input className="admin-form-input w-16" placeholder="GG" value={passenger.birthDay || ''} onChange={(e) => onChange({ birthDay: e.target.value })} />
+              <span className="text-gray-400">/</span>
+              <input className="admin-form-input w-16" placeholder="AA" value={passenger.birthMonth || ''} onChange={(e) => onChange({ birthMonth: e.target.value })} />
+              <span className="text-gray-400">/</span>
+              <input className="admin-form-input w-20" placeholder="YYYY" value={passenger.birthYear || ''} onChange={(e) => onChange({ birthYear: e.target.value })} />
+            </div>
             <select className="admin-form-select" value={passenger.gender || ''} onChange={(e) => onChange({ gender: e.target.value })}>
               <option value="">Cinsiyet</option>
               <option value="male">Erkek</option>
