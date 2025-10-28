@@ -348,11 +348,11 @@ export default function KullaniciDetayPage() {
                       <div className="text-lg font-bold text-blue-600">{user?.passengerCount || 0}</div>
                       <div className="text-xs text-gray-600">Yolcu</div>
                     </div>
-                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <div className="hidden text-center p-3 bg-green-50 rounded-lg">
                       <div className="text-lg font-bold text-green-600">{user?.alertCount || 0}</div>
                       <div className="text-xs text-gray-600">Fiyat Alarmı</div>
                     </div>
-                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                    <div className="hidden text-center p-3 bg-yellow-50 rounded-lg">
                       <div className="text-lg font-bold text-yellow-600">{user?.favoriteCount || 0}</div>
                       <div className="text-xs text-gray-600">Favori Arama</div>
                     </div>
