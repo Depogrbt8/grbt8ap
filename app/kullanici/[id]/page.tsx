@@ -63,6 +63,8 @@ export default function KullaniciDetayPage() {
   const [showPassengers, setShowPassengers] = useState(false)
   // Inline payments-style tabs state and mock data (same structure as Ödemeler sayfası)
   const [paymentsInlineTab, setPaymentsInlineTab] = useState<'rezervasyonlar' | 'odemeler' | 'iadeler'>('rezervasyonlar')
+  // Feature flag: müşteri detayında Rezervasyonlar bölümünü gizle
+  const HIDE_RESERVATIONS_SECTION = true
   const balances = [
     {
       id: '1',
@@ -663,16 +665,18 @@ export default function KullaniciDetayPage() {
                   <div className="admin-card">
                     <div className="border-b border-gray-200">
                       <nav className="-mb-px flex space-x-8 px-6">
-                        <button
-                          onClick={() => setPaymentsInlineTab('rezervasyonlar')}
-                          className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                            paymentsInlineTab === 'rezervasyonlar'
-                              ? 'border-blue-500 text-blue-600'
-                              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                          }`}
-                        >
-                          Rezervasyonlar ({reservations.length})
-                        </button>
+                        {!HIDE_RESERVATIONS_SECTION && (
+                          <button
+                            onClick={() => setPaymentsInlineTab('rezervasyonlar')}
+                            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                              paymentsInlineTab === 'rezervasyonlar'
+                                ? 'border-blue-500 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            }`}
+                          >
+                            Rezervasyonlar ({reservations.length})
+                          </button>
+                        )}
                         <button
                           onClick={() => setPaymentsInlineTab('odemeler')}
                           className={`py-4 px-1 border-b-2 font-medium text-sm ${
@@ -697,7 +701,7 @@ export default function KullaniciDetayPage() {
                     </div>
 
                     <div className="p-6">
-                      {paymentsInlineTab === 'rezervasyonlar' && (
+                      {!HIDE_RESERVATIONS_SECTION && paymentsInlineTab === 'rezervasyonlar' && (
                         loadingReservations ? (
                           <div className="admin-text-xs text-gray-500">Yükleniyor...</div>
                         ) : reservations.length === 0 ? (
@@ -1056,7 +1060,7 @@ export default function KullaniciDetayPage() {
             </div>
 
             {/* Inline Detay Kartı - Rezervasyonlar sekmesi (sadece tıklanınca göster) */}
-            {activeInlineTab === 'reservations' && (
+            {!HIDE_RESERVATIONS_SECTION && activeInlineTab === 'reservations' && (
               <div className="admin-card">
               <div className="border-b border-gray-200">
                 <nav className="-mb-px flex space-x-8 px-6">
