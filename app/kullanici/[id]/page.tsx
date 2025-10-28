@@ -596,22 +596,7 @@ export default function KullaniciDetayPage() {
                   </div>
                 </div>
 
-                {/* Anket Cevapları */}
-                {surveyResponse && surveyResponse.length > 0 && (
-                  <div>
-                    <h3 className="text-xs font-medium text-gray-900 mb-2">Anket Cevapları</h3>
-                    <div className="bg-gray-50 p-2 rounded-md">
-                      <div className="text-xs text-gray-600 leading-relaxed">
-                        {surveyResponse.map((item: any, index: number) => (
-                          <span key={index}>
-                            {item.answer}
-                            {index < surveyResponse.length - 1 && ' • '}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                
 
                 {/* İşlemler */}
                 <div>
@@ -795,6 +780,25 @@ export default function KullaniciDetayPage() {
                 </div>
               )}
             </div>
+
+            {/* Anket Cevapları - Yolcuların altında */}
+            {surveyResponse && surveyResponse.length > 0 && (
+              <div className="border-t border-gray-200">
+                <div className="p-4">
+                  <h3 className="text-xs font-medium text-gray-900 mb-2">Anket Cevapları</h3>
+                  <div className="bg-gray-50 p-2 rounded-md">
+                    <div className="text-xs text-gray-600 leading-relaxed">
+                      {surveyResponse.map((item: any, index: number) => (
+                        <span key={index}>
+                          {item.answer}
+                          {index < surveyResponse.length - 1 && ' • '}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Modal Footer */}
             <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
