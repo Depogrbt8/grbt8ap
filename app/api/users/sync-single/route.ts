@@ -59,6 +59,7 @@ export async function POST(request: NextRequest) {
           lastName: user.lastName,
           email: user.email,
           password: user.password,
+          customerNo: `#${user.id.slice(-6).toUpperCase()}`,
           countryCode: user.countryCode,
           phone: user.phone,
           birthDay: user.birthDay,
