@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
-import { User, Calendar, Clock, Edit, Save, CreditCard, X, Mail, Phone, MapPin, ChevronDown, ChevronUp, Home, Building, Plane } from 'lucide-react'
+import { User, Calendar, Clock, Edit, Save, CreditCard, X, Mail, Phone, MapPin, ChevronDown, ChevronUp, Home, Building, Plane, MessageSquare } from 'lucide-react'
 
 interface User {
   id: string
@@ -63,6 +63,10 @@ export default function KullaniciDetayPage() {
   const [showPassengers, setShowPassengers] = useState(false)
   // Inline payments-style tabs state and mock data (same structure as Ödemeler sayfası)
   const [paymentsInlineTab, setPaymentsInlineTab] = useState<'rezervasyonlar' | 'odemeler' | 'iadeler'>('rezervasyonlar')
+  // Yorumlar state
+  const [showComments, setShowComments] = useState(false)
+  const [comments, setComments] = useState('')
+  const [savingComments, setSavingComments] = useState(false)
   // Feature flag: sayfanın en altındaki inline Rezervasyonlar kartını gizle
   const HIDE_BOTTOM_RESERVATIONS_SECTION = true
   const balances = [
@@ -138,6 +142,11 @@ export default function KullaniciDetayPage() {
   useEffect(() => {
     fetchUser()
     fetchSurveyResponse()
+    // Yorumları localStorage'dan yükle
+    const savedComments = localStorage.getItem(`user_comments_${params.id}`)
+    if (savedComments) {
+      setComments(savedComments)
+    }
   }, [params.id])
 
   const fetchBillingInfos = async () => {
@@ -262,6 +271,29 @@ export default function KullaniciDetayPage() {
       console.error('Yolcu güncellenemedi:', e)
     } finally {
       setSavingPassenger(false)
+    }
+  }
+
+  const handleSaveComments = async () => {
+    if (!params.id) return
+    try {
+      setSavingComments(true)
+      const res = await fetch(`/api/users/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comments })
+      })
+      const data = await res.json()
+      if (data?.success) {
+        alert('Yorumlar başarıyla kaydedildi!')
+        // Yorumları localStorage'a da kaydet (backend yoksa)
+        localStorage.setItem(`user_comments_${params.id}`, comments)
+      }
+    } catch (e) {
+      console.error('Yorumlar kaydedilemedi:', e)
+      alert('Yorumlar kaydedilirken hata oluştu')
+    } finally {
+      setSavingComments(false)
     }
   }
 
@@ -1053,6 +1085,43 @@ export default function KullaniciDetayPage() {
                       ))}
                     </div>
                   )}
+                </div>
+              )}
+            </div>
+
+            {/* Yorumlar - Açılır kapanır bölüm */}
+            <div className="border-t border-gray-200">
+              <button
+                onClick={() => setShowComments(!showComments)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
+              >
+                <div className="flex items-center space-x-2">
+                  <MessageSquare className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm font-medium text-gray-900">Yorumlar</span>
+                </div>
+                {showComments ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+
+              {showComments && (
+                <div className="px-4 pb-4">
+                  <textarea
+                    value={comments}
+                    onChange={(e) => setComments(e.target.value)}
+                    rows={2}
+                    placeholder="Kullanıcı hakkında notlarınızı buraya yazabilirsiniz..."
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <button
+                    onClick={handleSaveComments}
+                    disabled={savingComments}
+                    className={`mt-2 px-4 py-2 text-sm rounded-md ${
+                      savingComments
+                        ? 'bg-gray-400 text-white cursor-not-allowed'
+                        : 'bg-blue-600 text-white hover:bg-blue-700'
+                    }`}
+                  >
+                    {savingComments ? 'Kaydediliyor...' : 'Yorumları Kaydet'}
+                  </button>
                 </div>
               )}
             </div>
