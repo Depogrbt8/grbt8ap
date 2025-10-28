@@ -54,7 +54,7 @@ export default function KullaniciDetayPage() {
   const [reservations, setReservations] = useState<any[]>([])
   const [loadingReservations, setLoadingReservations] = useState(false)
   // Inline tab and passengers panel (non-navigating UI)
-  const [activeInlineTab, setActiveInlineTab] = useState<'none' | 'passengers' | 'reservations'>('none')
+  const [activeInlineTab, setActiveInlineTab] = useState<'none' | 'passengers' | 'reservations'>('reservations')
   const [passengers, setPassengers] = useState<any[]>([])
   const [loadingPassengers, setLoadingPassengers] = useState(false)
   const [showPassengerModal, setShowPassengerModal] = useState(false)
@@ -452,13 +452,7 @@ export default function KullaniciDetayPage() {
                     </div>
                     <div 
                       className="text-center p-3 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors"
-                      onClick={() => {
-                        setActiveInlineTab('reservations')
-                        setTimeout(() => {
-                          const el = document.getElementById('section-reservations')
-                          el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                        }, 0)
-                      }}
+                      onClick={() => setActiveInlineTab('reservations')}
                     >
                       <div className="text-lg font-bold text-purple-600">{user?.reservationCount || 0}</div>
                       <div className="text-xs text-gray-600">Rezervasyon</div>
@@ -617,7 +611,7 @@ export default function KullaniciDetayPage() {
               </div>
             </div>
 
-            {activeInlineTab !== 'reservations' && (
+            {/* Adres Bilgileri Bölümü */}
             <div className="border-t border-gray-200">
               <button
                 onClick={toggleAddresses}
@@ -792,11 +786,10 @@ export default function KullaniciDetayPage() {
                 </div>
               )}
             </div>
-            )}
 
             {/* Inline Detay Kartı - Rezervasyonlar sekmesi (sadece tıklanınca göster) */}
             {activeInlineTab === 'reservations' && (
-              <div id="section-reservations" className="admin-card">
+              <div className="admin-card">
               <div className="border-b border-gray-200">
                 <nav className="-mb-px flex space-x-8 px-6">
                   <button
