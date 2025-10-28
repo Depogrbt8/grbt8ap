@@ -183,6 +183,8 @@ export default function KullaniciDetayPage() {
           city: data.data.city || '',
           isForeigner: data.data.isForeigner || false
         })
+        // Fiyat alarmları
+        setPriceAlerts(data.priceAlerts || [])
       } else {
         setError(data.error || 'Kullanıcı bulunamadı')
       }
@@ -597,44 +599,25 @@ export default function KullaniciDetayPage() {
               )}
             </div>
 
-            {/* Fiyat Alarmı Bölümü */}
+            {/* Fiyat Alarmı - Tek satır, sürekli görünür */}
             <div className="border-t border-gray-200">
-              <button
-                onClick={togglePriceAlerts}
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
-              >
+              <div className="w-full flex items-center justify-between p-4">
                 <div className="flex items-center space-x-2">
                   <span className="text-gray-400">🔔</span>
                   <span className="text-sm font-medium text-gray-900">Fiyat Alarmı :</span>
-                  {priceAlerts.length > 0 && (
-                    <span className="text-xs text-gray-500">({priceAlerts.length} alarm)</span>
-                  )}
                 </div>
-                {showPriceAlerts ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </button>
-              
-              {showPriceAlerts && (
-                <div className="px-4 pb-4">
-                  {loadingPriceAlerts ? (
-                    <div className="text-center py-4">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-                      <p className="mt-2 text-xs text-gray-500">Fiyat alarmları yükleniyor...</p>
-                    </div>
-                  ) : priceAlerts.length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-gray-500">Henüz fiyat alarmı eklenmemiş</p>
-                    </div>
+                <div className="flex flex-wrap gap-2">
+                  {priceAlerts && priceAlerts.length > 0 ? (
+                    priceAlerts.map((alert: any) => (
+                      <div key={alert.id} className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-md">
+                        {`${alert.origin}-${alert.destination}`}
+                      </div>
+                    ))
                   ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {priceAlerts.map((alert) => (
-                        <div key={alert.id} className="bg-gray-100 text-gray-700 text-xs px-3 py-1 rounded-full">
-                          {alert.origin}-{alert.destination}
-                        </div>
-                      ))}
-                    </div>
+                    <span className="text-xs text-gray-500">Kayıtlı alarm yok</span>
                   )}
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Modal Footer */}
