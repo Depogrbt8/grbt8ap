@@ -62,7 +62,7 @@ export default function KullaniciDetayPage() {
   const [savingPassenger, setSavingPassenger] = useState(false)
   const [showPassengers, setShowPassengers] = useState(false)
   // Inline payments-style tabs state and mock data (same structure as Ödemeler sayfası)
-  const [paymentsInlineTab, setPaymentsInlineTab] = useState<'odemeler' | 'bakiyeler' | 'iadeler'>('odemeler')
+  const [paymentsInlineTab, setPaymentsInlineTab] = useState<'rezervasyonlar' | 'bakiyeler' | 'iadeler'>('rezervasyonlar')
   const balances = [
     {
       id: '1',
@@ -664,14 +664,14 @@ export default function KullaniciDetayPage() {
                     <div className="border-b border-gray-200">
                       <nav className="-mb-px flex space-x-8 px-6">
                         <button
-                          onClick={() => setPaymentsInlineTab('odemeler')}
+                          onClick={() => setPaymentsInlineTab('rezervasyonlar')}
                           className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                            paymentsInlineTab === 'odemeler'
+                            paymentsInlineTab === 'rezervasyonlar'
                               ? 'border-blue-500 text-blue-600'
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
-                          Ödemeler
+                          Rezervasyonlar ({reservations.length})
                         </button>
                         <button
                           onClick={() => setPaymentsInlineTab('bakiyeler')}
@@ -697,24 +697,60 @@ export default function KullaniciDetayPage() {
                     </div>
 
                     <div className="p-6">
-                      {paymentsInlineTab === 'odemeler' && (
-                        <div>
-                          <h3 className="admin-text-sm mb-3">Ödeme Yönetimi</h3>
-                          <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
-                            <div className="flex">
-                              <div className="flex-shrink-0">
-                                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                </svg>
-                              </div>
-                              <div className="ml-3">
-                                <p className="admin-text-xs text-yellow-800">
-                                  <strong>Geliştirme Aşamasında:</strong> Ödeme yönetimi özellikleri yakında eklenecek.
-                                </p>
-                              </div>
+                      {paymentsInlineTab === 'rezervasyonlar' && (
+                        loadingReservations ? (
+                          <div className="admin-text-xs text-gray-500">Yükleniyor...</div>
+                        ) : reservations.length === 0 ? (
+                          <div className="admin-text-xs text-gray-500">Kayıtlı rezervasyon yok</div>
+                        ) : (
+                          <div className="w-full">
+                            <div className="grid grid-cols-7 text-xs text-gray-500 px-3 py-2">
+                              <div>Bilet</div>
+                              <div>Tarih</div>
+                              <div>Yolcu</div>
+                              <div>Tutar</div>
+                              <div>Seyahat</div>
+                              <div>Durum</div>
+                              <div className="text-right">Aksiyon</div>
+                            </div>
+                            <div className="divide-y divide-gray-200 bg-white rounded-lg border">
+                              {reservations.map((r: any) => {
+                                const tarih = r.departureTime ? new Date(r.departureTime) : null
+                                const yolcuSayisi = r.passengers ? (() => { try { const arr = JSON.parse(r.passengers); return Array.isArray(arr) ? arr.length : '-' } catch { return '-' } })() : '-'
+                                const seyahat = r.origin && r.destination ? `${r.origin}-${r.destination}` : (r.flightNumber || '-')
+                                const tutar = r.amount ? `${r.amount} ${r.currency || ''}` : '-'
+                                const pnr = r.pnr || (r.id ? r.id.slice(-8).toUpperCase() : '-')
+                                const badge = (s: string) => {
+                                  const base = 'px-2 py-0.5 rounded text-xs'
+                                  if (!s) return <span className={`${base} bg-gray-100 text-gray-600`}>Bilinmiyor</span>
+                                  const map: Record<string,string> = {
+                                    ready: 'bg-green-100 text-green-700',
+                                    confirmed: 'bg-green-100 text-green-700',
+                                    pending: 'bg-yellow-100 text-yellow-700',
+                                    processing: 'bg-yellow-100 text-yellow-700',
+                                    cancelled: 'bg-red-100 text-red-700',
+                                    completed: 'bg-blue-100 text-blue-700',
+                                  }
+                                  const cls = map[s] || 'bg-gray-100 text-gray-700'
+                                  return <span className={`${base} ${cls}`}>{s}</span>
+                                }
+                                return (
+                                  <div key={r.id} className="grid grid-cols-7 items-center px-3 py-3">
+                                    <div className="font-medium text-gray-900">{pnr}</div>
+                                    <div className="text-gray-700">{tarih ? tarih.toLocaleDateString('tr-TR') : '-'}</div>
+                                    <div className="text-gray-700">{yolcuSayisi}</div>
+                                    <div className="text-gray-900 font-medium">{tutar}</div>
+                                    <div className="text-gray-700">{seyahat}</div>
+                                    <div>{badge(r.status)}</div>
+                                    <div className="text-right">
+                                      <button className="text-xs px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">Görüntüle</button>
+                                    </div>
+                                  </div>
+                                )
+                              })}
                             </div>
                           </div>
-                        </div>
+                        )
                       )}
 
                       {paymentsInlineTab === 'bakiyeler' && (
