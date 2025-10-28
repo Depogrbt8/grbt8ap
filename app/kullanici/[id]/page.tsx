@@ -425,7 +425,7 @@ export default function KullaniciDetayPage() {
                   <h3 className="text-xs font-medium text-gray-900 mb-2">İstatistikler</h3>
                   <div className="grid grid-cols-5 gap-4">
                     <div 
-                      className="text-center p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
+                      className="hidden text-center p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
                       onClick={async () => {
                         setActiveInlineTab('passengers')
                         setShowPassengers(true)
