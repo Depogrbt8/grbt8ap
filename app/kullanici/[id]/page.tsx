@@ -51,6 +51,10 @@ export default function KullaniciDetayPage() {
   const [priceAlerts, setPriceAlerts] = useState<any[]>([])
   const [loadingPriceAlerts, setLoadingPriceAlerts] = useState(false)
   const [favoriteSearches, setFavoriteSearches] = useState<any[]>([])
+  // Inline tab and passengers panel (non-navigating UI)
+  const [activeInlineTab, setActiveInlineTab] = useState<'none' | 'passengers'>('none')
+  const [passengers, setPassengers] = useState<any[]>([])
+  const [loadingPassengers, setLoadingPassengers] = useState(false)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -131,6 +135,26 @@ export default function KullaniciDetayPage() {
     setShowPriceAlerts(!showPriceAlerts)
     if (!showPriceAlerts && priceAlerts.length === 0) {
       fetchPriceAlerts()
+    }
+  }
+
+  // Inline passengers fetcher
+  const fetchPassengers = async () => {
+    if (!params.id) return
+    try {
+      setLoadingPassengers(true)
+      const res = await fetch(`/api/passengers?userId=${params.id}`)
+      const data = await res.json()
+      if (data?.success) {
+        setPassengers(data.data || [])
+      } else {
+        setPassengers([])
+      }
+    } catch (e) {
+      console.error('Yolcu listesi alınamadı:', e)
+      setPassengers([])
+    } finally {
+      setLoadingPassengers(false)
     }
   }
 
@@ -343,7 +367,10 @@ export default function KullaniciDetayPage() {
                   <div className="grid grid-cols-5 gap-4">
                     <div 
                       className="text-center p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
-                      onClick={() => router.push(`/kullanici/${params.id}/yolcular`)}
+                      onClick={async () => {
+                        setActiveInlineTab('passengers')
+                        await fetchPassengers()
+                      }}
                     >
                       <div className="text-lg font-bold text-blue-600">{user?.passengerCount || 0}</div>
                       <div className="text-xs text-gray-600">Yolcu</div>
@@ -642,6 +669,45 @@ export default function KullaniciDetayPage() {
                 </div>
               </div>
             </div>
+
+            {/* Inline content below statistics */}
+            {activeInlineTab === 'passengers' && (
+              <div className="mt-3 border border-gray-200 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-medium text-gray-900">Yolcular</h4>
+                  <button
+                    onClick={() => setActiveInlineTab('none')}
+                    className="text-xs text-gray-500 hover:text-gray-700"
+                  >
+                    Kapat
+                  </button>
+                </div>
+                {loadingPassengers ? (
+                  <div className="text-xs text-gray-500">Yükleniyor...</div>
+                ) : passengers.length === 0 ? (
+                  <div className="text-xs text-gray-500">Kayıtlı yolcu yok</div>
+                ) : (
+                  <div className="space-y-2">
+                    {passengers.map((p: any, idx: number) => (
+                      <div key={p.id || idx} className="flex items-center justify-between bg-gray-50 rounded px-3 py-2">
+                        <div className="text-xs text-gray-800">
+                          <span className="font-medium">{p.firstName} {p.lastName}</span>
+                          {p.identityNumber ? (
+                            <span className="ml-2 text-gray-500">({p.identityNumber})</span>
+                          ) : null}
+                          {idx === 0 && (
+                            <span className="ml-2 text-blue-700 bg-blue-100 px-2 py-0.5 rounded">Hesap Sahibi</span>
+                          )}
+                        </div>
+                        <div className="text-xs text-gray-600">
+                          {(p.countryCode || '') + ' ' + (p.phone || '')}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Modal Footer */}
             <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
