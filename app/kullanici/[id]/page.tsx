@@ -617,8 +617,9 @@ export default function KullaniciDetayPage() {
               </div>
             </div>
 
+            {/* Adres Bilgileri Bölümü */}
             {activeInlineTab !== 'reservations' && (
-            <div className="border-t border-gray-200">
+              <div className="border-t border-gray-200">
               <button
                 onClick={toggleAddresses}
                 className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
@@ -792,6 +793,7 @@ export default function KullaniciDetayPage() {
                 </div>
               )}
             </div>
+              </>
             )}
 
             {/* Inline Detay Kartı - Rezervasyonlar sekmesi (sadece tıklanınca göster) */}
