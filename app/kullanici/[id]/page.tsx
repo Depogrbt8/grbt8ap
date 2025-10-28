@@ -51,6 +51,9 @@ export default function KullaniciDetayPage() {
   const [priceAlerts, setPriceAlerts] = useState<any[]>([])
   const [loadingPriceAlerts, setLoadingPriceAlerts] = useState(false)
   const [favoriteSearches, setFavoriteSearches] = useState<any[]>([])
+  const [reservations, setReservations] = useState<any[]>([])
+  const [showReservations, setShowReservations] = useState(false)
+  const [loadingReservations, setLoadingReservations] = useState(false)
   // Inline tab and passengers panel (non-navigating UI)
   const [activeInlineTab, setActiveInlineTab] = useState<'none' | 'passengers'>('none')
   const [passengers, setPassengers] = useState<any[]>([])
@@ -249,6 +252,7 @@ export default function KullaniciDetayPage() {
       
       if (data.success) {
         setUser(data.data)
+        setReservations(data.reservations || [])
         // Form verilerini doldur
         setFormData({
           firstName: data.data.firstName || data.data.name?.split(' ')[0] || '',
@@ -771,6 +775,54 @@ export default function KullaniciDetayPage() {
                               >
                                 Düzenle
                               </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Rezervasyonlar - Fatura adresleri gibi açılır kapalı bölüm */}
+            <div className="border-t border-gray-200">
+              <button
+                onClick={() => setShowReservations(!showReservations)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
+              >
+                <div className="flex items-center space-x-2">
+                  <span className="h-4 w-4 text-gray-400">🧾</span>
+                  <span className="text-sm font-medium text-gray-900">Rezervasyonlar</span>
+                  <span className="text-xs text-gray-500">({reservations.length})</span>
+                </div>
+                {showReservations ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              </button>
+
+              {showReservations && (
+                <div className="px-4 pb-4">
+                  {loadingReservations ? (
+                    <div className="text-xs text-gray-500">Yükleniyor...</div>
+                  ) : reservations.length === 0 ? (
+                    <div className="text-xs text-gray-500">Kayıtlı rezervasyon yok</div>
+                  ) : (
+                    <div className="space-y-2">
+                      {reservations.map((r: any) => (
+                        <div key={r.id} className="bg-gray-50 rounded px-3 py-2">
+                          <div className="flex items-center justify-between">
+                            <div className="text-xs text-gray-800 flex items-center flex-wrap gap-2">
+                              <span className="font-medium mr-1">{r.airline || '-'} {r.flightNumber || ''}</span>
+                              <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded">{r.origin || '-'} → {r.destination || '-'}</span>
+                              {r.departureTime && (
+                                <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded">{new Date(r.departureTime).toLocaleString('tr-TR')}</span>
+                              )}
+                              {r.pnr && (
+                                <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded">PNR: {r.pnr}</span>
+                              )}
+                              <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded">Durum: {r.status}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs text-gray-600 whitespace-nowrap">{r.amount ? `${r.amount} ${r.currency || ''}` : '-'}</span>
                             </div>
                           </div>
                         </div>

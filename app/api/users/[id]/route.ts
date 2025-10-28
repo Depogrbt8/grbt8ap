@@ -40,7 +40,26 @@ export async function GET(
           select: {
             passengers: true,
             priceAlerts: true,
-            searchFavorites: true
+            searchFavorites: true,
+            reservations: true,
+            payments: true
+          }
+        },
+        reservations: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            status: true,
+            amount: true,
+            currency: true,
+            pnr: true,
+            airline: true,
+            flightNumber: true,
+            origin: true,
+            destination: true,
+            departureTime: true,
+            arrivalTime: true,
+            createdAt: true,
           }
         },
         priceAlerts: {
@@ -90,8 +109,8 @@ export async function GET(
       passengerCount: user._count.passengers,
       alertCount: user._count.priceAlerts,
       favoriteCount: user._count.searchFavorites,
-      reservationCount: 0,
-      paymentCount: 0,
+      reservationCount: user._count.reservations,
+      paymentCount: user._count.payments,
       firstName: user.firstName,
       lastName: user.lastName,
       birthDay: user.birthDay || '',
@@ -108,6 +127,7 @@ export async function GET(
     return NextResponse.json({
       success: true,
       data: formattedUser,
+      reservations: user.reservations || [],
       priceAlerts: user.priceAlerts || [],
       searchFavorites: user.searchFavorites || []
     })
