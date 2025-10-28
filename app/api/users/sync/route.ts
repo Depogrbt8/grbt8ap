@@ -48,6 +48,11 @@ export async function POST(request: NextRequest) {
         });
 
         if (existingUser) {
+          // Silinmiş kullanıcıları senkronizasyon dışında bırak
+          if (existingUser.status === 'deleted') {
+            skippedCount++
+            continue
+          }
           // Kullanıcı varsa güncelle
           await prisma.user.update({
             where: { email: sourceUser.email },

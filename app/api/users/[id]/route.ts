@@ -24,6 +24,7 @@ export async function GET(
         email: true,
         firstName: true,
         lastName: true,
+        status: true,
         phone: true,
         countryCode: true,
         birthDay: true,
@@ -84,7 +85,7 @@ export async function GET(
       }
     })
 
-    if (!user) {
+    if (!user || user.status === 'deleted') {
       return NextResponse.json(
         { 
           success: false, 
@@ -101,7 +102,7 @@ export async function GET(
       customerNo: `#${user.id.slice(-6).toUpperCase()}`,
       email: user.email,
       phone: user.phone || 'Belirtilmemiş',
-      status: 'Aktif',
+      status: user.status === 'active' ? 'Aktif' : user.status === 'deleted' ? 'Silindi' : 'Pasif',
       joinDate: user.createdAt.toLocaleDateString('tr-TR'),
       lastLogin: 'Hiç giriş yapmamış',
       role: 'Kullanıcı',
@@ -302,49 +303,33 @@ export async function DELETE(
       )
     }
 
-    console.log('Kullanıcı bulundu, siliniyor:', user.email)
+    console.log('Kullanıcı bulundu, soft delete uygulanıyor:', user.email)
 
-    // Transaction ile güvenli silme
-    await prisma.$transaction(async (tx) => {
-      // Önce bağlı kayıtları sil
-      try {
-        await tx.passenger.deleteMany({
-          where: { userId: userId }
-        })
-        console.log('Yolcu kayıtları silindi')
-      } catch (e) {
-        console.log('Yolcu kayıtları yok veya silinemedi:', e)
+    // Soft delete: durumu 'deleted' yap, kritik alanları anonimize et
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        status: 'deleted',
+        canDelete: false,
+        email: `deleted_${user.id}@example.invalid`,
+        firstName: 'Silinen',
+        lastName: 'Kullanıcı',
+        phone: null,
+        countryCode: null,
+        identityNumber: null,
+        address: null,
+        city: null,
+        updatedAt: new Date()
       }
-
-      try {
-        await tx.priceAlert.deleteMany({
-          where: { userId: userId }
-        })
-        console.log('Fiyat alarmları silindi')
-      } catch (e) {
-        console.log('Fiyat alarmları yok veya silinemedi:', e)
-      }
-
-      try {
-        await tx.searchFavorite.deleteMany({
-          where: { userId: userId }
-        })
-        console.log('Favori aramalar silindi')
-      } catch (e) {
-        console.log('Favori aramalar yok veya silinemedi:', e)
-      }
-
-      // Son olarak kullanıcıyı sil
-      await tx.user.delete({
-        where: { id: userId }
-      })
     })
 
-    console.log('Kullanıcı başarıyla silindi:', userId)
+    // İsteğe bağlı: kullanıcıya bağlı cache/indeks verileri silinebilir
+
+    console.log('Kullanıcı soft delete ile işaretlendi:', userId)
 
     return NextResponse.json({
       success: true,
-      message: 'Kullanıcı ve tüm bağlı kayıtları başarıyla silindi'
+      message: 'Kullanıcı silindi olarak işaretlendi'
     })
 
   } catch (error) {

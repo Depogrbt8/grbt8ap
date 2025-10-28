@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const statusFilter = searchParams.get('status')
     
     // Toplam sayı
-    const whereConditions: any = {}
+    const whereConditions: any = { status: { not: 'deleted' } }
     
     if (search) {
       whereConditions.OR = [
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
       customerNo: `#${user.id.slice(-6).toUpperCase()}`,
       email: user.email,
       phone: user.phone ? `${user.countryCode || ''} ${user.phone}` : 'Belirtilmemiş',
-      status: user.status === 'active' ? 'Aktif' : 'Pasif',
+      status: user.status === 'active' ? 'Aktif' : user.status === 'deleted' ? 'Silindi' : 'Pasif',
       city: 'Belirtilmemiş', // Şu anda şema'da yok
       address: 'Belirtilmemiş', // Şu anda şema'da yok
       joinDate: user.createdAt.toLocaleDateString('tr-TR'),

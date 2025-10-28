@@ -19,6 +19,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingUser) {
+      // Silinmiş kullanıcıyı güncellemeyi atla
+      if (existingUser.status === 'deleted') {
+        return NextResponse.json({ success: true, message: 'Silinmiş kullanıcı atlandı', action: 'skipped' });
+      }
       // Kullanıcı varsa güncelle
       await prisma.user.update({
         where: { email: user.email },
