@@ -8,20 +8,25 @@ export async function PUT(request: NextRequest) {
     const adminCheck = await requireAdmin(request)
     if (adminCheck) return adminCheck
 
-    // 🔒 Güvenlik logu
+    // 🔒 Güvenlik logu (hataları yakala, işlemi durdurma)
     const user = await getAuthUser(request)
-    await prisma.systemLog.create({
-      data: {
-        level: 'warn',
-        message: `Bulk user update attempt - Admin: ${user?.email}`,
-        source: 'bulk_api',
-        userId: user?.id,
-        metadata: JSON.stringify({ 
-          ip: request.ip || request.headers.get('x-forwarded-for'),
-          userAgent: request.headers.get('user-agent')
-        })
-      }
-    })
+    try {
+      await prisma.systemLog.create({
+        data: {
+          level: 'warn',
+          message: `Bulk user update attempt - Admin: ${user?.email}`,
+          source: 'bulk_api',
+          userId: user?.id,
+          metadata: JSON.stringify({ 
+            ip: request.ip || request.headers.get('x-forwarded-for'),
+            userAgent: request.headers.get('user-agent')
+          })
+        }
+      })
+    } catch (logError) {
+      console.error('SystemLog kaydWarning: Failed to create SystemLog entry:', logError)
+      // Log hatasını görmezden gel, işleme devam et
+    }
 
     const body = await request.json()
     const { action, userIds } = body
