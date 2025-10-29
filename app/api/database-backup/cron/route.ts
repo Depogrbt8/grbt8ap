@@ -8,6 +8,7 @@ import path from 'path'
 export async function GET(request: NextRequest) {
   // GÜVENLIK: Sadece admin erişimi veya Vercel cron
   const isVercelCron = request.headers.get('authorization') === `Bearer ${process.env.CRON_SECRET}`
+    || !!request.headers.get('x-vercel-cron')
   
   if (!isVercelCron) {
     const adminCheck = await requireAdmin(request)

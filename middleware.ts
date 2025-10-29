@@ -59,6 +59,18 @@ export async function middleware(request: NextRequest) {
   ) {
     // Check authentication for protected routes
     if (!isPublicPath) {
+      // Vercel Cron istisnası: Backup endpoint'leri için cron header/secret varsa auth'u atla
+      if (pathname.startsWith('/api/database-backup')) {
+        const cronHeader = request.headers.get('x-vercel-cron')
+        const authHeader = request.headers.get('authorization')
+        const cronSecret = process.env.CRON_SECRET
+        const cronAuthorized = !!cronHeader || (cronSecret && authHeader === `Bearer ${cronSecret}`)
+        if (cronAuthorized) {
+          const response = NextResponse.next()
+          return addSecurityHeaders(response)
+        }
+      }
+
       const token = await getToken({
         req: request as any,
         secret: process.env.NEXTAUTH_SECRET

@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
   // GÜVENLİK: Vercel cron'dan geliyorsa izin ver, yoksa admin kontrolü yap
   const authHeader = request.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET || 'default-secret-change-me'
-  const isVercelCron = authHeader === `Bearer ${cronSecret}`
+  const vercelCronHeader = request.headers.get('x-vercel-cron')
+  const isVercelCron = (authHeader === `Bearer ${cronSecret}`) || !!vercelCronHeader
   
   if (!isVercelCron) {
     // Vercel cron değilse admin kontrolü yap
