@@ -9,12 +9,18 @@ export async function GET(request: NextRequest) {
   const adminCheck = await requireAdmin(request)
   if (adminCheck) return adminCheck
   try {
-    const backupFile = path.join(process.cwd(), 'backups', 'database-backup.json')
-    
-    // Backup klasörünü oluştur
-    const backupDir = path.join(process.cwd(), 'backups')
-    if (!fs.existsSync(backupDir)) {
-      fs.mkdirSync(backupDir, { recursive: true })
+    // Vercel dosya sistemi read-only (\"/var/task\"); yazılabilir tek klasör "/tmp"
+    const isVercel = !!process.env.VERCEL
+    const backupDir = isVercel ? path.join('/tmp', 'backups') : path.join(process.cwd(), 'backups')
+    const backupFile = path.join(backupDir, 'database-backup.json')
+
+    // Vercel'de yazma zorunlu değil; sadece varsa oku. Yazılabilir ortamda dizini oluştur.
+    try {
+      if (!isVercel && !fs.existsSync(backupDir)) {
+        fs.mkdirSync(backupDir, { recursive: true })
+      }
+    } catch (_) {
+      // Okuma amacıyla, mkdir hatalarını yoksay
     }
 
     let lastBackup: string | undefined
