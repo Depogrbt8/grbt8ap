@@ -6,7 +6,7 @@ import path from 'path'
 
 // GitHub backup bilgileri
 const GITHUB_TOKEN = process.env.GITHUB_BACKUP_TOKEN || ''
-const GITHUB_REPO = 'grbt8yedek/adm2saat'
+const GITHUB_REPO = 'grbt8yedek/adminhersaat'
 const GITHUB_API = 'https://api.github.com'
 
 // Her saatte bir çalışacak GitHub backup sistemi

@@ -1,0 +1,106 @@
+name: mirror-backups-to-adm2saat
+
+on:
+  schedule:
+    - cron: '10 */2 * * *' # 2 saatte bir, ilk workflow'dan 10 dk sonra
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger backup to source repo (adminhersaat)
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          BACKUP_URL: ${{ secrets.BACKUP_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$BACKUP_URL" ]; then
+            echo "CRON_SECRET veya BACKUP_URL tanımlı değil" >&2
+            exit 1
+          fi
+          curl -fsSL -H "Authorization: Bearer $CRON_SECRET" "$BACKUP_URL"
+
+      - name: Mirror latest backups to target repo (adm2saat)
+        uses: actions/github-script@v7
+        env:
+          SOURCE_REPO: grbt8yedek/adminhersaat
+          TARGET_REPO: grbt8yedek/adm2saat
+          BACKUP_PATH: backups
+          RETENTION_DAYS: '10'
+        with:
+          github-token: ${{ secrets.MIRROR_TOKEN }}
+          script: |
+            const source = process.env.SOURCE_REPO;
+            const target = process.env.TARGET_REPO;
+            const pathDir = process.env.BACKUP_PATH || 'backups';
+            const retentionDays = parseInt(process.env.RETENTION_DAYS || '10', 10);
+            if (!source || !target) {
+              core.setFailed('SOURCE_REPO ve TARGET_REPO gerekli');
+            }
+            const [sOwner, sRepo] = source.split('/');
+            const [tOwner, tRepo] = target.split('/');
+
+            // 1) Kaynaktaki dosyaları listele
+            const { data } = await github.rest.repos.getContent({ owner: sOwner, repo: sRepo, path: pathDir });
+            const files = Array.isArray(data) ? data.filter(f => f.type === 'file' && f.name.endsWith('.json')) : [];
+            if (files.length === 0) {
+              core.info('Kaynakta yedek dosyası bulunamadı');
+              return;
+            }
+
+            // 2) Tarihe göre sırala (en yeni ilk)
+            files.sort((a,b) => new Date(b.name).getTime() - new Date(a.name).getTime());
+
+            // 3) 10 günden eski dosyaları hedefte sil
+            const cutoff = new Date(Date.now() - retentionDays*24*60*60*1000);
+            try {
+              const targetList = await github.rest.repos.getContent({ owner: tOwner, repo: tRepo, path: pathDir });
+              const tFiles = Array.isArray(targetList.data) ? targetList.data : [];
+              for (const f of tFiles) {
+                if (f.type !== 'file' || !f.name.endsWith('.json')) continue;
+                const name = f.name;
+                const tsPart = name.replace('admin_backup_', '').replace('.json','').replace(/-/g, ':');
+                const isoGuess = tsPart.replace(/:(\d{3})Z$/, '.$1Z');
+                const dt = new Date(isoGuess);
+                if (!isNaN(dt.getTime()) && dt < cutoff) {
+                  core.info(`Delete old ${pathDir}/${name}`);
+                  await github.rest.repos.deleteFile({ owner: tOwner, repo: tRepo, path: `${pathDir}/${name}`, message: `Prune old backup ${name}`, sha: f.sha });
+                }
+              }
+            } catch (e) {
+              // Hedefte klasör yoksa devam
+              core.info('Target path might not exist yet; will create on upload.');
+            }
+
+            // 4) En yeni 3 dosyayı kopyala (fazla güvence)
+            const pick = files.slice(0, 3);
+            for (const f of pick) {
+              // Kaynak dosya içeriğini al
+              const contentResp = await github.rest.repos.getContent({ owner: sOwner, repo: sRepo, path: `${pathDir}/${f.name}` });
+              const fileData = contentResp.data;
+              if (!('content' in fileData)) continue;
+              const encoded = fileData.content; // base64
+
+              // Hedefte mevcutsa SHA öğren
+              let sha = undefined;
+              try {
+                const existing = await github.rest.repos.getContent({ owner: tOwner, repo: tRepo, path: `${pathDir}/${f.name}` });
+                if (Array.isArray(existing.data)) {
+                  // ignore
+                } else {
+                  sha = existing.data.sha;
+                  core.info(`Updating existing ${pathDir}/${f.name}`);
+                }
+              } catch (e) {
+                core.info(`Creating new ${pathDir}/${f.name}`);
+              }
+
+              await github.rest.repos.createOrUpdateFileContents({
+                owner: tOwner,
+                repo: tRepo,
+                path: `${pathDir}/${f.name}`,
+                message: `Mirror ${f.name} from ${source}`,
+                content: encoded,
+                sha,
+              });
+            }

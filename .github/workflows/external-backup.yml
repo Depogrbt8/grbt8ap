@@ -1,0 +1,81 @@
+name: external-hourly-backup
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Her 2 saatte bir
+  workflow_dispatch:
+
+jobs:
+  run-backup:
+    name: Trigger backup and prune old files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger admin backup endpoint
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          BACKUP_URL: ${{ secrets.BACKUP_URL }}
+        run: |
+          if [ -z "$CRON_SECRET" ] || [ -z "$BACKUP_URL" ]; then
+            echo "CRON_SECRET veya BACKUP_URL tanımlı değil" >&2
+            exit 1
+          fi
+          echo "Calling backup endpoint: $BACKUP_URL"
+          curl -fsSL -H "Authorization: Bearer $CRON_SECRET" "$BACKUP_URL"
+
+      - name: Prune backups older than 10 days
+        uses: actions/github-script@v7
+        env:
+          BACKUP_REPO: ${{ secrets.BACKUP_REPO }} # ör: grbt8yedek/adminhersaat
+          BACKUP_PATH: backups
+          RETENTION_DAYS: '10'
+        with:
+          github-token: ${{ secrets.BACKUP_REPO_TOKEN }}
+          script: |
+            const backupRepo = process.env.BACKUP_REPO;
+            const backupPath = process.env.BACKUP_PATH || 'backups';
+            const retentionDays = parseInt(process.env.RETENTION_DAYS || '10', 10);
+            if (!backupRepo) {
+              core.setFailed('BACKUP_REPO secret is required, e.g. "grbt8yedek/adminhersaat"');
+            }
+            const [owner, repo] = backupRepo.split('/');
+            const now = new Date();
+            const cutoff = new Date(now.getTime() - retentionDays * 24 * 60 * 60 * 1000);
+
+            // 1) Listele
+            const contents = await github.rest.repos.getContent({ owner, repo, path: backupPath });
+            const files = Array.isArray(contents.data) ? contents.data : [];
+
+            // 2) admin_backup_YYYY-... dosyaları filtrele ve tarih parse et
+            const toDelete = [];
+            for (const f of files) {
+              if (f.type !== 'file') continue;
+              const name = f.name;
+              if (!name.startsWith('admin_backup_') || !name.endsWith('.json')) continue;
+              // expected: admin_backup_2025-10-29T19-19-02-208Z.json
+              const tsPart = name.replace('admin_backup_', '').replace('.json', '').replace(/-/g, ':');
+              // Turn "YYYY:MM:DDTHH:MM:SS:msZ" back to ISO-ish; last ":" before Z is ms separator, best-effort
+              const isoGuess = tsPart.replace(/:(\d{3})Z$/, '.$1Z');
+              const parsed = new Date(isoGuess);
+              const fileDate = isNaN(parsed.getTime()) ? null : parsed;
+              if (fileDate && fileDate < cutoff) {
+                toDelete.push({ path: `${backupPath}/${name}`, sha: f.sha, date: fileDate.toISOString() });
+              }
+            }
+
+            if (toDelete.length === 0) {
+              core.info('No files to delete.');
+              return;
+            }
+
+            // 3) Sil
+            for (const item of toDelete) {
+              core.info(`Deleting ${item.path} (date: ${item.date})`);
+              await github.rest.repos.deleteFile({
+                owner,
+                repo,
+                path: item.path,
+                message: `Prune old backup ${item.path}`,
+                sha: item.sha,
+              });
+            }
+
