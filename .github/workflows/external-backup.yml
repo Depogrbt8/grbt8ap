@@ -7,75 +7,86 @@ on:
 
 jobs:
   run-backup:
-    name: Trigger backup and prune old files
+    name: Export DB and write to adm2saat (prune >10 days)
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger admin backup endpoint
-        env:
-          CRON_SECRET: ${{ secrets.CRON_SECRET }}
-          BACKUP_URL: ${{ secrets.BACKUP_URL }}
-        run: |
-          if [ -z "$CRON_SECRET" ] || [ -z "$BACKUP_URL" ]; then
-            echo "CRON_SECRET veya BACKUP_URL tanımlı değil" >&2
-            exit 1
-          fi
-          echo "Calling backup endpoint: $BACKUP_URL"
-          curl -fsSL -H "Authorization: Bearer $CRON_SECRET" "$BACKUP_URL"
-
-      - name: Prune backups older than 10 days
+      - name: Fetch export and write to target repo
         uses: actions/github-script@v7
         env:
-          BACKUP_REPO: ${{ secrets.BACKUP_REPO }} # ör: grbt8yedek/adminhersaat
-          BACKUP_PATH: backups
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          BACKUP_URL: ${{ secrets.BACKUP_URL }} # https://www.grbt8.store/api/database-backup/export
+          TARGET_REPO: ${{ secrets.TARGET_REPO }} # grbt8yedek/adm2saat
           RETENTION_DAYS: '10'
         with:
-          github-token: ${{ secrets.BACKUP_REPO_TOKEN }}
+          github-token: ${{ secrets.TARGET_TOKEN }}
           script: |
-            const backupRepo = process.env.BACKUP_REPO;
-            const backupPath = process.env.BACKUP_PATH || 'backups';
-            const retentionDays = parseInt(process.env.RETENTION_DAYS || '10', 10);
-            if (!backupRepo) {
-              core.setFailed('BACKUP_REPO secret is required, e.g. "grbt8yedek/adminhersaat"');
-            }
-            const [owner, repo] = backupRepo.split('/');
-            const now = new Date();
-            const cutoff = new Date(now.getTime() - retentionDays * 24 * 60 * 60 * 1000);
-
-            // 1) Listele
-            const contents = await github.rest.repos.getContent({ owner, repo, path: backupPath });
-            const files = Array.isArray(contents.data) ? contents.data : [];
-
-            // 2) admin_backup_YYYY-... dosyaları filtrele ve tarih parse et
-            const toDelete = [];
-            for (const f of files) {
-              if (f.type !== 'file') continue;
-              const name = f.name;
-              if (!name.startsWith('admin_backup_') || !name.endsWith('.json')) continue;
-              // expected: admin_backup_2025-10-29T19-19-02-208Z.json
-              const tsPart = name.replace('admin_backup_', '').replace('.json', '').replace(/-/g, ':');
-              // Turn "YYYY:MM:DDTHH:MM:SS:msZ" back to ISO-ish; last ":" before Z is ms separator, best-effort
-              const isoGuess = tsPart.replace(/:(\d{3})Z$/, '.$1Z');
-              const parsed = new Date(isoGuess);
-              const fileDate = isNaN(parsed.getTime()) ? null : parsed;
-              if (fileDate && fileDate < cutoff) {
-                toDelete.push({ path: `${backupPath}/${name}`, sha: f.sha, date: fileDate.toISOString() });
+            const fetchExport = async () => {
+              const url = process.env.BACKUP_URL;
+              const secret = process.env.CRON_SECRET;
+              if (!url || !secret) {
+                core.setFailed('BACKUP_URL veya CRON_SECRET eksik');
+                return null;
               }
-            }
+              const res = await fetch(url, { headers: { Authorization: `Bearer ${secret}` } });
+              if (!res.ok) {
+                core.setFailed(`Export endpoint error: ${res.status}`);
+                return null;
+              }
+              return await res.json();
+            };
 
-            if (toDelete.length === 0) {
-              core.info('No files to delete.');
+            const data = await fetchExport();
+            if (!data || !data.success) {
+              core.setFailed('Export başarısız');
               return;
             }
 
-            // 3) Sil
-            for (const item of toDelete) {
-              core.info(`Deleting ${item.path} (date: ${item.date})`);
-              await github.rest.repos.deleteFile({
-                owner,
-                repo,
-                path: item.path,
-                message: `Prune old backup ${item.path}`,
-                sha: item.sha,
-              });
+            const target = process.env.TARGET_REPO;
+            const [owner, repo] = (target || '').split('/');
+            if (!owner || !repo) {
+              core.setFailed('TARGET_REPO beklenen formatta değil (owner/repo)');
+              return;
+            }
+
+            const fileName = data.fileName || `admin_backup_${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
+            const contentObj = data.data;
+            const filePath = `backups/${fileName}`;
+            const encoded = Buffer.from(JSON.stringify(contentObj, null, 2)).toString('base64');
+
+            // Mevcutsa SHA al
+            let sha = undefined;
+            try {
+              const existing = await github.rest.repos.getContent({ owner, repo, path: filePath });
+              if (!Array.isArray(existing.data)) sha = existing.data.sha;
+            } catch (e) {}
+
+            // Yaz
+            await github.rest.repos.createOrUpdateFileContents({
+              owner,
+              repo,
+              path: filePath,
+              message: `Admin export backup - ${new Date().toLocaleString('tr-TR')}`,
+              content: encoded,
+              sha,
+            });
+
+            // Prune > N days
+            const retentionDays = parseInt(process.env.RETENTION_DAYS || '10', 10);
+            const cutoff = new Date(Date.now() - retentionDays*24*60*60*1000);
+            try {
+              const list = await github.rest.repos.getContent({ owner, repo, path: 'backups' });
+              const files = Array.isArray(list.data) ? list.data : [];
+              for (const f of files) {
+                if (f.type !== 'file' || !f.name.endsWith('.json')) continue;
+                const name = f.name;
+                const tsPart = name.replace('admin_backup_','').replace('.json','').replace(/-/g, ':');
+                const isoGuess = tsPart.replace(/:(\d{3})Z$/, '.$1Z');
+                const dt = new Date(isoGuess);
+                if (!isNaN(dt.getTime()) && dt < cutoff) {
+                  await github.rest.repos.deleteFile({ owner, repo, path: `backups/${name}`, message: `Prune old backup ${name}`, sha: f.sha });
+                }
+              }
+            } catch (e) {
+              core.info('Backups klasörü yok, prune atlandı');
             }
 
