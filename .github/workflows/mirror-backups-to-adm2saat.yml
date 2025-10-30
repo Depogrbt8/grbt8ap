@@ -1,12 +1,12 @@
-name: mirror-backups-to-adm2saat
+name: mirror-backups-to-adm2saat (disabled)
 
 on:
-  schedule:
-    - cron: '10 */2 * * *' # 2 saatte bir, ilk workflow'dan 10 dk sonra
+  # Disabled: direct push to adm2saat is now used
   workflow_dispatch:
 
 jobs:
   mirror:
+    if: false # disabled
     runs-on: ubuntu-latest
     steps:
       - name: Trigger backup to source repo (adminhersaat)
