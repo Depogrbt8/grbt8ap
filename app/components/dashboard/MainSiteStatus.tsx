@@ -62,8 +62,8 @@ export default function MainSiteStatus() {
     try {
       setError(null)
       const [statusRes, healthRes] = await Promise.all([
-        fetch('https://anasite.grbt8.store/api/system/status'),
-        fetch('https://anasite.grbt8.store/api/system/health-score')
+        fetch('https://gurbetbiz.app/api/system/status'),
+        fetch('https://gurbetbiz.app/api/system/health-score')
       ])
 
       const statusJson = await statusRes.json()

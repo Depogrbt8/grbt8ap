@@ -118,7 +118,7 @@ export class ResendEmailService {
           </ul>
 
           <div style="text-align: center;">
-            <a href="https://anasite.grbt8.store/giris" class="button">Hesabıma git</a>
+            <a href="https://gurbetbiz.app/giris" class="button">Hesabıma git</a>
           </div>
 
           <div class="closing-text">
@@ -191,7 +191,7 @@ export class ResendEmailService {
           </div>
 
           <div style="text-align: center;">
-            <a href="https://anasite.grbt8.store/hesabim/rezervasyonlar" class="button">Rezervasyonlarımı Görüntüle</a>
+            <a href="https://gurbetbiz.app/hesabim/rezervasyonlar" class="button">Rezervasyonlarımı Görüntüle</a>
           </div>
 
           <div class="closing-text">

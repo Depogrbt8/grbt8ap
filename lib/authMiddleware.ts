@@ -149,7 +149,7 @@ export function addSecurityHeaders(response: NextResponse) {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
     "font-src 'self'",
-    "connect-src 'self' https://api.github.com https://www.grbt8.store https://anasite.grbt8.store",
+    "connect-src 'self' https://api.github.com https://www.grbt8.store https://gurbetbiz.app",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

@@ -61,8 +61,8 @@ export default function Header() {
         // Ana Site durumu kontrolü
         try {
           const [mainStatusRes, mainHealthRes] = await Promise.all([
-            fetch('https://anasite.grbt8.store/api/system/status'),
-            fetch('https://anasite.grbt8.store/api/system/health-score')
+            fetch('https://gurbetbiz.app/api/system/status'),
+            fetch('https://gurbetbiz.app/api/system/health-score')
           ])
 
           if (mainStatusRes.ok && mainHealthRes.ok) {

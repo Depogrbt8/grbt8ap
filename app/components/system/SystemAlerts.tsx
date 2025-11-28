@@ -127,8 +127,8 @@ export default function SystemAlerts({ className = '' }: SystemAlertProps) {
 
       // 3. Ana Site durumu kontrolü
       const [mainStatusRes, mainHealthRes] = await Promise.all([
-        fetch('https://anasite.grbt8.store/api/system/status').catch(() => null),
-        fetch('https://anasite.grbt8.store/api/system/health-score').catch(() => null)
+        fetch('https://gurbetbiz.app/api/system/status').catch(() => null),
+        fetch('https://gurbetbiz.app/api/system/health-score').catch(() => null)
       ])
 
       if (mainStatusRes?.ok && mainHealthRes?.ok) {
