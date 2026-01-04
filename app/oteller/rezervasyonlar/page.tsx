@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
-import { Building2, Calendar, Users, DollarSign, MapPin, Clock, CheckCircle, XCircle, AlertCircle, Search, Filter, X } from 'lucide-react'
+import { Building2, Calendar, Users, DollarSign, MapPin, Clock, CheckCircle, XCircle, AlertCircle, Search, Filter } from 'lucide-react'
 
 interface HotelBooking {
   id: string
@@ -50,8 +50,7 @@ export default function OtelRezervasyonlarPage() {
   const [bookings, setBookings] = useState<HotelBooking[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [selectedBooking, setSelectedBooking] = useState<HotelBooking | null>(null)
-  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [expandedId, setExpandedId] = useState<string | null>(null)
 
   useEffect(() => {
     fetchBookings()
@@ -339,72 +338,258 @@ export default function OtelRezervasyonlarPage() {
                       {filteredBookings.map((booking) => {
                         const guests = parseGuests(booking.guests)
                         const guestInfo = parseGuestInfo(booking.guestInfo)
+                        const isExpanded = expandedId === booking.id
                         return (
-                          <tr key={booking.id} className="hover:bg-gray-50">
-                            <td className="px-3 py-2 whitespace-nowrap">
-                              <div className="text-xs font-medium text-gray-900">
-                                {booking.confirmationNumber || booking.id.slice(-8).toUpperCase()}
-                              </div>
-                              {booking.bookingReference && (
-                                <div className="text-xs text-gray-400">
-                                  {booking.bookingReference}
+                          <>
+                            <tr key={booking.id} className="hover:bg-gray-50">
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <div className="text-xs font-medium text-gray-900">
+                                  {booking.confirmationNumber || booking.id.slice(-8).toUpperCase()}
                                 </div>
-                              )}
-                            </td>
-                            <td className="px-3 py-2">
-                              <div className="text-xs font-medium text-gray-900">
-                                {booking.hotelName}
-                              </div>
-                              {booking.roomName && (
-                                <div className="text-xs text-gray-400">
-                                  {booking.roomName}
+                                {booking.bookingReference && (
+                                  <div className="text-xs text-gray-400">
+                                    {booking.bookingReference}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="text-xs font-medium text-gray-900">
+                                  {booking.hotelName}
                                 </div>
-                              )}
-                            </td>
-                            <td className="px-3 py-2">
-                              <div className="text-xs font-medium text-gray-900">
-                                {guestInfo.firstName} {guestInfo.lastName}
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap">
-                              <div className="text-xs text-gray-900">
-                                {new Date(booking.checkIn).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {new Date(booking.checkOut).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                {booking.nights} gece
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap">
-                              <div className="text-xs font-medium text-gray-900">
-                                {booking.totalPrice} {booking.currency || 'EUR'}
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap">
-                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getStatusColor(booking.status)}`}>
-                                {getStatusIcon(booking.status)}
-                                <span className="ml-0.5">{getStatusText(booking.status)}</span>
-                              </span>
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap">
-                              <div className="text-xs text-gray-600">
-                                {booking.apiProvider?.displayName || booking.provider || 'Demo'}
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap text-right">
-                              <button
-                                onClick={() => {
-                                  setSelectedBooking(booking)
-                                  setShowDetailModal(true)
-                                }}
-                                className="text-xs text-blue-600 hover:text-blue-800"
-                              >
-                                Detay
-                              </button>
-                            </td>
-                          </tr>
+                                {booking.roomName && (
+                                  <div className="text-xs text-gray-400">
+                                    {booking.roomName}
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-3 py-2">
+                                <div className="text-xs font-medium text-gray-900">
+                                  {guestInfo.firstName} {guestInfo.lastName}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <div className="text-xs text-gray-900">
+                                  {new Date(booking.checkIn).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {new Date(booking.checkOut).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  {booking.nights} gece
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <div className="text-xs font-medium text-gray-900">
+                                  {booking.totalPrice} {booking.currency || 'EUR'}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getStatusColor(booking.status)}`}>
+                                  {getStatusIcon(booking.status)}
+                                  <span className="ml-0.5">{getStatusText(booking.status)}</span>
+                                </span>
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap">
+                                <div className="text-xs text-gray-600">
+                                  {booking.apiProvider?.displayName || booking.provider || 'Demo'}
+                                </div>
+                              </td>
+                              <td className="px-3 py-2 whitespace-nowrap text-right">
+                                <button
+                                  onClick={() => setExpandedId(isExpanded ? null : booking.id)}
+                                  className="text-xs text-blue-600 hover:text-blue-800"
+                                >
+                                  {isExpanded ? 'Gizle' : 'Detay'}
+                                </button>
+                              </td>
+                            </tr>
+                            {/* Genişletilmiş Detaylar */}
+                            {isExpanded && (
+                              <tr>
+                                <td colSpan={8} className="px-3 py-3 bg-gray-50">
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Sol Kolon */}
+                                    <div>
+                                      <div className="text-xs font-semibold text-gray-900 mb-2">Rezervasyon Bilgileri</div>
+                                      <div className="space-y-1.5 text-xs">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Rezervasyon No:</span>
+                                          <span className="text-gray-900 font-medium">
+                                            {booking.confirmationNumber || booking.id.slice(-8).toUpperCase()}
+                                          </span>
+                                        </div>
+                                        {booking.bookingReference && (
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-500">Booking Reference:</span>
+                                            <span className="text-gray-900">{booking.bookingReference}</span>
+                                          </div>
+                                        )}
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Durum:</span>
+                                          <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getStatusColor(booking.status)}`}>
+                                            {getStatusText(booking.status)}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Provider:</span>
+                                          <span className="text-gray-900">{booking.apiProvider?.displayName || booking.provider || 'Demo'}</span>
+                                        </div>
+                                        {booking.providerBookingId && (
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-500">Provider Booking ID:</span>
+                                            <span className="text-gray-900">{booking.providerBookingId}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Sağ Kolon */}
+                                    <div>
+                                      <div className="text-xs font-semibold text-gray-900 mb-2">Otel Bilgileri</div>
+                                      <div className="space-y-1.5 text-xs">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Otel Adı:</span>
+                                          <span className="text-gray-900 font-medium">{booking.hotelName}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Konum:</span>
+                                          <span className="text-gray-900">{booking.hotelLocation}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Oda Tipi:</span>
+                                          <span className="text-gray-900">{booking.roomType}</span>
+                                        </div>
+                                        {booking.roomName && (
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-500">Oda Adı:</span>
+                                            <span className="text-gray-900">{booking.roomName}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* İkinci Satır - Sol */}
+                                    <div>
+                                      <div className="text-xs font-semibold text-gray-900 mb-2">Tarih Bilgileri</div>
+                                      <div className="space-y-1.5 text-xs">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Giriş:</span>
+                                          <span className="text-gray-900">{formatDate(booking.checkIn)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Çıkış:</span>
+                                          <span className="text-gray-900">{formatDate(booking.checkOut)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Gece Sayısı:</span>
+                                          <span className="text-gray-900 font-medium">{booking.nights} gece</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* İkinci Satır - Sağ */}
+                                    <div>
+                                      <div className="text-xs font-semibold text-gray-900 mb-2">Misafir Bilgileri</div>
+                                      <div className="space-y-1.5 text-xs">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Yetişkin:</span>
+                                          <span className="text-gray-900">{guests.adults} kişi</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Çocuk:</span>
+                                          <span className="text-gray-900">{guests.children} kişi</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Oda Sayısı:</span>
+                                          <span className="text-gray-900 font-medium">{guests.rooms} oda</span>
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Üçüncü Satır - Sol */}
+                                    <div>
+                                      <div className="text-xs font-semibold text-gray-900 mb-2">Müşteri Bilgileri</div>
+                                      <div className="space-y-1.5 text-xs">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Ad Soyad:</span>
+                                          <span className="text-gray-900 font-medium">{guestInfo.firstName} {guestInfo.lastName}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Email:</span>
+                                          <span className="text-gray-900">{guestInfo.email}</span>
+                                        </div>
+                                        {guestInfo.phone && (
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-500">Telefon:</span>
+                                            <span className="text-gray-900">{guestInfo.phone}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Üçüncü Satır - Sağ */}
+                                    <div>
+                                      <div className="text-xs font-semibold text-gray-900 mb-2">Fiyat Bilgileri</div>
+                                      <div className="space-y-1.5 text-xs">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Toplam Tutar:</span>
+                                          <span className="text-gray-900 font-semibold">
+                                            {booking.totalPrice} {booking.currency || 'EUR'}
+                                          </span>
+                                        </div>
+                                      </div>
+                                      {booking.cancellationPolicy && (
+                                        <div className="mt-3 pt-3 border-t border-gray-200">
+                                          <div className="text-xs font-semibold text-gray-900 mb-1">İptal Politikası</div>
+                                          <div className="text-xs text-gray-700">{booking.cancellationPolicy}</div>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* İptal Bilgileri */}
+                                    {booking.status === 'cancelled' && booking.cancelledAt && (
+                                      <div className="md:col-span-2">
+                                        <div className="text-xs font-semibold text-gray-900 mb-2">İptal Bilgileri</div>
+                                        <div className="grid grid-cols-2 gap-4 text-xs">
+                                          <div className="flex justify-between">
+                                            <span className="text-gray-500">İptal Tarihi:</span>
+                                            <span className="text-gray-900">
+                                              {new Date(booking.cancelledAt).toLocaleString('tr-TR')}
+                                            </span>
+                                          </div>
+                                          {booking.cancellationReason && (
+                                            <div className="flex justify-between">
+                                              <span className="text-gray-500">İptal Nedeni:</span>
+                                              <span className="text-gray-900">{booking.cancellationReason}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Sistem Bilgileri */}
+                                    <div className="md:col-span-2 pt-2 border-t border-gray-200">
+                                      <div className="text-xs font-semibold text-gray-900 mb-2">Sistem Bilgileri</div>
+                                      <div className="grid grid-cols-2 gap-4 text-xs">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Oluşturulma:</span>
+                                          <span className="text-gray-900">
+                                            {new Date(booking.createdAt).toLocaleString('tr-TR')}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-500">Son Güncelleme:</span>
+                                          <span className="text-gray-900">
+                                            {new Date(booking.updatedAt).toLocaleString('tr-TR')}
+                                          </span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                          </>
                         )
                       })}
                     </tbody>
@@ -415,234 +600,6 @@ export default function OtelRezervasyonlarPage() {
           </div>
         </main>
       </div>
-
-      {/* Detay Modal */}
-      {showDetailModal && selectedBooking && (
-        <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            {/* Modal Header */}
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900">Rezervasyon Detayları</h3>
-              <button
-                onClick={() => {
-                  setShowDetailModal(false)
-                  setSelectedBooking(null)
-                }}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-4 space-y-3">
-              {(() => {
-                const guests = parseGuests(selectedBooking.guests)
-                const guestInfo = parseGuestInfo(selectedBooking.guestInfo)
-                return (
-                  <>
-                    {/* Rezervasyon Bilgileri */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <div className="text-xs text-gray-500 mb-0.5">Rezervasyon No</div>
-                        <div className="text-xs font-medium text-gray-900">
-                          {selectedBooking.confirmationNumber || selectedBooking.id.slice(-8).toUpperCase()}
-                        </div>
-                      </div>
-                      {selectedBooking.bookingReference && (
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Booking Reference</div>
-                          <div className="text-xs font-medium text-gray-900">{selectedBooking.bookingReference}</div>
-                        </div>
-                      )}
-                      <div>
-                        <div className="text-xs text-gray-500 mb-0.5">Durum</div>
-                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getStatusColor(selectedBooking.status)}`}>
-                          {getStatusText(selectedBooking.status)}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 mb-0.5">Provider</div>
-                        <div className="text-xs font-medium text-gray-900">
-                          {selectedBooking.apiProvider?.displayName || selectedBooking.provider || 'Demo'}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Otel Bilgileri */}
-                    <div className="border-t border-gray-200 pt-3">
-                      <div className="text-xs font-semibold text-gray-900 mb-2">Otel Bilgileri</div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Otel Adı</div>
-                          <div className="text-xs font-medium text-gray-900">{selectedBooking.hotelName}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Konum</div>
-                          <div className="text-xs font-medium text-gray-900">{selectedBooking.hotelLocation}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Oda Tipi</div>
-                          <div className="text-xs font-medium text-gray-900">{selectedBooking.roomType}</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Oda Adı</div>
-                          <div className="text-xs font-medium text-gray-900">{selectedBooking.roomName}</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Tarih Bilgileri */}
-                    <div className="border-t border-gray-200 pt-3">
-                      <div className="text-xs font-semibold text-gray-900 mb-2">Tarih Bilgileri</div>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Giriş Tarihi</div>
-                          <div className="text-xs font-medium text-gray-900">
-                            {formatDate(selectedBooking.checkIn)}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Çıkış Tarihi</div>
-                          <div className="text-xs font-medium text-gray-900">
-                            {formatDate(selectedBooking.checkOut)}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Gece Sayısı</div>
-                          <div className="text-xs font-medium text-gray-900">{selectedBooking.nights} gece</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Misafir Bilgileri */}
-                    <div className="border-t border-gray-200 pt-3">
-                      <div className="text-xs font-semibold text-gray-900 mb-2">Misafir Bilgileri</div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Yetişkin</div>
-                          <div className="text-xs font-medium text-gray-900">{guests.adults} kişi</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Çocuk</div>
-                          <div className="text-xs font-medium text-gray-900">{guests.children} kişi</div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Oda Sayısı</div>
-                          <div className="text-xs font-medium text-gray-900">{guests.rooms} oda</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Müşteri Bilgileri */}
-                    <div className="border-t border-gray-200 pt-3">
-                      <div className="text-xs font-semibold text-gray-900 mb-2">Müşteri Bilgileri</div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Ad Soyad</div>
-                          <div className="text-xs font-medium text-gray-900">
-                            {guestInfo.firstName} {guestInfo.lastName}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Email</div>
-                          <div className="text-xs font-medium text-gray-900">{guestInfo.email}</div>
-                        </div>
-                        {guestInfo.phone && (
-                          <div>
-                            <div className="text-xs text-gray-500 mb-0.5">Telefon</div>
-                            <div className="text-xs font-medium text-gray-900">{guestInfo.phone}</div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Fiyat Bilgileri */}
-                    <div className="border-t border-gray-200 pt-3">
-                      <div className="text-xs font-semibold text-gray-900 mb-2">Fiyat Bilgileri</div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Toplam Tutar</div>
-                          <div className="text-xs font-semibold text-gray-900">
-                            {selectedBooking.totalPrice} {selectedBooking.currency || 'EUR'}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* İptal Politikası */}
-                    {selectedBooking.cancellationPolicy && (
-                      <div className="border-t border-gray-200 pt-3">
-                        <div className="text-xs font-semibold text-gray-900 mb-1">İptal Politikası</div>
-                        <div className="text-xs text-gray-700">{selectedBooking.cancellationPolicy}</div>
-                      </div>
-                    )}
-
-                    {/* İptal Bilgileri */}
-                    {selectedBooking.status === 'cancelled' && selectedBooking.cancelledAt && (
-                      <div className="border-t border-gray-200 pt-3">
-                        <div className="text-xs font-semibold text-gray-900 mb-2">İptal Bilgileri</div>
-                        <div className="grid grid-cols-2 gap-3">
-                          <div>
-                            <div className="text-xs text-gray-500 mb-0.5">İptal Tarihi</div>
-                            <div className="text-xs font-medium text-gray-900">
-                              {new Date(selectedBooking.cancelledAt).toLocaleString('tr-TR')}
-                            </div>
-                          </div>
-                          {selectedBooking.cancellationReason && (
-                            <div>
-                              <div className="text-xs text-gray-500 mb-0.5">İptal Nedeni</div>
-                              <div className="text-xs font-medium text-gray-900">{selectedBooking.cancellationReason}</div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Sistem Bilgileri */}
-                    <div className="border-t border-gray-200 pt-3">
-                      <div className="text-xs font-semibold text-gray-900 mb-2">Sistem Bilgileri</div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Oluşturulma</div>
-                          <div className="text-xs font-medium text-gray-900">
-                            {new Date(selectedBooking.createdAt).toLocaleString('tr-TR')}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 mb-0.5">Son Güncelleme</div>
-                          <div className="text-xs font-medium text-gray-900">
-                            {new Date(selectedBooking.updatedAt).toLocaleString('tr-TR')}
-                          </div>
-                        </div>
-                        {selectedBooking.providerBookingId && (
-                          <div>
-                            <div className="text-xs text-gray-500 mb-0.5">Provider Booking ID</div>
-                            <div className="text-xs font-medium text-gray-900">{selectedBooking.providerBookingId}</div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </>
-                )
-              })()}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="sticky bottom-0 bg-gray-50 border-t border-gray-200 px-4 py-2 flex justify-end">
-              <button
-                onClick={() => {
-                  setShowDetailModal(false)
-                  setSelectedBooking(null)
-                }}
-                className="px-3 py-1 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50"
-              >
-                Kapat
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
