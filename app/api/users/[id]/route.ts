@@ -43,7 +43,6 @@ export async function GET(
             passengers: true,
             priceAlerts: true,
             searchFavorites: true,
-            hotelFavorites: true,
             reservations: true,
             payments: true
           }
@@ -83,8 +82,17 @@ export async function GET(
             departureDate: true,
             createdAt: true
           }
-        },
-        hotelFavorites: {
+        }
+      }
+    })
+
+    // hotelFavorites'i ayrı bir query ile çek (migration sonrası aktif olacak)
+    let hotelFavorites: any[] = []
+    try {
+      // Prisma client'ın hotelFavorite modelini destekleyip desteklemediğini kontrol et
+      if (prisma.hotelFavorite && typeof prisma.hotelFavorite.findMany === 'function') {
+        const hotelFavs = await prisma.hotelFavorite.findMany({
+          where: { userId: userId },
           orderBy: { createdAt: 'desc' },
           select: {
             id: true,
@@ -94,9 +102,14 @@ export async function GET(
             hotelImage: true,
             createdAt: true
           }
-        }
+        })
+        hotelFavorites = hotelFavs
       }
-    })
+    } catch (error: any) {
+      // HotelFavorite tablosu henüz oluşturulmamışsa boş array döndür
+      console.log('HotelFavorite tablosu henüz oluşturulmamış veya migration gerekli:', error?.message || 'Unknown error')
+      hotelFavorites = []
+    }
 
     if (!user || user.status === 'deleted') {
       return NextResponse.json(
