@@ -1184,16 +1184,25 @@ export default function KullaniciDetayPage() {
                   <span className="text-sm font-medium text-gray-900">Favori Oteller :</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {hotelFavorites && hotelFavorites.length > 0 ? (
-                    hotelFavorites.map((fav: any) => (
-                      <div key={fav.id} className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-md">
-                        {fav.hotelName}
-                        {fav.hotelLocation && <span className="text-gray-500 ml-1">({fav.hotelLocation})</span>}
-                      </div>
-                    ))
-                  ) : (
-                    <span className="text-xs text-gray-500">Kayıtlı favori otel yok</span>
-                  )}
+                  {(() => {
+                    console.log('[Frontend Render] hotelFavorites state:', hotelFavorites)
+                    console.log('[Frontend Render] hotelFavorites length:', hotelFavorites?.length)
+                    console.log('[Frontend Render] hotelFavorites isArray:', Array.isArray(hotelFavorites))
+                    
+                    if (!hotelFavorites || !Array.isArray(hotelFavorites) || hotelFavorites.length === 0) {
+                      return <span className="text-xs text-gray-500">Kayıtlı favori otel yok</span>
+                    }
+                    
+                    return hotelFavorites.map((fav: any) => {
+                      console.log('[Frontend Render] Rendering favorite:', fav)
+                      return (
+                        <div key={fav.id || fav.hotelId} className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-md">
+                          {fav.hotelName || 'İsimsiz Otel'}
+                          {fav.hotelLocation && <span className="text-gray-500 ml-1">({fav.hotelLocation})</span>}
+                        </div>
+                      )
+                    })
+                  })()}
                 </div>
               </div>
             </div>
