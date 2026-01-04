@@ -320,9 +320,6 @@ export default function OtelRezervasyonlarPage() {
                           Tarihler
                         </th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
-                          Misafirler
-                        </th>
-                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Tutar
                         </th>
                         <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -356,10 +353,6 @@ export default function OtelRezervasyonlarPage() {
                               <div className="text-xs font-medium text-gray-900">
                                 {booking.hotelName}
                               </div>
-                              <div className="text-xs text-gray-500 flex items-center">
-                                <MapPin className="h-2.5 w-2.5 mr-0.5" />
-                                {booking.hotelLocation}
-                              </div>
                               {booking.roomName && (
                                 <div className="text-xs text-gray-400">
                                   {booking.roomName}
@@ -370,7 +363,6 @@ export default function OtelRezervasyonlarPage() {
                               <div className="text-xs font-medium text-gray-900">
                                 {guestInfo.firstName} {guestInfo.lastName}
                               </div>
-                              <div className="text-xs text-gray-500">{guestInfo.email}</div>
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap">
                               <div className="text-xs text-gray-900">
@@ -381,19 +373,6 @@ export default function OtelRezervasyonlarPage() {
                               </div>
                               <div className="text-xs text-gray-400">
                                 {booking.nights} gece
-                              </div>
-                            </td>
-                            <td className="px-3 py-2 whitespace-nowrap">
-                              <div className="text-xs text-gray-900">
-                                {guests.adults} Yetişkin
-                              </div>
-                              {guests.children > 0 && (
-                                <div className="text-xs text-gray-500">
-                                  {guests.children} Çocuk
-                                </div>
-                              )}
-                              <div className="text-xs text-gray-400">
-                                {guests.rooms} Oda
                               </div>
                             </td>
                             <td className="px-3 py-2 whitespace-nowrap">
