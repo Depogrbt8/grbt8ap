@@ -17,6 +17,7 @@ export async function POST(
     const response = await fetch(`${mainSiteUrl}/api/hotels/providers/${params.name}/test`, {
       method: 'POST',
       headers: {
+        'x-admin-panel-token': process.env.ADMIN_PANEL_SECRET || '',
         'Content-Type': 'application/json',
         'Cookie': cookies,
         'User-Agent': request.headers.get('user-agent') || '',

@@ -18,6 +18,7 @@ export async function GET(request: NextRequest) {
       `${mainSiteUrl}/api/hotels/providers?${searchParams.toString()}`,
       {
         headers: {
+          'x-admin-panel-token': process.env.ADMIN_PANEL_SECRET || '',
           'Content-Type': 'application/json',
           'Cookie': cookies,
           // User-Agent ve diğer header'ları da forward et
@@ -63,6 +64,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(`${mainSiteUrl}/api/hotels/providers`, {
       method: 'POST',
       headers: {
+        'x-admin-panel-token': process.env.ADMIN_PANEL_SECRET || '',
         'Content-Type': 'application/json',
         'Cookie': cookies,
         'User-Agent': request.headers.get('user-agent') || '',

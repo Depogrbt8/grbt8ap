@@ -16,6 +16,7 @@ export async function GET(
     // Ana sitedeki endpoint'e yönlendir
     const response = await fetch(`${mainSiteUrl}/api/hotels/providers/${params.name}`, {
       headers: {
+        'x-admin-panel-token': process.env.ADMIN_PANEL_SECRET || '',
         'Content-Type': 'application/json',
         'Cookie': cookies,
         'User-Agent': request.headers.get('user-agent') || '',
@@ -60,6 +61,7 @@ export async function PUT(
     const response = await fetch(`${mainSiteUrl}/api/hotels/providers/${params.name}`, {
       method: 'PUT',
       headers: {
+        'x-admin-panel-token': process.env.ADMIN_PANEL_SECRET || '',
         'Content-Type': 'application/json',
         'Cookie': cookies,
         'User-Agent': request.headers.get('user-agent') || '',
@@ -104,6 +106,7 @@ export async function DELETE(
     const response = await fetch(`${mainSiteUrl}/api/hotels/providers/${params.name}`, {
       method: 'DELETE',
       headers: {
+        'x-admin-panel-token': process.env.ADMIN_PANEL_SECRET || '',
         'Content-Type': 'application/json',
         'Cookie': cookies,
         'User-Agent': request.headers.get('user-agent') || '',
