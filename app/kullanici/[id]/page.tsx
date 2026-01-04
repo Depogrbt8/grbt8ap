@@ -51,6 +51,7 @@ export default function KullaniciDetayPage() {
   const [priceAlerts, setPriceAlerts] = useState<any[]>([])
   const [loadingPriceAlerts, setLoadingPriceAlerts] = useState(false)
   const [favoriteSearches, setFavoriteSearches] = useState<any[]>([])
+  const [hotelFavorites, setHotelFavorites] = useState<any[]>([])
   const [reservations, setReservations] = useState<any[]>([])
   const [hotelReservations, setHotelReservations] = useState<any[]>([])
   const [loadingReservations, setLoadingReservations] = useState(false)
@@ -378,6 +379,7 @@ export default function KullaniciDetayPage() {
         // Fiyat alarmları ve favori aramalar
         setPriceAlerts(data.priceAlerts || [])
         setFavoriteSearches(data.searchFavorites || [])
+        setHotelFavorites(data.hotelFavorites || [])
       } else {
         setError(data.error || 'Kullanıcı bulunamadı')
       }
@@ -1161,6 +1163,28 @@ export default function KullaniciDetayPage() {
                     ))
                   ) : (
                     <span className="text-xs text-gray-500">Kayıtlı favori yok</span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Favori Oteller - Tek satır, sürekli görünür */}
+            <div className="border-t border-gray-200">
+              <div className="w-full flex items-center p-4">
+                <div className="flex items-center space-x-2 mr-3">
+                  <span className="text-gray-400">🏨</span>
+                  <span className="text-sm font-medium text-gray-900">Favori Oteller :</span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {hotelFavorites && hotelFavorites.length > 0 ? (
+                    hotelFavorites.map((fav: any) => (
+                      <div key={fav.id} className="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-md">
+                        {fav.hotelName}
+                        {fav.hotelLocation && <span className="text-gray-500 ml-1">({fav.hotelLocation})</span>}
+                      </div>
+                    ))
+                  ) : (
+                    <span className="text-xs text-gray-500">Kayıtlı favori otel yok</span>
                   )}
                 </div>
               </div>

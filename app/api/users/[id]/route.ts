@@ -43,6 +43,7 @@ export async function GET(
             passengers: true,
             priceAlerts: true,
             searchFavorites: true,
+            hotelFavorites: true,
             reservations: true,
             payments: true
           }
@@ -80,6 +81,17 @@ export async function GET(
             origin: true,
             destination: true,
             departureDate: true,
+            createdAt: true
+          }
+        },
+        hotelFavorites: {
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            hotelId: true,
+            hotelName: true,
+            hotelLocation: true,
+            hotelImage: true,
             createdAt: true
           }
         }
@@ -132,7 +144,8 @@ export async function GET(
       data: formattedUser,
       reservations: user.reservations || [],
       priceAlerts: user.priceAlerts || [],
-      searchFavorites: user.searchFavorites || []
+      searchFavorites: user.searchFavorites || [],
+      hotelFavorites: user.hotelFavorites || []
     })
 
   } catch (error) {
