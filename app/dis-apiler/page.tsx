@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import Sidebar from '../components/layout/Sidebar'
 import Header from '../components/layout/Header'
 import { Plus, Settings, Play, Pause, ExternalLink, Code, Key, Globe, Clock, CheckCircle, XCircle, AlertCircle, Trash2 } from 'lucide-react'
@@ -12,6 +13,8 @@ interface ExternalApi {
   lastTest?: string
   status?: 'online' | 'offline' | 'error'
   responseTime?: number
+  type?: 'external' | 'hotel' // API tipi: external veya hotel
+  healthStatus?: string // Otel API için health status
 }
 
 export default function ExternalApisPage() {
@@ -64,13 +67,47 @@ export default function ExternalApisPage() {
   })
 
   const fetchApis = async () => {
+    setLoading(true)
     try {
-      const response = await fetch('/api/external/list?action=list')
-      const data = await response.json()
-      console.log('API Response:', data)
-      if (data.success) {
-        setApis(data.data)
+      // Genel API'leri çek
+      const externalResponse = await fetch('/api/external/list?action=list')
+      const externalData = await externalResponse.json()
+      
+      // Otel API Provider'ları çek
+      const hotelResponse = await fetch('/api/hotels/providers')
+      const hotelData = await hotelResponse.json()
+      
+      const allApis: ExternalApi[] = []
+      
+      // Genel API'leri ekle
+      if (externalData.success && externalData.data) {
+        externalData.data.forEach((api: any) => {
+          allApis.push({
+            ...api,
+            type: 'external'
+          })
+        })
       }
+      
+      // Otel API Provider'ları ekle
+      if (hotelData.success && hotelData.data) {
+        hotelData.data.forEach((provider: any) => {
+          allApis.push({
+            id: provider.name,
+            name: provider.displayName || provider.name,
+            baseUrl: provider.apiUrl || 'N/A',
+            enabled: provider.isActive || false,
+            status: provider.healthStatus === 'healthy' ? 'online' : 
+                   provider.healthStatus === 'down' ? 'offline' : 
+                   provider.healthStatus === 'degraded' ? 'error' : 'offline',
+            lastTest: provider.lastTestAt,
+            type: 'hotel',
+            healthStatus: provider.healthStatus
+          })
+        })
+      }
+      
+      setApis(allApis)
     } catch (error) {
       console.error('API listesi alınamadı:', error)
     } finally {
@@ -82,19 +119,44 @@ export default function ExternalApisPage() {
     fetchApis()
   }, [])
 
-  const testApi = async (apiId: string) => {
+  const testApi = async (apiId: string, apiType?: string) => {
     setTesting(apiId)
     try {
-      const response = await fetch(`/api/external/list?action=test&id=${apiId}`)
+      let response
+      if (apiType === 'hotel') {
+        // Otel API Provider test
+        response = await fetch(`/api/hotels/providers/${apiId}/test`, {
+          method: 'POST'
+        })
+      } else {
+        // Genel API test
+        response = await fetch(`/api/external/list?action=test&id=${apiId}`)
+      }
+      
       const data = await response.json()
       
       if (data.success) {
         // API durumunu güncelle
         setApis(prev => prev.map(api => 
           api.id === apiId 
-            ? { ...api, status: 'online', lastTest: new Date().toISOString(), responseTime: data.responseTime }
+            ? { 
+                ...api, 
+                status: apiType === 'hotel' 
+                  ? (data.data?.testResult?.success ? 'online' : 'error')
+                  : 'online',
+                lastTest: new Date().toISOString(), 
+                responseTime: data.responseTime || data.data?.testResult?.responseTime
+              }
             : api
         ))
+        // Otel API için health status güncelle
+        if (apiType === 'hotel' && data.data?.provider) {
+          setApis(prev => prev.map(api => 
+            api.id === apiId 
+              ? { ...api, healthStatus: data.data.provider.healthStatus }
+              : api
+          ))
+        }
       } else {
         setApis(prev => prev.map(api => 
           api.id === apiId 
@@ -113,11 +175,21 @@ export default function ExternalApisPage() {
     }
   }
 
-  const toggleApi = async (apiId: string) => {
+  const toggleApi = async (apiId: string, apiType?: string) => {
     try {
-      const response = await fetch(`/api/external/list?action=toggle&id=${apiId}`, {
-        method: 'POST'
-      })
+      let response
+      if (apiType === 'hotel') {
+        // Otel API Provider toggle
+        response = await fetch(`/api/hotels/providers/${apiId}/toggle`, {
+          method: 'POST'
+        })
+      } else {
+        // Genel API toggle
+        response = await fetch(`/api/external/list?action=toggle&id=${apiId}`, {
+          method: 'POST'
+        })
+      }
+      
       const data = await response.json()
       
       if (data.success) {
@@ -126,6 +198,10 @@ export default function ExternalApisPage() {
             ? { ...api, enabled: !api.enabled }
             : api
         ))
+        // Otel API için yeniden fetch et
+        if (apiType === 'hotel') {
+          fetchApis()
+        }
       }
     } catch (error) {
       console.error('API durumu değiştirilemedi:', error)
@@ -261,16 +337,25 @@ export default function ExternalApisPage() {
                 <Globe className="h-8 w-8 text-blue-600" />
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">Dış API'ler</h1>
-                  <p className="text-gray-600">Harici servis entegrasyonları</p>
+                  <p className="text-gray-600">Harici servis entegrasyonları ve Otel API Provider'ları</p>
                 </div>
               </div>
-              <button
-                onClick={() => setShowAddModal(true)}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4" />
-                <span>API Ekle</span>
-              </button>
+              <div className="flex items-center space-x-2">
+                <Link
+                  href="/oteller/api-providers/yeni"
+                  className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>Otel API Provider Ekle</span>
+                </Link>
+                <button
+                  onClick={() => setShowAddModal(true)}
+                  className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                  <Plus className="h-4 w-4" />
+                  <span>API Ekle</span>
+                </button>
+              </div>
             </div>
 
             {/* API Listesi */}
@@ -281,6 +366,11 @@ export default function ExternalApisPage() {
                     <div className="flex items-center space-x-2">
                       <Globe className="h-5 w-5 text-gray-600" />
                       <h3 className="text-lg font-semibold text-gray-900">{api.name}</h3>
+                      {api.type === 'hotel' && (
+                        <span className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded">
+                          Otel API
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center space-x-2">
                       {getStatusIcon(api.status)}
@@ -289,7 +379,12 @@ export default function ExternalApisPage() {
                         api.status === 'offline' ? 'text-red-600' :
                         api.status === 'error' ? 'text-yellow-600' : 'text-gray-500'
                       }`}>
-                        {getStatusText(api.status)}
+                        {api.type === 'hotel' && api.healthStatus 
+                          ? (api.healthStatus === 'healthy' ? 'Sağlıklı' :
+                             api.healthStatus === 'degraded' ? 'Bozuk' :
+                             api.healthStatus === 'down' ? 'Çevrimdışı' : 'Bilinmiyor')
+                          : getStatusText(api.status)
+                        }
                       </span>
                     </div>
                   </div>
@@ -323,7 +418,7 @@ export default function ExternalApisPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => toggleApi(api.id)}
+                        onClick={() => toggleApi(api.id, api.type)}
                         className={`px-3 py-1 text-sm rounded-md ${
                           api.enabled 
                             ? 'bg-green-100 text-green-800 hover:bg-green-200' 
@@ -346,7 +441,7 @@ export default function ExternalApisPage() {
 
                     <div className="flex items-center space-x-2">
                       <button
-                        onClick={() => testApi(api.id)}
+                        onClick={() => testApi(api.id, api.type)}
                         disabled={testing === api.id}
                         className="px-3 py-1 text-sm bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 disabled:opacity-50"
                       >
@@ -360,13 +455,23 @@ export default function ExternalApisPage() {
                         )}
                       </button>
                       
-                      <button 
-                        onClick={() => openEditModal(api)}
-                        className="px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
-                        title="API Düzenle"
-                      >
-                        <Settings className="h-3 w-3" />
-                      </button>
+                      {api.type === 'hotel' ? (
+                        <Link
+                          href={`/oteller/api-providers/${api.id}`}
+                          className="px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
+                          title="Otel API Provider Ayarları"
+                        >
+                          <Settings className="h-3 w-3" />
+                        </Link>
+                      ) : (
+                        <button 
+                          onClick={() => openEditModal(api)}
+                          className="px-3 py-1 text-sm bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
+                          title="API Düzenle"
+                        >
+                          <Settings className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>

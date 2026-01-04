@@ -1,5 +1,5 @@
 'use client'
-import { Calendar, Clock, User, Layout, Megaphone, CreditCard, FileText, Settings, BookOpen, BarChart3, Search, Mail, Code, Globe, LogOut, Building2 } from 'lucide-react'
+import { Calendar, Clock, User, Layout, Megaphone, CreditCard, FileText, Settings, BookOpen, BarChart3, Search, Mail, Code, Globe, LogOut } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useRouter } from 'next/navigation'
@@ -173,7 +173,6 @@ export default function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
           {renderPageLink('/dis-apiler', 'externalApi', <Globe className="h-3 w-3" />, 'Dış API', () => setActiveTab('dis-apiler'))}
           {renderPageLink('/rezervasyonlar', 'reservations', <BookOpen className="h-3 w-3" />, 'Rezervasyonlar', () => setActiveTab('rezervasyonlar'))}
           {renderPageLink('/ucuslar', 'flights', <Calendar className="h-3 w-3" />, 'Uçuşlar', () => setActiveTab('ucuslar'))}
-          {renderPageLink('/oteller/api-providers', 'oteller-api-providers', <Building2 className="h-3 w-3" />, 'Otel API Provider', () => setActiveTab('oteller-api-providers'))}
           {renderPageLink('/odemeler', 'payments', <CreditCard className="h-3 w-3" />, 'Ödemeler', () => setActiveTab('odemeler'))}
           {renderPageLink('/raporlar', 'reports', <FileText className="h-3 w-3" />, 'Raporlar', () => setActiveTab('raporlar'))}
           {renderPageLink('/istatistikler', 'statistics', <BarChart3 className="h-3 w-3" />, 'İstatistikler', () => setActiveTab('istatistikler'))}
