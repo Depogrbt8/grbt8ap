@@ -52,7 +52,10 @@ export default function KullaniciDetayPage() {
   const [loadingPriceAlerts, setLoadingPriceAlerts] = useState(false)
   const [favoriteSearches, setFavoriteSearches] = useState<any[]>([])
   const [reservations, setReservations] = useState<any[]>([])
+  const [hotelReservations, setHotelReservations] = useState<any[]>([])
   const [loadingReservations, setLoadingReservations] = useState(false)
+  const [loadingHotelReservations, setLoadingHotelReservations] = useState(false)
+  const [reservationFilter, setReservationFilter] = useState<'all' | 'flight' | 'hotel'>('all')
   // Inline tab and passengers panel (non-navigating UI)
   const [activeInlineTab, setActiveInlineTab] = useState<'none' | 'passengers' | 'reservations'>('reservations')
   const [passengers, setPassengers] = useState<any[]>([])
@@ -142,7 +145,28 @@ export default function KullaniciDetayPage() {
   useEffect(() => {
     fetchUser()
     fetchSurveyResponse()
+    fetchHotelReservations()
   }, [params.id])
+
+  const fetchHotelReservations = async () => {
+    if (!params.id) return
+    try {
+      setLoadingHotelReservations(true)
+      const response = await fetch(`/api/hotels/bookings?userId=${params.id}`)
+      const data = await response.json()
+      
+      if (data.success && data.data) {
+        setHotelReservations(data.data)
+      } else {
+        setHotelReservations([])
+      }
+    } catch (error) {
+      console.error('Otel rezervasyonları yüklenirken hata:', error)
+      setHotelReservations([])
+    } finally {
+      setLoadingHotelReservations(false)
+    }
+  }
 
   const fetchBillingInfos = async () => {
     if (!params.id) return
@@ -700,7 +724,7 @@ export default function KullaniciDetayPage() {
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
-                          Rezervasyonlar ({reservations.length})
+                          Rezervasyonlar ({reservations.length + hotelReservations.length})
                         </button>
                         <button
                           onClick={() => setPaymentsInlineTab('odemeler')}
@@ -727,59 +751,179 @@ export default function KullaniciDetayPage() {
 
                     <div className="p-6">
                       {paymentsInlineTab === 'rezervasyonlar' && (
-                        loadingReservations ? (
-                          <div className="admin-text-xs text-gray-500">Yükleniyor...</div>
-                        ) : reservations.length === 0 ? (
-                          <div className="admin-text-xs text-gray-500">Kayıtlı rezervasyon yok</div>
-                        ) : (
-                          <div className="w-full">
-                            <div className="grid grid-cols-7 text-xs text-gray-500 px-3 py-2">
-                              <div>Bilet</div>
-                              <div>Tarih</div>
-                              <div>Yolcu</div>
-                              <div>Tutar</div>
-                              <div>Seyahat</div>
-                              <div>Durum</div>
-                              <div className="text-right">Aksiyon</div>
-                            </div>
-                            <div className="divide-y divide-gray-200 bg-white rounded-lg border">
-                              {reservations.map((r: any) => {
-                                const tarih = r.departureTime ? new Date(r.departureTime) : null
-                                const yolcuSayisi = r.passengers ? (() => { try { const arr = JSON.parse(r.passengers); return Array.isArray(arr) ? arr.length : '-' } catch { return '-' } })() : '-'
-                                const seyahat = r.origin && r.destination ? `${r.origin}-${r.destination}` : (r.flightNumber || '-')
-                                const tutar = r.amount ? `${r.amount} ${r.currency || ''}` : '-'
-                                const pnr = r.pnr || (r.id ? r.id.slice(-8).toUpperCase() : '-')
-                                const badge = (s: string) => {
-                                  const base = 'px-2 py-0.5 rounded text-xs'
-                                  if (!s) return <span className={`${base} bg-gray-100 text-gray-600`}>Bilinmiyor</span>
-                                  const map: Record<string,string> = {
-                                    ready: 'bg-green-100 text-green-700',
-                                    confirmed: 'bg-green-100 text-green-700',
-                                    pending: 'bg-yellow-100 text-yellow-700',
-                                    processing: 'bg-yellow-100 text-yellow-700',
-                                    cancelled: 'bg-red-100 text-red-700',
-                                    completed: 'bg-blue-100 text-blue-700',
-                                  }
-                                  const cls = map[s] || 'bg-gray-100 text-gray-700'
-                                  return <span className={`${base} ${cls}`}>{s}</span>
-                                }
-                                return (
-                                  <div key={r.id} className="grid grid-cols-7 items-center px-3 py-3">
-                                    <div className="font-medium text-gray-900">{pnr}</div>
-                                    <div className="text-gray-700">{tarih ? tarih.toLocaleDateString('tr-TR') : '-'}</div>
-                                    <div className="text-gray-700">{yolcuSayisi}</div>
-                                    <div className="text-gray-900 font-medium">{tutar}</div>
-                                    <div className="text-gray-700">{seyahat}</div>
-                                    <div>{badge(r.status)}</div>
-                                    <div className="text-right">
-                                      <button className="text-xs px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">Görüntüle</button>
-                                    </div>
-                                  </div>
-                                )
-                              })}
-                            </div>
+                        <>
+                          {/* Filtreleme Butonları */}
+                          <div className="flex gap-2 mb-4">
+                            <button
+                              onClick={() => setReservationFilter('all')}
+                              className={`px-3 py-1 text-xs font-medium rounded-md ${
+                                reservationFilter === 'all'
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              Tümü ({reservations.length + hotelReservations.length})
+                            </button>
+                            <button
+                              onClick={() => setReservationFilter('flight')}
+                              className={`px-3 py-1 text-xs font-medium rounded-md ${
+                                reservationFilter === 'flight'
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              Uçuş ({reservations.length})
+                            </button>
+                            <button
+                              onClick={() => setReservationFilter('hotel')}
+                              className={`px-3 py-1 text-xs font-medium rounded-md ${
+                                reservationFilter === 'hotel'
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              Otel ({hotelReservations.length})
+                            </button>
                           </div>
-                        )
+
+                          {(loadingReservations || loadingHotelReservations) ? (
+                            <div className="admin-text-xs text-gray-500">Yükleniyor...</div>
+                          ) : (
+                            <>
+                              {/* Uçuş Rezervasyonları */}
+                              {(reservationFilter === 'all' || reservationFilter === 'flight') && reservations.length > 0 && (
+                                <div className="w-full mb-4">
+                                  <div className="text-xs font-medium text-gray-700 mb-2">Uçuş Rezervasyonları</div>
+                                  <div className="grid grid-cols-7 text-xs text-gray-500 px-3 py-2 bg-gray-50 rounded-t-lg">
+                                    <div>Bilet</div>
+                                    <div>Tarih</div>
+                                    <div>Yolcu</div>
+                                    <div>Tutar</div>
+                                    <div>Seyahat</div>
+                                    <div>Durum</div>
+                                    <div className="text-right">Aksiyon</div>
+                                  </div>
+                                  <div className="divide-y divide-gray-200 bg-white rounded-b-lg border">
+                                    {reservations.map((r: any) => {
+                                      const tarih = r.departureTime ? new Date(r.departureTime) : null
+                                      const yolcuSayisi = r.passengers ? (() => { try { const arr = JSON.parse(r.passengers); return Array.isArray(arr) ? arr.length : '-' } catch { return '-' } })() : '-'
+                                      const seyahat = r.origin && r.destination ? `${r.origin}-${r.destination}` : (r.flightNumber || '-')
+                                      const tutar = r.amount ? `${r.amount} ${r.currency || ''}` : '-'
+                                      const pnr = r.pnr || (r.id ? r.id.slice(-8).toUpperCase() : '-')
+                                      const badge = (s: string) => {
+                                        const base = 'px-2 py-0.5 rounded text-xs'
+                                        if (!s) return <span className={`${base} bg-gray-100 text-gray-600`}>Bilinmiyor</span>
+                                        const map: Record<string,string> = {
+                                          ready: 'bg-green-100 text-green-700',
+                                          confirmed: 'bg-green-100 text-green-700',
+                                          pending: 'bg-yellow-100 text-yellow-700',
+                                          processing: 'bg-yellow-100 text-yellow-700',
+                                          cancelled: 'bg-red-100 text-red-700',
+                                          completed: 'bg-blue-100 text-blue-700',
+                                        }
+                                        const cls = map[s] || 'bg-gray-100 text-gray-700'
+                                        return <span className={`${base} ${cls}`}>{s}</span>
+                                      }
+                                      return (
+                                        <div key={r.id} className="grid grid-cols-7 items-center px-3 py-3">
+                                          <div className="font-medium text-gray-900">{pnr}</div>
+                                          <div className="text-gray-700">{tarih ? tarih.toLocaleDateString('tr-TR') : '-'}</div>
+                                          <div className="text-gray-700">{yolcuSayisi}</div>
+                                          <div className="text-gray-900 font-medium">{tutar}</div>
+                                          <div className="text-gray-700">{seyahat}</div>
+                                          <div>{badge(r.status)}</div>
+                                          <div className="text-right">
+                                            <button 
+                                              onClick={() => router.push(`/rezervasyonlar/${r.id}`)}
+                                              className="text-xs px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+                                            >
+                                              Görüntüle
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Otel Rezervasyonları */}
+                              {(reservationFilter === 'all' || reservationFilter === 'hotel') && hotelReservations.length > 0 && (
+                                <div className="w-full">
+                                  <div className="text-xs font-medium text-gray-700 mb-2">Otel Rezervasyonları</div>
+                                  <div className="grid grid-cols-7 text-xs text-gray-500 px-3 py-2 bg-gray-50 rounded-t-lg">
+                                    <div>Rezervasyon No</div>
+                                    <div>Giriş Tarihi</div>
+                                    <div>Misafir</div>
+                                    <div>Tutar</div>
+                                    <div>Otel</div>
+                                    <div>Durum</div>
+                                    <div className="text-right">Aksiyon</div>
+                                  </div>
+                                  <div className="divide-y divide-gray-200 bg-white rounded-b-lg border">
+                                    {hotelReservations.map((r: any) => {
+                                      const checkIn = r.checkIn ? new Date(r.checkIn) : null
+                                      const checkOut = r.checkOut ? new Date(r.checkOut) : null
+                                      const guests = r.guests ? (() => { try { const g = typeof r.guests === 'string' ? JSON.parse(r.guests) : r.guests; return `${g.adults || 0} Yetişkin${g.children ? `, ${g.children} Çocuk` : ''}` } catch { return '-' } })() : '-'
+                                      const tutar = r.totalPrice ? `${r.totalPrice} ${r.currency || 'EUR'}` : '-'
+                                      const confirmationNumber = r.confirmationNumber || (r.id ? r.id.slice(-8).toUpperCase() : '-')
+                                      const badge = (s: string) => {
+                                        const base = 'px-2 py-0.5 rounded text-xs'
+                                        if (!s) return <span className={`${base} bg-gray-100 text-gray-600`}>Bilinmiyor</span>
+                                        const map: Record<string,string> = {
+                                          pending: 'bg-yellow-100 text-yellow-700',
+                                          confirmed: 'bg-green-100 text-green-700',
+                                          cancelled: 'bg-red-100 text-red-700',
+                                          completed: 'bg-blue-100 text-blue-700',
+                                        }
+                                        const cls = map[s] || 'bg-gray-100 text-gray-700'
+                                        const textMap: Record<string,string> = {
+                                          pending: 'Beklemede',
+                                          confirmed: 'Onaylandı',
+                                          cancelled: 'İptal Edildi',
+                                          completed: 'Tamamlandı',
+                                        }
+                                        return <span className={`${base} ${cls}`}>{textMap[s] || s}</span>
+                                      }
+                                      return (
+                                        <div key={r.id} className="grid grid-cols-7 items-center px-3 py-3">
+                                          <div className="font-medium text-gray-900">{confirmationNumber}</div>
+                                          <div className="text-gray-700">
+                                            {checkIn ? checkIn.toLocaleDateString('tr-TR') : '-'}
+                                            {checkOut && ` - ${checkOut.toLocaleDateString('tr-TR')}`}
+                                          </div>
+                                          <div className="text-gray-700">{guests}</div>
+                                          <div className="text-gray-900 font-medium">{tutar}</div>
+                                          <div className="text-gray-700">{r.hotelName || '-'}</div>
+                                          <div>{badge(r.status)}</div>
+                                          <div className="text-right">
+                                            <button 
+                                              onClick={() => router.push(`/oteller/rezervasyonlar/${r.id}`)}
+                                              className="text-xs px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+                                            >
+                                              Görüntüle
+                                            </button>
+                                          </div>
+                                        </div>
+                                      )
+                                    })}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Boş Durum */}
+                              {reservationFilter === 'all' && reservations.length === 0 && hotelReservations.length === 0 && (
+                                <div className="admin-text-xs text-gray-500">Kayıtlı rezervasyon yok</div>
+                              )}
+                              {reservationFilter === 'flight' && reservations.length === 0 && (
+                                <div className="admin-text-xs text-gray-500">Kayıtlı uçuş rezervasyonu yok</div>
+                              )}
+                              {reservationFilter === 'hotel' && hotelReservations.length === 0 && (
+                                <div className="admin-text-xs text-gray-500">Kayıtlı otel rezervasyonu yok</div>
+                              )}
+                            </>
+                          )}
+                        </>
                       )}
 
                       {paymentsInlineTab === 'odemeler' && (
