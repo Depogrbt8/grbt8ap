@@ -158,7 +158,7 @@ export async function GET(
       reservations: user.reservations || [],
       priceAlerts: user.priceAlerts || [],
       searchFavorites: user.searchFavorites || [],
-      hotelFavorites: user.hotelFavorites || []
+      hotelFavorites: hotelFavorites
     })
 
   } catch (error) {
