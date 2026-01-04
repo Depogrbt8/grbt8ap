@@ -379,8 +379,15 @@ export default function KullaniciDetayPage() {
         // Fiyat alarmları ve favori aramalar
         setPriceAlerts(data.priceAlerts || [])
         setFavoriteSearches(data.searchFavorites || [])
-        console.log('[Frontend] API\'den gelen hotelFavorites:', data.hotelFavorites)
-        setHotelFavorites(data.hotelFavorites || [])
+        console.log('[Frontend] API Response:', {
+          hotelFavorites: data.hotelFavorites,
+          hotelFavoritesLength: data.hotelFavorites?.length || 0,
+          hotelFavoritesType: typeof data.hotelFavorites,
+          fullData: data
+        })
+        const favs = Array.isArray(data.hotelFavorites) ? data.hotelFavorites : []
+        console.log('[Frontend] Setting hotelFavorites:', favs)
+        setHotelFavorites(favs)
       } else {
         setError(data.error || 'Kullanıcı bulunamadı')
       }
