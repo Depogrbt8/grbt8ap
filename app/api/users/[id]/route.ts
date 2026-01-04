@@ -89,6 +89,7 @@ export async function GET(
     // hotelFavorites'i ayrı bir query ile çek
     let hotelFavorites: any[] = []
     try {
+      console.log(`[API] HotelFavorite sorgusu başlatılıyor - userId: ${userId}`)
       const hotelFavs = await prisma.hotelFavorite.findMany({
         where: { userId: userId },
         orderBy: { createdAt: 'desc' },
@@ -102,10 +103,29 @@ export async function GET(
         }
       })
       hotelFavorites = hotelFavs
-      console.log(`[API] User ${userId} için ${hotelFavs.length} favori otel bulundu:`, hotelFavs)
+      console.log(`[API] User ${userId} için ${hotelFavs.length} favori otel bulundu:`, JSON.stringify(hotelFavs, null, 2))
+      
+      // Eğer hiç favori yoksa, tüm HotelFavorite kayıtlarını kontrol et (debug için)
+      if (hotelFavs.length === 0) {
+        const allFavs = await prisma.hotelFavorite.findMany({
+          take: 5,
+          select: {
+            id: true,
+            userId: true,
+            hotelName: true,
+            hotelLocation: true
+          }
+        })
+        console.log(`[API] Veritabanında toplam ${allFavs.length} favori otel kaydı var (ilk 5):`, JSON.stringify(allFavs, null, 2))
+      }
     } catch (error: any) {
       // HotelFavorite tablosu henüz oluşturulmamışsa boş array döndür
       console.error('[API] HotelFavorite çekilirken hata:', error)
+      console.error('[API] Hata detayları:', {
+        code: error.code,
+        message: error.message,
+        meta: error.meta
+      })
       // P2025 = Record not found, P2001 = Table does not exist gibi hatalar için
       if (error.code === 'P2025' || error.message?.includes('does not exist') || error.message?.includes('Unknown model')) {
         console.log('[API] HotelFavorite tablosu henüz oluşturulmamış, migration gerekli')
@@ -154,14 +174,19 @@ export async function GET(
       comments: user.comments || ''
     }
 
-    return NextResponse.json({
+    const responseData = {
       success: true,
       data: formattedUser,
       reservations: user.reservations || [],
       priceAlerts: user.priceAlerts || [],
       searchFavorites: user.searchFavorites || [],
       hotelFavorites: hotelFavorites
-    })
+    }
+    
+    console.log(`[API] Response hazırlandı - hotelFavorites count: ${hotelFavorites.length}`)
+    console.log(`[API] Response hotelFavorites:`, JSON.stringify(hotelFavorites, null, 2))
+    
+    return NextResponse.json(responseData)
 
   } catch (error) {
     console.error('Kullanıcı getirme hatası:', error)
