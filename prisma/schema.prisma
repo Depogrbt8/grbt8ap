@@ -401,3 +401,48 @@ model Admin {
   @@index([status])
   @@index([role])
 }
+
+// Otel API Sağlayıcı Yönetimi
+model HotelApiProvider {
+  id                String    @id @default(cuid())
+  name              String    @unique // "amadeus", "expedia", "booking.com"
+  displayName       String    // "Amadeus Hotel API", "Expedia Partner Solutions"
+  isActive          Boolean   @default(false) // Provider aktif mi?
+  isTestMode        Boolean   @default(true) // Test modunda mı?
+  
+  // API Credentials (Şifreli saklanacak)
+  apiKey            String?   // Encrypted API key
+  apiSecret         String?   // Encrypted API secret
+  apiUrl            String?   // Base API URL (opsiyonel, default kullanılabilir)
+  accessToken       String?   // OAuth token (varsa, encrypted)
+  refreshToken      String?   // OAuth refresh token (varsa, encrypted)
+  tokenExpiresAt    DateTime? // Token son kullanma tarihi
+  
+  // Provider Ayarları
+  timeout           Int       @default(30000) // ms cinsinden timeout
+  retryCount        Int       @default(3) // Retry sayısı
+  retryDelay        Int       @default(1000) // ms cinsinden retry delay
+  priority          Int       @default(1) // Multi-provider için öncelik (1=en yüksek)
+  maxConcurrentRequests Int   @default(10) // Maksimum eşzamanlı istek sayısı
+  
+  // Monitoring ve Durum
+  lastSyncAt        DateTime? // Son senkronizasyon zamanı
+  lastTestAt        DateTime? // Son test zamanı
+  healthStatus      String    @default("unknown") // "healthy", "degraded", "down", "unknown"
+  healthCheckUrl    String?  // Health check endpoint (opsiyonel)
+  errorCount        Int       @default(0) // Son 24 saatteki hata sayısı
+  lastErrorAt       DateTime? // Son hata zamanı
+  lastErrorMessage  String?  // Son hata mesajı
+  
+  // Metadata
+  description       String?  // Provider açıklaması
+  documentationUrl  String?  // API dokümantasyon URL'i
+  supportEmail      String?  // Destek email'i
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@index([name])
+  @@index([isActive])
+  @@index([healthStatus])
+  @@index([priority])
+}
