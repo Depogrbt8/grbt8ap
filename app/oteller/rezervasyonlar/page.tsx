@@ -119,15 +119,15 @@ export default function OtelRezervasyonlarPage() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'confirmed':
-        return <CheckCircle className="h-4 w-4 text-green-600" />
+        return <CheckCircle className="h-3 w-3 text-green-600" />
       case 'pending':
-        return <AlertCircle className="h-4 w-4 text-yellow-600" />
+        return <AlertCircle className="h-3 w-3 text-yellow-600" />
       case 'cancelled':
-        return <XCircle className="h-4 w-4 text-red-600" />
+        return <XCircle className="h-3 w-3 text-red-600" />
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-blue-600" />
+        return <CheckCircle className="h-3 w-3 text-blue-600" />
       default:
-        return <Clock className="h-4 w-4 text-gray-400" />
+        return <Clock className="h-3 w-3 text-gray-400" />
     }
   }
 
@@ -194,47 +194,47 @@ export default function OtelRezervasyonlarPage() {
           <div className="max-w-7xl mx-auto space-y-6">
             {/* Başlık */}
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Building2 className="h-8 w-8 text-purple-600" />
+              <div className="flex items-center space-x-2">
+                <Building2 className="h-5 w-5 text-purple-600" />
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">Otel Rezervasyonları</h1>
-                  <p className="text-gray-600">Tüm otel rezervasyonlarını görüntüleyin ve yönetin</p>
+                  <h1 className="text-lg font-semibold text-gray-900">Otel Rezervasyonları</h1>
+                  <p className="text-xs text-gray-500">Tüm otel rezervasyonlarını görüntüleyin ve yönetin</p>
                 </div>
               </div>
             </div>
 
             {/* Filtreler ve Arama */}
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex flex-col md:flex-row gap-4">
+            <div className="bg-white rounded-lg border border-gray-200 p-3">
+              <div className="flex flex-col md:flex-row gap-3">
                 {/* Arama */}
                 <div className="flex-1">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-gray-400" />
                     <input
                       type="text"
                       placeholder="Otel, konum, rezervasyon no veya müşteri ara..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-8 pr-2 py-1.5 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                   </div>
                 </div>
 
                 {/* Durum Filtresi */}
-                <div className="flex gap-2">
+                <div className="flex gap-1.5 flex-wrap">
                   <button
                     onClick={() => setActiveFilter('all')}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                    className={`px-2.5 py-1 text-xs font-medium rounded ${
                       activeFilter === 'all'
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
-                  >
+                    >
                     Tümü ({bookings.length})
                   </button>
                   <button
                     onClick={() => setActiveFilter('pending')}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                    className={`px-2.5 py-1 text-xs font-medium rounded ${
                       activeFilter === 'pending'
                         ? 'bg-yellow-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -244,7 +244,7 @@ export default function OtelRezervasyonlarPage() {
                   </button>
                   <button
                     onClick={() => setActiveFilter('confirmed')}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                    className={`px-2.5 py-1 text-xs font-medium rounded ${
                       activeFilter === 'confirmed'
                         ? 'bg-green-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -254,7 +254,7 @@ export default function OtelRezervasyonlarPage() {
                   </button>
                   <button
                     onClick={() => setActiveFilter('cancelled')}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                    className={`px-2.5 py-1 text-xs font-medium rounded ${
                       activeFilter === 'cancelled'
                         ? 'bg-red-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -264,7 +264,7 @@ export default function OtelRezervasyonlarPage() {
                   </button>
                   <button
                     onClick={() => setActiveFilter('completed')}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                    className={`px-2.5 py-1 text-xs font-medium rounded ${
                       activeFilter === 'completed'
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -278,60 +278,60 @@ export default function OtelRezervasyonlarPage() {
 
             {/* Hata Mesajı */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className="bg-red-50 border border-red-200 rounded p-2">
                 <div className="flex items-center">
-                  <XCircle className="h-5 w-5 text-red-600 mr-2" />
-                  <p className="text-sm text-red-600">{error}</p>
+                  <XCircle className="h-3 w-3 text-red-600 mr-1.5" />
+                  <p className="text-xs text-red-600">{error}</p>
                 </div>
               </div>
             )}
 
             {/* Rezervasyon Listesi */}
             {loading ? (
-              <div className="bg-white rounded-lg shadow p-8">
+              <div className="bg-white rounded-lg shadow p-4">
                 <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <p className="ml-3 text-gray-600">Rezervasyonlar yükleniyor...</p>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+                  <p className="ml-2 text-xs text-gray-600">Yükleniyor...</p>
                 </div>
               </div>
             ) : filteredBookings.length === 0 ? (
-              <div className="bg-white rounded-lg shadow p-8">
+              <div className="bg-white rounded-lg shadow p-4">
                 <div className="text-center">
-                  <Building2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Rezervasyon bulunamadı</p>
+                  <Building2 className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-xs text-gray-600">Rezervasyon bulunamadı</p>
                 </div>
               </div>
             ) : (
-              <div className="bg-white rounded-lg shadow overflow-hidden">
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Rezervasyon No
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Otel
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Müşteri
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Tarihler
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Misafirler
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Tutar
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Durum
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                           Provider
                         </th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">
                           İşlemler
                         </th>
                       </tr>
@@ -342,54 +342,49 @@ export default function OtelRezervasyonlarPage() {
                         const guestInfo = parseGuestInfo(booking.guestInfo)
                         return (
                           <tr key={booking.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900">
+                            <td className="px-3 py-2 whitespace-nowrap">
+                              <div className="text-xs font-medium text-gray-900">
                                 {booking.confirmationNumber || booking.id.slice(-8).toUpperCase()}
                               </div>
                               {booking.bookingReference && (
-                                <div className="text-xs text-gray-500">
-                                  Ref: {booking.bookingReference}
+                                <div className="text-xs text-gray-400">
+                                  {booking.bookingReference}
                                 </div>
                               )}
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm font-medium text-gray-900">
+                            <td className="px-3 py-2">
+                              <div className="text-xs font-medium text-gray-900">
                                 {booking.hotelName}
                               </div>
                               <div className="text-xs text-gray-500 flex items-center">
-                                <MapPin className="h-3 w-3 mr-1" />
+                                <MapPin className="h-2.5 w-2.5 mr-0.5" />
                                 {booking.hotelLocation}
                               </div>
                               {booking.roomName && (
-                                <div className="text-xs text-gray-500">
-                                  {booking.roomName} ({booking.roomType})
+                                <div className="text-xs text-gray-400">
+                                  {booking.roomName}
                                 </div>
                               )}
                             </td>
-                            <td className="px-6 py-4">
-                              <div className="text-sm font-medium text-gray-900">
+                            <td className="px-3 py-2">
+                              <div className="text-xs font-medium text-gray-900">
                                 {guestInfo.firstName} {guestInfo.lastName}
                               </div>
                               <div className="text-xs text-gray-500">{guestInfo.email}</div>
-                              {guestInfo.phone && (
-                                <div className="text-xs text-gray-500">{guestInfo.phone}</div>
-                              )}
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                <Calendar className="h-4 w-4 inline mr-1" />
-                                {formatDate(booking.checkIn)}
+                            <td className="px-3 py-2 whitespace-nowrap">
+                              <div className="text-xs text-gray-900">
+                                {new Date(booking.checkIn).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {formatDate(booking.checkOut)}
+                                {new Date(booking.checkOut).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short' })}
                               </div>
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs text-gray-400">
                                 {booking.nights} gece
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
-                                <Users className="h-4 w-4 inline mr-1" />
+                            <td className="px-3 py-2 whitespace-nowrap">
+                              <div className="text-xs text-gray-900">
                                 {guests.adults} Yetişkin
                               </div>
                               {guests.children > 0 && (
@@ -397,30 +392,30 @@ export default function OtelRezervasyonlarPage() {
                                   {guests.children} Çocuk
                                 </div>
                               )}
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs text-gray-400">
                                 {guests.rooms} Oda
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900">
+                            <td className="px-3 py-2 whitespace-nowrap">
+                              <div className="text-xs font-medium text-gray-900">
                                 {booking.totalPrice} {booking.currency || 'EUR'}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
+                            <td className="px-3 py-2 whitespace-nowrap">
+                              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${getStatusColor(booking.status)}`}>
                                 {getStatusIcon(booking.status)}
-                                <span className="ml-1">{getStatusText(booking.status)}</span>
+                                <span className="ml-0.5">{getStatusText(booking.status)}</span>
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm text-gray-900">
+                            <td className="px-3 py-2 whitespace-nowrap">
+                              <div className="text-xs text-gray-600">
                                 {booking.apiProvider?.displayName || booking.provider || 'Demo'}
                               </div>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <td className="px-3 py-2 whitespace-nowrap text-right">
                               <button
                                 onClick={() => window.location.href = `/oteller/rezervasyonlar/${booking.id}`}
-                                className="text-blue-600 hover:text-blue-900"
+                                className="text-xs text-blue-600 hover:text-blue-800"
                               >
                                 Detay
                               </button>
