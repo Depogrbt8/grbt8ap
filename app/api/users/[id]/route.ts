@@ -86,28 +86,30 @@ export async function GET(
       }
     })
 
-    // hotelFavorites'i ayrı bir query ile çek (migration sonrası aktif olacak)
+    // hotelFavorites'i ayrı bir query ile çek
     let hotelFavorites: any[] = []
     try {
-      // Prisma client'ın hotelFavorite modelini destekleyip desteklemediğini kontrol et
-      if (prisma.hotelFavorite && typeof prisma.hotelFavorite.findMany === 'function') {
-        const hotelFavs = await prisma.hotelFavorite.findMany({
-          where: { userId: userId },
-          orderBy: { createdAt: 'desc' },
-          select: {
-            id: true,
-            hotelId: true,
-            hotelName: true,
-            hotelLocation: true,
-            hotelImage: true,
-            createdAt: true
-          }
-        })
-        hotelFavorites = hotelFavs
-      }
+      const hotelFavs = await prisma.hotelFavorite.findMany({
+        where: { userId: userId },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          hotelId: true,
+          hotelName: true,
+          hotelLocation: true,
+          hotelImage: true,
+          createdAt: true
+        }
+      })
+      hotelFavorites = hotelFavs
+      console.log(`[API] User ${userId} için ${hotelFavs.length} favori otel bulundu:`, hotelFavs)
     } catch (error: any) {
       // HotelFavorite tablosu henüz oluşturulmamışsa boş array döndür
-      console.log('HotelFavorite tablosu henüz oluşturulmamış veya migration gerekli:', error?.message || 'Unknown error')
+      console.error('[API] HotelFavorite çekilirken hata:', error)
+      // P2025 = Record not found, P2001 = Table does not exist gibi hatalar için
+      if (error.code === 'P2025' || error.message?.includes('does not exist') || error.message?.includes('Unknown model')) {
+        console.log('[API] HotelFavorite tablosu henüz oluşturulmamış, migration gerekli')
+      }
       hotelFavorites = []
     }
 
