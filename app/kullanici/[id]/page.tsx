@@ -379,12 +379,17 @@ export default function KullaniciDetayPage() {
         // Fiyat alarmları ve favori aramalar
         setPriceAlerts(data.priceAlerts || [])
         setFavoriteSearches(data.searchFavorites || [])
-        console.log('[Frontend] API Response:', {
-          hotelFavorites: data.hotelFavorites,
-          hotelFavoritesLength: data.hotelFavorites?.length || 0,
-          hotelFavoritesType: typeof data.hotelFavorites,
-          fullData: data
-        })
+        
+        // Detaylı API response log'u
+        console.log('[Frontend] ========== API RESPONSE START ==========')
+        console.log('[Frontend] Full API Response:', JSON.stringify(data, null, 2))
+        console.log('[Frontend] data.hotelFavorites:', data.hotelFavorites)
+        console.log('[Frontend] data.hotelFavorites type:', typeof data.hotelFavorites)
+        console.log('[Frontend] data.hotelFavorites isArray:', Array.isArray(data.hotelFavorites))
+        console.log('[Frontend] data.hotelFavorites length:', data.hotelFavorites?.length)
+        console.log('[Frontend] User ID:', params.id)
+        console.log('[Frontend] ========== API RESPONSE END ==========')
+        
         const favs = Array.isArray(data.hotelFavorites) ? data.hotelFavorites : []
         console.log('[Frontend] Setting hotelFavorites:', favs)
         setHotelFavorites(favs)
