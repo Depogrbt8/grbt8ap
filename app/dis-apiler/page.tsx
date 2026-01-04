@@ -69,42 +69,49 @@ export default function ExternalApisPage() {
   const fetchApis = async () => {
     setLoading(true)
     try {
-      // Genel API'leri çek
-      const externalResponse = await fetch('/api/external/list?action=list')
-      const externalData = await externalResponse.json()
-      
-      // Otel API Provider'ları çek
-      const hotelResponse = await fetch('/api/hotels/providers')
-      const hotelData = await hotelResponse.json()
-      
       const allApis: ExternalApi[] = []
       
-      // Genel API'leri ekle
-      if (externalData.success && externalData.data) {
-        externalData.data.forEach((api: any) => {
-          allApis.push({
-            ...api,
-            type: 'external'
+      // Genel API'leri çek (Uçuş API'leri)
+      try {
+        const externalResponse = await fetch('/api/external/list?action=list')
+        const externalData = await externalResponse.json()
+        
+        if (externalData.success && externalData.data) {
+          externalData.data.forEach((api: any) => {
+            allApis.push({
+              ...api,
+              type: 'external'
+            })
           })
-        })
+        }
+      } catch (error) {
+        console.error('Genel API listesi alınamadı:', error)
       }
       
-      // Otel API Provider'ları ekle
-      if (hotelData.success && hotelData.data) {
-        hotelData.data.forEach((provider: any) => {
-          allApis.push({
-            id: provider.name,
-            name: provider.displayName || provider.name,
-            baseUrl: provider.apiUrl || 'N/A',
-            enabled: provider.isActive || false,
-            status: provider.healthStatus === 'healthy' ? 'online' : 
-                   provider.healthStatus === 'down' ? 'offline' : 
-                   provider.healthStatus === 'degraded' ? 'error' : 'offline',
-            lastTest: provider.lastTestAt,
-            type: 'hotel',
-            healthStatus: provider.healthStatus
+      // Otel API Provider'ları çek
+      try {
+        const hotelResponse = await fetch('/api/hotels/providers')
+        const hotelData = await hotelResponse.json()
+        
+        if (hotelData.success && hotelData.data && Array.isArray(hotelData.data)) {
+          hotelData.data.forEach((provider: any) => {
+            allApis.push({
+              id: provider.name,
+              name: provider.displayName || provider.name,
+              baseUrl: provider.apiUrl || 'N/A',
+              enabled: provider.isActive || false,
+              status: provider.healthStatus === 'healthy' ? 'online' : 
+                     provider.healthStatus === 'down' ? 'offline' : 
+                     provider.healthStatus === 'degraded' ? 'error' : 'offline',
+              lastTest: provider.lastTestAt,
+              type: 'hotel',
+              healthStatus: provider.healthStatus
+            })
           })
-        })
+        }
+      } catch (error) {
+        console.error('Otel API Provider listesi alınamadı:', error)
+        // Hata durumunda sessizce devam et, sadece genel API'leri göster
       }
       
       setApis(allApis)

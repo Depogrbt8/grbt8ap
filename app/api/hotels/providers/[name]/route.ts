@@ -11,12 +11,17 @@ export async function GET(
 
   try {
     const mainSiteUrl = process.env.MAIN_SITE_URL || 'https://gurbetbiz.app';
+    const cookies = request.headers.get('cookie') || '';
     
     // Ana sitedeki endpoint'e yönlendir
     const response = await fetch(`${mainSiteUrl}/api/hotels/providers/${params.name}`, {
       headers: {
         'Content-Type': 'application/json',
-      }
+        'Cookie': cookies,
+        'User-Agent': request.headers.get('user-agent') || '',
+        'X-Forwarded-For': request.headers.get('x-forwarded-for') || '',
+      },
+      credentials: 'include',
     });
 
     if (!response.ok) {
@@ -49,13 +54,18 @@ export async function PUT(
   try {
     const mainSiteUrl = process.env.MAIN_SITE_URL || 'https://gurbetbiz.app';
     const body = await request.json();
+    const cookies = request.headers.get('cookie') || '';
     
     // Ana sitedeki endpoint'e yönlendir
     const response = await fetch(`${mainSiteUrl}/api/hotels/providers/${params.name}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        'Cookie': cookies,
+        'User-Agent': request.headers.get('user-agent') || '',
+        'X-Forwarded-For': request.headers.get('x-forwarded-for') || '',
       },
+      credentials: 'include',
       body: JSON.stringify(body)
     });
 
@@ -88,13 +98,18 @@ export async function DELETE(
 
   try {
     const mainSiteUrl = process.env.MAIN_SITE_URL || 'https://gurbetbiz.app';
+    const cookies = request.headers.get('cookie') || '';
     
     // Ana sitedeki endpoint'e yönlendir
     const response = await fetch(`${mainSiteUrl}/api/hotels/providers/${params.name}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-      }
+        'Cookie': cookies,
+        'User-Agent': request.headers.get('user-agent') || '',
+        'X-Forwarded-For': request.headers.get('x-forwarded-for') || '',
+      },
+      credentials: 'include',
     });
 
     if (!response.ok) {

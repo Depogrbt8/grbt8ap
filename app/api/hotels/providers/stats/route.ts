@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const mainSiteUrl = process.env.MAIN_SITE_URL || 'https://gurbetbiz.app';
     const { searchParams } = new URL(request.url);
+    const cookies = request.headers.get('cookie') || '';
     
     // Ana sitedeki endpoint'e yönlendir
     const response = await fetch(
@@ -16,7 +17,11 @@ export async function GET(request: NextRequest) {
       {
         headers: {
           'Content-Type': 'application/json',
-        }
+          'Cookie': cookies,
+          'User-Agent': request.headers.get('user-agent') || '',
+          'X-Forwarded-For': request.headers.get('x-forwarded-for') || '',
+        },
+        credentials: 'include',
       }
     );
 
