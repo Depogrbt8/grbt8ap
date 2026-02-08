@@ -549,47 +549,6 @@ export default function KullaniciDetayPage() {
                   </div>
                 </div>
 
-                {/* İstatistikler */}
-                <div>
-                  <h3 className="text-xs font-medium text-gray-900 mb-2">İstatistikler</h3>
-                  <div className="grid grid-cols-5 gap-4">
-                    <div 
-                      className="hidden text-center p-3 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors"
-                      onClick={async () => {
-                        setActiveInlineTab('passengers')
-                        setShowPassengers(true)
-                        await fetchPassengers()
-                        setTimeout(() => {
-                          const el = document.getElementById('section-passengers')
-                          el?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                        }, 0)
-                      }}
-                    >
-                      <div className="text-lg font-bold text-blue-600">{user?.passengerCount || 0}</div>
-                      <div className="text-xs text-gray-600">Yolcu</div>
-                    </div>
-                    <div className="hidden text-center p-3 bg-green-50 rounded-lg">
-                      <div className="text-lg font-bold text-green-600">{user?.alertCount || 0}</div>
-                      <div className="text-xs text-gray-600">Fiyat Alarmı</div>
-                    </div>
-                    <div className="hidden text-center p-3 bg-yellow-50 rounded-lg">
-                      <div className="text-lg font-bold text-yellow-600">{user?.favoriteCount || 0}</div>
-                      <div className="text-xs text-gray-600">Favori Arama</div>
-                    </div>
-                    <div 
-                      className="text-center p-3 bg-purple-50 rounded-lg cursor-pointer hover:bg-purple-100 transition-colors"
-                      onClick={() => setActiveInlineTab('reservations')}
-                    >
-                      <div className="text-lg font-bold text-purple-600">{user?.reservationCount || 0}</div>
-                      <div className="text-xs text-gray-600">Rezervasyon</div>
-                    </div>
-                    <div className="text-center p-3 bg-red-50 rounded-lg">
-                      <div className="text-lg font-bold text-red-600">{user?.paymentCount || 0}</div>
-                      <div className="text-xs text-gray-600">Ödeme</div>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Kullanıcı Bilgileri */}
                 <div>
                   <h3 className="text-xs font-medium text-gray-900 mb-2">Kullanıcı Bilgileri</h3>
