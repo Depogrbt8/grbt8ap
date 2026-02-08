@@ -31,71 +31,79 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
 
     const surveyResponse = surveyResponses[0]
 
+    // Soru etiketleri (ana sitedeki anket sırasına göre)
+    const QUESTION_LABELS: Record<number, string> = {
+      1: 'Ülke',
+      2: 'Memleket',
+      3: 'Havalimanları',
+      4: 'Ulaşım',
+      5: 'Okul Çocuğu',
+      6: 'Araç Kiralama',
+      7: 'Otel Tercihi',
+      8: 'Telefon Hattı',
+      9: 'Cinsiyet / Yaş',
+      10: 'İletişim İzni',
+    }
+
+    // JSON string içindeki özel objeleri okunabilir metne çevir
+    function formatJsonAnswer(raw: string): string {
+      try {
+        const obj = JSON.parse(raw)
+        if (typeof obj !== 'object' || obj === null) return raw
+
+        // Havalimanı bilgileri
+        if (obj.departure && obj.return) {
+          const dep = obj.departure.name || obj.departure.city || obj.departure.code || ''
+          const ret = obj.return.name || obj.return.city || obj.return.code || ''
+          const depCode = obj.departure.code ? ` (${obj.departure.code})` : ''
+          const retCode = obj.return.code ? ` (${obj.return.code})` : ''
+          return `${dep}${depCode} → ${ret}${retCode}`
+        }
+        // Demografik bilgiler
+        if (obj.gender !== undefined && obj.ageRange !== undefined) {
+          return `${obj.gender}, ${obj.ageRange} yaş`
+        }
+        // İzin bilgileri
+        if (obj.emailPermission !== undefined || obj.phonePermission !== undefined) {
+          const perms: string[] = []
+          if (obj.emailPermission) perms.push('E-posta')
+          if (obj.phonePermission) perms.push('Telefon')
+          return perms.length > 0 ? `${perms.join(', ')} izni var` : 'İzin yok'
+        }
+        return raw
+      } catch {
+        return raw
+      }
+    }
+
     // JSON string'i parse et ve düzenli format'a çevir
     let formattedAnswers: Array<{question: string, answer: string}> = []
     try {
       const parsedAnswers = JSON.parse(surveyResponse.answers)
       
-      // Eğer array ise, her birini işle
       if (Array.isArray(parsedAnswers)) {
         parsedAnswers.forEach((item: any, index: number) => {
+          const qId = item?.questionId ?? (index + 1)
+          const label = QUESTION_LABELS[qId] || `Soru ${qId}`
+
           if (typeof item === 'string') {
-            // Basit string cevaplar
-            formattedAnswers.push({
-              question: `Soru ${index + 1}`,
-              answer: item
-            })
-          } else if (typeof item === 'object' && item.answer) {
-            // Object formatındaki cevaplar
-            formattedAnswers.push({
-              question: item.question || `Soru ${index + 1}`,
-              answer: item.answer
-            })
+            formattedAnswers.push({ question: label, answer: item })
+          } else if (typeof item === 'object' && item.answer !== undefined) {
+            // answer alanı string ise JSON olabilir, parse et
+            const rawAnswer = typeof item.answer === 'string' ? item.answer : JSON.stringify(item.answer)
+            formattedAnswers.push({ question: label, answer: formatJsonAnswer(rawAnswer) })
           } else if (typeof item === 'object') {
-            // JSON object'leri kontrol et - havalimanı bilgileri için
-            let processedAnswer = item
-            
-            // Havalimanı bilgileri için özel işlem
-            if (item.departure && item.return) {
-              const departureName = item.departure.name || item.departure.city
-              const returnName = item.return.name || item.return.city
-              processedAnswer = `${departureName}, ${returnName}`
-            } else if (item.gender && item.ageRange) {
-              // Demografik bilgiler için
-              processedAnswer = `${item.gender}, ${item.ageRange} yaş`
-            } else if (item.emailPermission !== undefined && item.phonePermission !== undefined) {
-              // İzin bilgileri için
-              const permissions = []
-              if (item.emailPermission) permissions.push('E-posta')
-              if (item.phonePermission) permissions.push('Telefon')
-              processedAnswer = permissions.length > 0 ? permissions.join(', ') : 'İzin yok'
-            } else {
-              // Diğer JSON'lar için string'e çevir
-              processedAnswer = JSON.stringify(item)
-            }
-            
-            formattedAnswers.push({
-              question: `Soru ${index + 1}`,
-              answer: processedAnswer
-            })
+            formattedAnswers.push({ question: label, answer: formatJsonAnswer(JSON.stringify(item)) })
           }
         })
       } else if (typeof parsedAnswers === 'object') {
-        // Object formatındaki cevaplar
         Object.entries(parsedAnswers).forEach(([key, value]) => {
-          formattedAnswers.push({
-            question: key,
-            answer: String(value)
-          })
+          formattedAnswers.push({ question: key, answer: String(value) })
         })
       }
     } catch (error) {
       console.error('Anket cevapları parse edilemedi:', error)
-      // Parse edilemezse raw data'yı göster
-      formattedAnswers = [{
-        question: 'Ham Veri',
-        answer: surveyResponse.answers
-      }]
+      formattedAnswers = [{ question: 'Ham Veri', answer: surveyResponse.answers }]
     }
 
     return NextResponse.json({
