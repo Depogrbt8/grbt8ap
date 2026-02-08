@@ -21,6 +21,7 @@ export async function GET(
       where: { id: userId },
       select: {
         id: true,
+        userNo: true,
         email: true,
         firstName: true,
         lastName: true,
@@ -148,6 +149,7 @@ export async function GET(
       id: user.id,
       name: `${user.firstName} ${user.lastName}`,
       customerNo: `#${user.id.slice(-6).toUpperCase()}`,
+      userNoFormatted: user.userNo != null ? String(user.userNo).padStart(6, '0') : null,
       email: user.email,
       phone: user.phone || 'Belirtilmemiş',
       status: user.status === 'active' ? 'Aktif' : user.status === 'deleted' ? 'Silindi' : 'Pasif',

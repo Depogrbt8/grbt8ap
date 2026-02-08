@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/app/lib/prisma'
 import { requireAdmin, getAuthUser } from '@/lib/authMiddleware'
+import { getNextUserNo } from '@/lib/userNo'
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,6 +74,7 @@ export async function POST(request: NextRequest) {
 
     // User tablosunu geri yükle
     if (tables.User && Array.isArray(tables.User)) {
+      let nextUserNo = await getNextUserNo()
       for (const userData of tables.User) {
         await prisma.user.create({
           data: {
@@ -81,6 +83,7 @@ export async function POST(request: NextRequest) {
             lastName: userData.lastName,
             email: userData.email,
             password: userData.password,
+            userNo: nextUserNo++,
             countryCode: userData.countryCode,
             phone: userData.phone,
             birthDay: userData.birthDay,

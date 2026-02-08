@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAdmin } from '@/lib/authMiddleware';
+import { getNextUserNo } from '@/lib/userNo';
 
 export async function POST(request: NextRequest) {
   // GÜVENLIK: Sadece admin erişimi
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: true, message: 'Kullanıcı güncellendi', action: 'updated' });
     } else {
       // Kullanıcı yoksa oluştur
+      const nextUserNo = await getNextUserNo();
       await prisma.user.create({
         data: {
           id: user.id,
@@ -60,6 +62,7 @@ export async function POST(request: NextRequest) {
           email: user.email,
           password: user.password,
           customerNo: `#${user.id.slice(-6).toUpperCase()}`,
+          userNo: nextUserNo,
           countryCode: user.countryCode,
           phone: user.phone,
           birthDay: user.birthDay,

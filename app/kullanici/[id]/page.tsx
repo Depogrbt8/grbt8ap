@@ -9,6 +9,7 @@ interface User {
   id: string
   name: string
   customerNo: string
+  userNoFormatted?: string | null
   email: string
   phone: string
   status: string
@@ -529,6 +530,10 @@ export default function KullaniciDetayPage() {
                     <div className="p-2 bg-gray-50 rounded-l-md border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">Numara</p>
                       <p className="text-xs text-gray-500">{user?.customerNo}</p>
+                    </div>
+                    <div className="p-2 bg-gray-50 border-r border-gray-200">
+                      <p className="text-sm font-medium text-gray-900">No</p>
+                      <p className="text-xs text-gray-500">{user?.userNoFormatted ?? '-'}</p>
                     </div>
                     <div className="p-2 bg-gray-50 border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">Durum</p>

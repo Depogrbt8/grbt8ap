@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { requireAdmin } from '@/lib/authMiddleware';
+import { getNextUserNo } from '@/lib/userNo';
 import { PrismaClient } from '@prisma/client';
 
 export async function POST(request: NextRequest) {
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
           skippedCount++;
         } else {
           // Kullanıcı yoksa oluştur
+          const nextUserNo = await getNextUserNo();
           await prisma.user.create({
             data: {
               id: sourceUser.id,
@@ -89,6 +91,7 @@ export async function POST(request: NextRequest) {
               email: sourceUser.email,
               password: sourceUser.password,
               customerNo: `#${sourceUser.id.slice(-6).toUpperCase()}`,
+              userNo: nextUserNo,
               countryCode: sourceUser.countryCode,
               phone: sourceUser.phone,
               birthDay: sourceUser.birthDay,
