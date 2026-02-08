@@ -5,6 +5,45 @@ import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
 import { User, Calendar, Clock, Edit, Save, CreditCard, X, Mail, Phone, MapPin, ChevronDown, ChevronUp, Home, Building, Plane, MessageSquare } from 'lucide-react'
 
+const COUNTRY_CODE_TO_NAME: Record<string, string> = {
+  '+90': 'Türkiye',
+  '+49': 'Almanya',
+  '+44': 'İngiltere',
+  '+33': 'Fransa',
+  '+32': 'Belçika',
+  '+31': 'Hollanda',
+  '+43': 'Avusturya',
+  '+41': 'İsviçre',
+  '+1': 'ABD',
+  '+34': 'İspanya',
+  '+39': 'İtalya',
+  '+46': 'İsveç',
+  '+47': 'Norveç',
+  '+45': 'Danimarka',
+  '+48': 'Polonya',
+  '+30': 'Yunanistan',
+  '+351': 'Portekiz',
+  '+358': 'Finlandiya',
+  '+353': 'İrlanda',
+  '+7': 'Rusya',
+  '+994': 'Azerbaycan',
+  '+998': 'Özbekistan',
+  '+996': 'Kırgızistan',
+  '+993': 'Türkmenistan',
+  '+992': 'Tacikistan',
+  '+374': 'Ermenistan',
+  '+995': 'Gürcistan',
+  '+98': 'İran',
+  '+964': 'Irak',
+  '+966': 'Suudi Arabistan',
+  '+971': 'BAE',
+}
+
+function getCountryFromCode(code: string | undefined | null): string {
+  if (!code) return '-'
+  return COUNTRY_CODE_TO_NAME[code.trim()] ?? code
+}
+
 interface User {
   id: string
   name: string
@@ -534,6 +573,10 @@ export default function KullaniciDetayPage() {
                     <div className="p-2 bg-gray-50 border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">No</p>
                       <p className="text-xs text-gray-500">{user?.userNoFormatted ?? '-'}</p>
+                    </div>
+                    <div className="p-2 bg-gray-50 border-r border-gray-200">
+                      <p className="text-sm font-medium text-gray-900">Ülke</p>
+                      <p className="text-xs text-gray-500">{getCountryFromCode(user?.countryCode)}</p>
                     </div>
                     <div className="p-2 bg-gray-50 border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">Durum</p>
