@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
 import { User, Calendar, Clock, Edit, Save, CreditCard, X, Mail, Phone, MapPin, ChevronDown, ChevronUp, Home, Building, Plane, MessageSquare } from 'lucide-react'
@@ -84,6 +85,7 @@ const MEMBERSHIP_LABELS: Record<string, string> = {
 export default function KullaniciDetayPage() {
   const params = useParams()
   const router = useRouter()
+  const { data: session } = useSession()
   const [activeTab, setActiveTab] = useState('users')
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
@@ -130,6 +132,18 @@ export default function KullaniciDetayPage() {
   const [showNoteModal, setShowNoteModal] = useState(false)
   const [noteModalValue, setNoteModalValue] = useState('')
   const [savingNote, setSavingNote] = useState(false)
+
+  // comments JSON parse helper
+  const parseNotes = (raw: string): { text: string; admin: string; date: string }[] => {
+    if (!raw?.trim()) return []
+    try {
+      const parsed = JSON.parse(raw)
+      if (Array.isArray(parsed)) return parsed
+    } catch {}
+    // Eski düz metin formatı -> tek not olarak dönüştür
+    return [{ text: raw, admin: '-', date: '' }]
+  }
+  const notesList = parseNotes(comments)
   // Feature flag: sayfanın en altındaki inline Rezervasyonlar kartını gizle
   const HIDE_BOTTOM_RESERVATIONS_SECTION = true
   const balances = [
@@ -448,27 +462,34 @@ export default function KullaniciDetayPage() {
   }
 
   const openNoteModal = () => {
-    setNoteModalValue(comments || '')
+    setNoteModalValue('')
     setShowNoteModal(true)
   }
 
   const handleNoteSave = async () => {
-    if (!params.id) return
+    if (!params.id || !noteModalValue.trim()) return
     try {
       setSavingNote(true)
       setError(null)
       setSuccess(null)
+      const newNote = {
+        text: noteModalValue.trim(),
+        admin: session?.user?.email || 'admin',
+        date: new Date().toISOString()
+      }
+      const updatedNotes = [newNote, ...notesList]
+      const newComments = JSON.stringify(updatedNotes)
       const res = await fetch(`/api/users/${params.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ comments: noteModalValue })
+        body: JSON.stringify({ comments: newComments })
       })
       const data = await res.json()
       if (data?.success) {
-        setComments(noteModalValue)
+        setComments(newComments)
+        setNoteModalValue('')
         setSuccess('Not kaydedildi!')
         setShowNoteModal(false)
-        await fetchUser()
       } else {
         setError(data.error || 'Not kaydedilemedi')
       }
@@ -746,12 +767,12 @@ export default function KullaniciDetayPage() {
                         type="button"
                         onClick={openNoteModal}
                         className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
-                          comments?.trim()
+                          notesList.length > 0
                             ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
                             : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                         }`}
                       >
-                        {comments?.trim() ? 'Var' : 'Yok'}
+                        {notesList.length > 0 ? `${notesList.length} not` : 'Yok'}
                       </button>
                     </div>
                   </div>
@@ -1698,24 +1719,72 @@ export default function KullaniciDetayPage() {
       )}
       {showNoteModal && (
         <div className="admin-modal-overlay" onClick={() => !savingNote && setShowNoteModal(false)}>
-          <div className="admin-modal max-w-md w-full" onClick={e => e.stopPropagation()}>
+          <div className="admin-modal max-w-lg w-full" onClick={e => e.stopPropagation()}>
             <div className="admin-modal-header">
-              <h3 className="admin-modal-title">Not</h3>
+              <h3 className="admin-modal-title">Notlar</h3>
               <button onClick={() => !savingNote && setShowNoteModal(false)} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-            <div className="admin-modal-content">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Kullanıcı Notu</label>
-              <textarea
-                value={noteModalValue}
-                onChange={e => setNoteModalValue(e.target.value)}
-                rows={4}
-                placeholder="Notunuzu yazın..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
-              />
+            <div className="admin-modal-content space-y-4">
+              {/* Yeni not ekleme */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Yeni Not Ekle</label>
+                <textarea
+                  value={noteModalValue}
+                  onChange={e => setNoteModalValue(e.target.value)}
+                  rows={3}
+                  placeholder="Notunuzu yazın..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                />
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={handleNoteSave}
+                    className="admin-btn admin-btn-primary text-sm px-3 py-1.5"
+                    disabled={savingNote || !noteModalValue.trim()}
+                  >
+                    {savingNote ? 'Kaydediliyor...' : 'Not Ekle'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Not geçmişi */}
+              {notesList.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Not Geçmişi</label>
+                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                    {notesList.map((note, idx) => (
+                      <div key={idx} className="bg-gray-50 border border-gray-200 rounded-md p-3">
+                        <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.text}</p>
+                        <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                          {note.admin && note.admin !== '-' && (
+                            <span className="flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              {note.admin}
+                            </span>
+                          )}
+                          {note.date && (
+                            <span className="flex items-center gap-1">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>
+                              {new Date(note.date).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {notesList.length === 0 && (
+                <p className="text-sm text-gray-500 text-center py-2">Henüz not eklenmemiş.</p>
+              )}
             </div>
             <div className="admin-modal-footer">
               <button
@@ -1723,14 +1792,7 @@ export default function KullaniciDetayPage() {
                 className="admin-btn admin-btn-secondary"
                 disabled={savingNote}
               >
-                İptal
-              </button>
-              <button
-                onClick={handleNoteSave}
-                className="admin-btn admin-btn-primary"
-                disabled={savingNote}
-              >
-                {savingNote ? 'Kaydediliyor...' : 'Kaydet'}
+                Kapat
               </button>
             </div>
           </div>
