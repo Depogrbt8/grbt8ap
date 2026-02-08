@@ -987,7 +987,6 @@ export default function KullaniciDetayPage() {
                                       <tr className="border-b border-gray-200">
                                         <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Rezervasyon No</th>
                                         <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Otel</th>
-                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Müşteri</th>
                                         <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Tarihler</th>
                                         <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Tutar</th>
                                         <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Durum</th>
@@ -1059,15 +1058,9 @@ export default function KullaniciDetayPage() {
                                             </div>
                                           </td>
                                           <td className="py-3 px-3">
-                                            <span className="font-semibold text-gray-900">{misafirAd}</span>
-                                          </td>
-                                          <td className="py-3 px-3">
-                                            <div className="text-gray-700 text-sm space-y-0.5">
-                                              {checkIn && <div>{dateStr(checkIn)}</div>}
-                                              {checkOut && <div>{dateStr(checkOut)}</div>}
-                                              {nights > 0 && <div className="text-gray-500">{nights} gece</div>}
-                                              {!checkIn && !checkOut && <div>-</div>}
-                                            </div>
+                                            <span className="text-gray-700 text-sm">
+                                              {checkIn ? dateStr(checkIn) : '-'}{checkOut ? ` – ${dateStr(checkOut)}` : ''}
+                                            </span>
                                           </td>
                                           <td className="py-3 px-3">
                                             <span className="font-semibold text-gray-900">{tutar}</span>
