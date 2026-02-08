@@ -39,6 +39,7 @@ export async function GET(
         comments: true,
         createdAt: true,
         updatedAt: true,
+        lastLoginAt: true,
         _count: {
           select: {
             passengers: true,
@@ -154,7 +155,7 @@ export async function GET(
       phone: user.phone || 'Belirtilmemiş',
       status: user.status === 'active' ? 'Aktif' : user.status === 'deleted' ? 'Silindi' : 'Pasif',
       joinDate: user.createdAt.toLocaleDateString('tr-TR'),
-      lastLogin: 'Hiç giriş yapmamış',
+      lastLogin: user.lastLoginAt ? user.lastLoginAt.toLocaleString('tr-TR') : 'Hiç giriş yapmamış',
       role: 'Kullanıcı',
       emailVerified: 'Doğrulanmamış',
       passengerCount: user._count.passengers,
