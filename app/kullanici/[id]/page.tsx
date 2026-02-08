@@ -126,6 +126,10 @@ export default function KullaniciDetayPage() {
   const [showMembershipModal, setShowMembershipModal] = useState(false)
   const [membershipModalValue, setMembershipModalValue] = useState<'standart' | 'silver' | 'gold'>('standart')
   const [savingMembership, setSavingMembership] = useState(false)
+  // Not (yorum) modal
+  const [showNoteModal, setShowNoteModal] = useState(false)
+  const [noteModalValue, setNoteModalValue] = useState('')
+  const [savingNote, setSavingNote] = useState(false)
   // Feature flag: sayfanın en altındaki inline Rezervasyonlar kartını gizle
   const HIDE_BOTTOM_RESERVATIONS_SECTION = true
   const balances = [
@@ -443,6 +447,39 @@ export default function KullaniciDetayPage() {
     }
   }
 
+  const openNoteModal = () => {
+    setNoteModalValue(comments || '')
+    setShowNoteModal(true)
+  }
+
+  const handleNoteSave = async () => {
+    if (!params.id) return
+    try {
+      setSavingNote(true)
+      setError(null)
+      setSuccess(null)
+      const res = await fetch(`/api/users/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comments: noteModalValue })
+      })
+      const data = await res.json()
+      if (data?.success) {
+        setComments(noteModalValue)
+        setSuccess('Not kaydedildi!')
+        setShowNoteModal(false)
+        await fetchUser()
+      } else {
+        setError(data.error || 'Not kaydedilemedi')
+      }
+    } catch (e) {
+      console.error('Not kaydedilemedi:', e)
+      setError('Not kaydedilirken hata oluştu')
+    } finally {
+      setSavingNote(false)
+    }
+  }
+
   const togglePassengers = async () => {
     const next = !showPassengers
     setShowPassengers(next)
@@ -699,9 +736,23 @@ export default function KullaniciDetayPage() {
                       <p className="text-sm font-medium text-gray-900">Son Giriş</p>
                       <p className="text-xs text-gray-500">{user?.lastLogin}</p>
                     </div>
-                    <div className="p-2 bg-gray-50 rounded-r-md">
+                    <div className="p-2 bg-gray-50 border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">İşlem</p>
                       <p className="text-xs text-gray-500">{reservations.length + hotelReservations.length}</p>
+                    </div>
+                    <div className="p-2 bg-gray-50 rounded-r-md">
+                      <p className="text-sm font-medium text-gray-900">Not</p>
+                      <button
+                        type="button"
+                        onClick={openNoteModal}
+                        className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                          comments?.trim()
+                            ? 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {comments?.trim() ? 'Var' : 'Yok'}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1677,6 +1728,46 @@ export default function KullaniciDetayPage() {
                 disabled={savingMembership}
               >
                 {savingMembership ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showNoteModal && (
+        <div className="admin-modal-overlay" onClick={() => !savingNote && setShowNoteModal(false)}>
+          <div className="admin-modal max-w-md w-full" onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Not</h3>
+              <button onClick={() => !savingNote && setShowNoteModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="admin-modal-content">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Kullanıcı Notu</label>
+              <textarea
+                value={noteModalValue}
+                onChange={e => setNoteModalValue(e.target.value)}
+                rows={4}
+                placeholder="Notunuzu yazın..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              />
+            </div>
+            <div className="admin-modal-footer">
+              <button
+                onClick={() => !savingNote && setShowNoteModal(false)}
+                className="admin-btn admin-btn-secondary"
+                disabled={savingNote}
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleNoteSave}
+                className="admin-btn admin-btn-primary"
+                disabled={savingNote}
+              >
+                {savingNote ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
             </div>
           </div>
