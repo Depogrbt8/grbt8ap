@@ -84,6 +84,7 @@ export async function POST(request: NextRequest) {
             email: userData.email,
             password: userData.password,
             userNo: nextUserNo++,
+            membership: userData.membership || 'standart',
             countryCode: userData.countryCode,
             phone: userData.phone,
             birthDay: userData.birthDay,

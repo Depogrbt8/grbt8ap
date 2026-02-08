@@ -40,6 +40,7 @@ export async function GET(
         createdAt: true,
         updatedAt: true,
         lastLoginAt: true,
+        membership: true,
         _count: {
           select: {
             passengers: true,
@@ -156,6 +157,7 @@ export async function GET(
       status: user.status === 'active' ? 'Aktif' : user.status === 'deleted' ? 'Silindi' : 'Pasif',
       joinDate: user.createdAt.toLocaleDateString('tr-TR'),
       lastLogin: user.lastLoginAt ? user.lastLoginAt.toLocaleString('tr-TR') : 'Hiç giriş yapmamış',
+      membership: user.membership || 'standart',
       role: 'Kullanıcı',
       emailVerified: 'Doğrulanmamış',
       passengerCount: user._count.passengers,
@@ -280,6 +282,10 @@ export async function PUT(
       if (body.status !== undefined) {
         const s = String(body.status).toLowerCase()
         if (s === 'active' || s === 'inactive') updateData.status = s
+      }
+      if (body.membership !== undefined) {
+        const m = String(body.membership).toLowerCase()
+        if (m === 'standart' || m === 'silver' || m === 'gold') updateData.membership = m
       }
       
       // Kullanıcıyı güncelle

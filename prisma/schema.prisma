@@ -35,6 +35,7 @@ model User {
   canDelete        Boolean          @default(true)
   customerNo       String?          @unique
   userNo           Int?             @unique
+  membership       String?          @default("standart")
   comments         String?
   accounts         Account[]
   billingInfos     BillingInfo[]

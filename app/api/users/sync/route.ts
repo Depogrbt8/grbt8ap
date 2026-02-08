@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
               password: sourceUser.password,
               customerNo: `#${sourceUser.id.slice(-6).toUpperCase()}`,
               userNo: nextUserNo,
+              membership: (sourceUser as any).membership || 'standart',
               countryCode: sourceUser.countryCode,
               phone: sourceUser.phone,
               birthDay: sourceUser.birthDay,

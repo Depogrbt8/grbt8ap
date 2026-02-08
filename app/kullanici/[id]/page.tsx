@@ -72,6 +72,13 @@ interface User {
   gender?: string
   identityNumber?: string
   countryCode?: string
+  membership?: string
+}
+
+const MEMBERSHIP_LABELS: Record<string, string> = {
+  standart: 'Standart',
+  silver: 'Silver',
+  gold: 'Gold',
 }
 
 export default function KullaniciDetayPage() {
@@ -115,6 +122,10 @@ export default function KullaniciDetayPage() {
   const [showStatusModal, setShowStatusModal] = useState(false)
   const [statusModalValue, setStatusModalValue] = useState<'active' | 'inactive'>('active')
   const [savingStatus, setSavingStatus] = useState(false)
+  // Üyelik degistirme modal
+  const [showMembershipModal, setShowMembershipModal] = useState(false)
+  const [membershipModalValue, setMembershipModalValue] = useState<'standart' | 'silver' | 'gold'>('standart')
+  const [savingMembership, setSavingMembership] = useState(false)
   // Feature flag: sayfanın en altındaki inline Rezervasyonlar kartını gizle
   const HIDE_BOTTOM_RESERVATIONS_SECTION = true
   const balances = [
@@ -399,6 +410,39 @@ export default function KullaniciDetayPage() {
     }
   }
 
+  const openMembershipModal = () => {
+    const val = (user?.membership || 'standart').toLowerCase()
+    setMembershipModalValue((val === 'silver' || val === 'gold' ? val : 'standart') as 'standart' | 'silver' | 'gold')
+    setShowMembershipModal(true)
+  }
+
+  const handleMembershipSave = async () => {
+    if (!params.id) return
+    try {
+      setSavingMembership(true)
+      setError(null)
+      setSuccess(null)
+      const res = await fetch(`/api/users/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ membership: membershipModalValue })
+      })
+      const data = await res.json()
+      if (data?.success) {
+        setSuccess('Üyelik türü güncellendi!')
+        setShowMembershipModal(false)
+        await fetchUser()
+      } else {
+        setError(data.error || 'Üyelik güncellenemedi')
+      }
+    } catch (e) {
+      console.error('Üyelik güncellenemedi:', e)
+      setError('Üyelik güncellenirken hata oluştu')
+    } finally {
+      setSavingMembership(false)
+    }
+  }
+
   const togglePassengers = async () => {
     const next = !showPassengers
     setShowPassengers(next)
@@ -610,6 +654,16 @@ export default function KullaniciDetayPage() {
                     <div className="p-2 bg-gray-50 border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">No</p>
                       <p className="text-xs text-gray-500">{user?.userNoFormatted ?? '-'}</p>
+                    </div>
+                    <div className="p-2 bg-gray-50 border-r border-gray-200">
+                      <p className="text-sm font-medium text-gray-900">Üyelik</p>
+                      <button
+                        type="button"
+                        onClick={openMembershipModal}
+                        className="text-xs font-medium px-2 py-1 rounded hover:bg-gray-200 transition-colors text-gray-700 bg-gray-100"
+                      >
+                        {MEMBERSHIP_LABELS[(user?.membership || 'standart').toLowerCase()] || 'Standart'}
+                      </button>
                     </div>
                     <div className="p-2 bg-gray-50 border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">Ülke</p>
@@ -1582,6 +1636,48 @@ export default function KullaniciDetayPage() {
                 disabled={savingStatus}
               >
                 {savingStatus ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showMembershipModal && (
+        <div className="admin-modal-overlay" onClick={() => !savingMembership && setShowMembershipModal(false)}>
+          <div className="admin-modal max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Üyelik Türü</h3>
+              <button onClick={() => !savingMembership && setShowMembershipModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="admin-modal-content">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Üyelik</label>
+              <select
+                value={membershipModalValue}
+                onChange={e => setMembershipModalValue(e.target.value as 'standart' | 'silver' | 'gold')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="standart">Standart</option>
+                <option value="silver">Silver</option>
+                <option value="gold">Gold</option>
+              </select>
+            </div>
+            <div className="admin-modal-footer">
+              <button
+                onClick={() => !savingMembership && setShowMembershipModal(false)}
+                className="admin-btn admin-btn-secondary"
+                disabled={savingMembership}
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleMembershipSave}
+                className="admin-btn admin-btn-primary"
+                disabled={savingMembership}
+              >
+                {savingMembership ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
             </div>
           </div>
