@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Sidebar from '../../components/layout/Sidebar'
 import Header from '../../components/layout/Header'
 import { Building2, Calendar, Users, DollarSign, MapPin, Clock, CheckCircle, XCircle, AlertCircle, Search, Filter } from 'lucide-react'
@@ -16,7 +17,9 @@ interface HotelBooking {
   checkOut: string
   nights: number
   guests: string // JSON: { adults: number, children: number, rooms: number }
-  guestInfo: string // JSON: { firstName, lastName, email, phone }
+  guestInfo?: string // JSON: { firstName, lastName, email, phone } - legacy
+  contactInfo?: string // JSON: { email, phone, countryCode } - iletişim
+  guestDetails?: string // JSON: HotelGuest[] - her misafir için ad, soyad, cinsiyet, isForeigner
   totalPrice: number
   currency: string
   status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
@@ -44,6 +47,7 @@ interface HotelBooking {
 }
 
 export default function OtelRezervasyonlarPage() {
+  const searchParams = useSearchParams()
   const [activeTab, setActiveTab] = useState('oteller')
   const [activeFilter, setActiveFilter] = useState<'all' | 'pending' | 'confirmed' | 'cancelled' | 'completed'>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -55,6 +59,14 @@ export default function OtelRezervasyonlarPage() {
   useEffect(() => {
     fetchBookings()
   }, [activeFilter, searchTerm])
+
+  // Kullanıcı detay sayfasından ?expand=bookingId ile gelindiğinde ilgili rezervasyonu aç
+  useEffect(() => {
+    const expandId = searchParams.get('expand')
+    if (expandId && bookings.some(b => b.id === expandId)) {
+      setExpandedId(expandId)
+    }
+  }, [searchParams, bookings])
 
   const fetchBookings = async () => {
     try {
@@ -153,11 +165,22 @@ export default function OtelRezervasyonlarPage() {
     }
   }
 
-  const parseGuestInfo = (guestInfoJson: string) => {
+  const parseGuestInfo = (guestInfoJson: string | undefined) => {
     try {
+      if (!guestInfoJson) return { firstName: '', lastName: '', email: '', phone: '' }
       return typeof guestInfoJson === 'string' ? JSON.parse(guestInfoJson) : guestInfoJson
     } catch {
       return { firstName: '', lastName: '', email: '', phone: '' }
+    }
+  }
+
+  const parseGuestDetails = (guestDetailsJson: string | undefined): Array<{ type: string; firstName: string; lastName: string; isForeigner?: boolean; gender?: string }> => {
+    try {
+      if (!guestDetailsJson) return []
+      const parsed = typeof guestDetailsJson === 'string' ? JSON.parse(guestDetailsJson) : guestDetailsJson
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
     }
   }
 
@@ -338,6 +361,7 @@ export default function OtelRezervasyonlarPage() {
                       {filteredBookings.map((booking) => {
                         const guests = parseGuests(booking.guests)
                         const guestInfo = parseGuestInfo(booking.guestInfo)
+                        const guestDetailsList = parseGuestDetails(booking.guestDetails)
                         const isExpanded = expandedId === booking.id
                         return (
                           <>
@@ -503,6 +527,51 @@ export default function OtelRezervasyonlarPage() {
                                           <span className="text-gray-500">Oda Sayısı:</span>
                                           <span className="text-gray-900 font-medium">{guests.rooms} oda</span>
                                         </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Misafir Listesi - her misafir için Ad Soyad, Cinsiyet, TC vatandaşı */}
+                                    <div className="md:col-span-2">
+                                      <div className="text-xs font-semibold text-gray-900 mb-2">Misafir Listesi</div>
+                                      <div className="overflow-x-auto border border-gray-200 rounded">
+                                        <table className="min-w-full divide-y divide-gray-200 text-xs">
+                                          <thead className="bg-gray-50">
+                                            <tr>
+                                              <th className="px-3 py-1.5 text-left text-gray-500 font-medium">Ad Soyad</th>
+                                              <th className="px-3 py-1.5 text-left text-gray-500 font-medium">Cinsiyet</th>
+                                              <th className="px-3 py-1.5 text-left text-gray-500 font-medium">TC Vatandaşı</th>
+                                              {guestDetailsList.length > 0 && (
+                                                <th className="px-3 py-1.5 text-left text-gray-500 font-medium">Tip</th>
+                                              )}
+                                            </tr>
+                                          </thead>
+                                          <tbody className="bg-white divide-y divide-gray-200">
+                                            {guestDetailsList.length > 0 ? (
+                                              guestDetailsList.map((g, idx) => (
+                                                <tr key={idx}>
+                                                  <td className="px-3 py-1.5 text-gray-900 font-medium">
+                                                    {[g.firstName, g.lastName].filter(Boolean).join(' ') || '-'}
+                                                  </td>
+                                                  <td className="px-3 py-1.5 text-gray-700">
+                                                    {g.gender === 'male' ? 'Erkek' : g.gender === 'female' ? 'Kadın' : g.gender || '-'}
+                                                  </td>
+                                                  <td className="px-3 py-1.5 text-gray-700">
+                                                    {g.isForeigner === true ? 'Değil' : g.isForeigner === false ? 'TC vatandaşı' : '-'}
+                                                  </td>
+                                                  <td className="px-3 py-1.5 text-gray-700">{g.type === 'adult' ? 'Yetişkin' : g.type === 'child' ? 'Çocuk' : g.type || '-'}</td>
+                                                </tr>
+                                              ))
+                                            ) : (
+                                              <tr>
+                                                <td className="px-3 py-1.5 text-gray-900 font-medium">
+                                                  {[guestInfo.firstName, guestInfo.lastName].filter(Boolean).join(' ') || '-'}
+                                                </td>
+                                                <td className="px-3 py-1.5 text-gray-700">-</td>
+                                                <td className="px-3 py-1.5 text-gray-700">-</td>
+                                              </tr>
+                                            )}
+                                          </tbody>
+                                        </table>
                                       </div>
                                     </div>
 

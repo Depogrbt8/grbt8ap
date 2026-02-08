@@ -879,7 +879,25 @@ export default function KullaniciDetayPage() {
                                     {hotelReservations.map((r: any) => {
                                       const checkIn = r.checkIn ? new Date(r.checkIn) : null
                                       const checkOut = r.checkOut ? new Date(r.checkOut) : null
-                                      const guests = r.guests ? (() => { try { const g = typeof r.guests === 'string' ? JSON.parse(r.guests) : r.guests; return `${g.adults || 0} Yetişkin${g.children ? `, ${g.children} Çocuk` : ''}` } catch { return '-' } })() : '-'
+                                      const guestsParsed = r.guests ? (() => { try { const g = typeof r.guests === 'string' ? JSON.parse(r.guests) : r.guests; return { adults: g.adults || 0, children: g.children || 0 } } catch { return { adults: 0, children: 0 } } })() : { adults: 0, children: 0 }
+                                      const guests = `${guestsParsed.adults} Yetişkin${guestsParsed.children ? `, ${guestsParsed.children} Çocuk` : ''}`
+                                      const guestDetailsList = (() => {
+                                        try {
+                                          if (!r.guestDetails) return []
+                                          const p = typeof r.guestDetails === 'string' ? JSON.parse(r.guestDetails) : r.guestDetails
+                                          return Array.isArray(p) ? p : []
+                                        } catch { return [] }
+                                      })()
+                                      const guestInfo = (() => {
+                                        try {
+                                          if (!r.guestInfo) return { firstName: '', lastName: '' }
+                                          const p = typeof r.guestInfo === 'string' ? JSON.parse(r.guestInfo) : r.guestInfo
+                                          return p || { firstName: '', lastName: '' }
+                                        } catch { return { firstName: '', lastName: '' } }
+                                      })()
+                                      const misafirSummary = guestDetailsList.length > 0
+                                        ? `${guests} – ${guestDetailsList.map((g: any) => [g.firstName, g.lastName].filter(Boolean).join(' ')).filter(Boolean).join(', ') || '-'}`
+                                        : guestInfo.firstName || guestInfo.lastName ? `${guests} – ${[guestInfo.firstName, guestInfo.lastName].filter(Boolean).join(' ')}` : guests
                                       const tutar = r.totalPrice ? `${r.totalPrice} ${r.currency || 'EUR'}` : '-'
                                       const confirmationNumber = r.confirmationNumber || (r.id ? r.id.slice(-8).toUpperCase() : '-')
                                       const badge = (s: string) => {
@@ -907,13 +925,13 @@ export default function KullaniciDetayPage() {
                                             {checkIn ? checkIn.toLocaleDateString('tr-TR') : '-'}
                                             {checkOut && ` - ${checkOut.toLocaleDateString('tr-TR')}`}
                                           </div>
-                                          <div className="text-gray-700">{guests}</div>
+                                          <div className="text-gray-700" title={misafirSummary}>{misafirSummary}</div>
                                           <div className="text-gray-900 font-medium">{tutar}</div>
                                           <div className="text-gray-700">{r.hotelName || '-'}</div>
                                           <div>{badge(r.status)}</div>
                                           <div className="text-right">
                                             <button 
-                                              onClick={() => router.push(`/oteller/rezervasyonlar/${r.id}`)}
+                                              onClick={() => router.push(`/oteller/rezervasyonlar?expand=${r.id}`)}
                                               className="text-xs px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
                                             >
                                               Görüntüle
