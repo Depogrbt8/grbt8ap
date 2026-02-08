@@ -870,21 +870,26 @@ export default function KullaniciDetayPage() {
 
                               {/* Otel Rezervasyonları */}
                               {(reservationFilter === 'all' || reservationFilter === 'hotel') && hotelReservations.length > 0 && (
-                                <div className="w-full">
-                                  <div className="text-xs font-medium text-gray-700 mb-2">Otel Rezervasyonları</div>
-                                  <div className="grid grid-cols-7 text-xs text-gray-500 px-3 py-2 bg-gray-50 rounded-t-lg">
-                                    <div>Rezervasyon No</div>
-                                    <div>Giriş Tarihi</div>
-                                    <div>Misafir</div>
-                                    <div>Tutar</div>
-                                    <div>Otel</div>
-                                    <div>Durum</div>
-                                    <div className="text-right">Aksiyon</div>
-                                  </div>
-                                  <div className="divide-y divide-gray-200 bg-white rounded-b-lg border">
+                                <div className="w-full overflow-x-auto">
+                                  <div className="text-sm font-medium text-gray-900 mb-2">Otel Rezervasyonları</div>
+                                  <table className="w-full min-w-[720px] text-sm">
+                                    <thead>
+                                      <tr className="border-b border-gray-200">
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Rezervasyon No</th>
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Otel</th>
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Müşteri</th>
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Tarihler</th>
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Tutar</th>
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Durum</th>
+                                        <th className="text-right py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">İşlemler</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
                                     {hotelReservations.map((r: any) => {
                                       const checkIn = r.checkIn ? new Date(r.checkIn) : null
                                       const checkOut = r.checkOut ? new Date(r.checkOut) : null
+                                      const nights = checkIn && checkOut ? Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24)) : 0
+                                      const dateStr = (d: Date) => d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })
                                       const guestsParsed = r.guests ? (() => { try { const g = typeof r.guests === 'string' ? JSON.parse(r.guests) : r.guests; return { adults: g.adults || 0, children: g.children || 0 } } catch { return { adults: 0, children: 0 } } })() : { adults: 0, children: 0 }
                                       const guests = `${guestsParsed.adults} Yetişkin${guestsParsed.children ? `, ${guestsParsed.children} Çocuk` : ''}`
                                       const guestDetailsList = (() => {
@@ -901,52 +906,76 @@ export default function KullaniciDetayPage() {
                                           return p || { firstName: '', lastName: '' }
                                         } catch { return { firstName: '', lastName: '' } }
                                       })()
-                                      const misafirSummary = guestDetailsList.length > 0
-                                        ? `${guests} – ${guestDetailsList.map((g: any) => [g.firstName, g.lastName].filter(Boolean).join(' ')).filter(Boolean).join(', ') || '-'}`
-                                        : guestInfo.firstName || guestInfo.lastName ? `${guests} – ${[guestInfo.firstName, guestInfo.lastName].filter(Boolean).join(' ')}` : guests
+                                      const misafirAd = guestDetailsList.length > 0
+                                        ? guestDetailsList.map((g: any) => [g.firstName, g.lastName].filter(Boolean).join(' ')).filter(Boolean).join(', ') || '-'
+                                        : [guestInfo.firstName, guestInfo.lastName].filter(Boolean).join(' ') || '-'
                                       const tutar = r.totalPrice ? `${r.totalPrice} ${r.currency || 'EUR'}` : '-'
                                       const confirmationNumber = r.confirmationNumber || (r.id ? r.id.slice(-8).toUpperCase() : '-')
+                                      const roomType = r.roomType || r.roomName || null
                                       const badge = (s: string) => {
-                                        const base = 'px-2 py-0.5 rounded text-xs'
-                                        if (!s) return <span className={`${base} bg-gray-100 text-gray-600`}>Bilinmiyor</span>
-                                        const map: Record<string,string> = {
-                                          pending: 'bg-yellow-100 text-yellow-700',
-                                          confirmed: 'bg-green-100 text-green-700',
-                                          cancelled: 'bg-red-100 text-red-700',
-                                          completed: 'bg-blue-100 text-blue-700',
-                                        }
-                                        const cls = map[s] || 'bg-gray-100 text-gray-700'
+                                        if (!s) return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">Bilinmiyor</span>
                                         const textMap: Record<string,string> = {
                                           pending: 'Beklemede',
                                           confirmed: 'Onaylandı',
                                           cancelled: 'İptal Edildi',
                                           completed: 'Tamamlandı',
                                         }
-                                        return <span className={`${base} ${cls}`}>{textMap[s] || s}</span>
+                                        const text = textMap[s] || s
+                                        if (s === 'confirmed') {
+                                          return (
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/90 text-white">
+                                              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                                              {text}
+                                            </span>
+                                          )
+                                        }
+                                        const map: Record<string,string> = {
+                                          pending: 'bg-amber-100 text-amber-800',
+                                          cancelled: 'bg-red-100 text-red-700',
+                                          completed: 'bg-blue-100 text-blue-700',
+                                        }
+                                        const cls = map[s] || 'bg-gray-100 text-gray-700'
+                                        return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${cls}`}>{text}</span>
                                       }
                                       return (
-                                        <div key={r.id} className="grid grid-cols-7 items-center px-3 py-3">
-                                          <div className="font-medium text-gray-900">{confirmationNumber}</div>
-                                          <div className="text-gray-700">
-                                            {checkIn ? checkIn.toLocaleDateString('tr-TR') : '-'}
-                                            {checkOut && ` - ${checkOut.toLocaleDateString('tr-TR')}`}
-                                          </div>
-                                          <div className="text-gray-700" title={misafirSummary}>{misafirSummary}</div>
-                                          <div className="text-gray-900 font-medium">{tutar}</div>
-                                          <div className="text-gray-700">{r.hotelName || '-'}</div>
-                                          <div>{badge(r.status)}</div>
-                                          <div className="text-right">
-                                            <button 
+                                        <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50/50">
+                                          <td className="py-3 px-3">
+                                            <span className="font-semibold text-gray-900">{confirmationNumber}</span>
+                                          </td>
+                                          <td className="py-3 px-3">
+                                            <div>
+                                              <span className="font-semibold text-gray-900 block">{r.hotelName || '-'}</span>
+                                              {roomType && <span className="text-xs text-gray-500 font-normal">{roomType}</span>}
+                                            </div>
+                                          </td>
+                                          <td className="py-3 px-3">
+                                            <span className="font-semibold text-gray-900">{misafirAd}</span>
+                                          </td>
+                                          <td className="py-3 px-3">
+                                            <div className="text-gray-700 text-sm space-y-0.5">
+                                              {checkIn && <div>{dateStr(checkIn)}</div>}
+                                              {checkOut && <div>{dateStr(checkOut)}</div>}
+                                              {nights > 0 && <div className="text-gray-500">{nights} gece</div>}
+                                              {!checkIn && !checkOut && <div>-</div>}
+                                            </div>
+                                          </td>
+                                          <td className="py-3 px-3">
+                                            <span className="font-semibold text-gray-900">{tutar}</span>
+                                          </td>
+                                          <td className="py-3 px-3">{badge(r.status)}</td>
+                                          <td className="py-3 px-3 text-right">
+                                            <button
                                               onClick={() => router.push(`/oteller/rezervasyonlar?expand=${r.id}`)}
-                                              className="text-xs px-2 py-1 rounded bg-blue-600 text-white hover:bg-blue-700"
+                                              className="text-blue-600 hover:text-blue-800 font-medium text-sm hover:underline"
                                             >
-                                              Görüntüle
+                                              Detay
                                             </button>
-                                          </div>
-                                        </div>
+                                          </td>
+                                        </tr>
                                       )
                                     })}
-                                  </div>
+                                    </tbody>
+                                  </table>
                                 </div>
                               )}
 
