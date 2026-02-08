@@ -660,7 +660,13 @@ export default function KullaniciDetayPage() {
                       <button
                         type="button"
                         onClick={openMembershipModal}
-                        className="text-xs font-medium px-2 py-1 rounded hover:bg-gray-200 transition-colors text-gray-700 bg-gray-100"
+                        className={`text-xs font-medium px-2 py-1 rounded transition-colors ${
+                          (user?.membership || 'standart').toLowerCase() === 'gold'
+                            ? 'bg-amber-200 text-amber-900 hover:bg-amber-300'
+                            : (user?.membership || 'standart').toLowerCase() === 'silver'
+                            ? 'bg-slate-300 text-slate-800 hover:bg-slate-400'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
                       >
                         {MEMBERSHIP_LABELS[(user?.membership || 'standart').toLowerCase()] || 'Standart'}
                       </button>
