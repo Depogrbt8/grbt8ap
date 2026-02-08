@@ -46,7 +46,7 @@ export async function GET(request: NextRequest, { params }: { params: { userId: 
     }
 
     // JSON string içindeki özel objeleri okunabilir metne çevir
-    function formatJsonAnswer(raw: string): string {
+    const formatJsonAnswer = (raw: string): string => {
       try {
         const obj = JSON.parse(raw)
         if (typeof obj !== 'object' || obj === null) return raw
