@@ -635,9 +635,22 @@ export default function KullaniciDetayPage() {
                       <p className="text-sm font-medium text-gray-900">Kayıt Tarihi</p>
                       <p className="text-xs text-gray-500">{user?.joinDate}</p>
                     </div>
-                    <div className="p-2 bg-gray-50 rounded-r-md">
+                    <div className="p-2 bg-gray-50 border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">Son Giriş</p>
                       <p className="text-xs text-gray-500">{user?.lastLogin}</p>
+                    </div>
+                    <div className="p-2 bg-gray-50 rounded-r-md">
+                      <p className="text-sm font-medium text-gray-900">İşlem</p>
+                      <p className="text-xs text-gray-500">
+                        {reservations.length > 0 || hotelReservations.length > 0 ? (
+                          <>
+                            {reservations.length} uçak, {hotelReservations.length} otel
+                            <span className="block font-medium text-gray-700 mt-0.5">Toplam {reservations.length + hotelReservations.length}</span>
+                          </>
+                        ) : (
+                          '0'
+                        )}
+                      </p>
                     </div>
                   </div>
                 </div>
