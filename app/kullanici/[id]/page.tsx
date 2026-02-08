@@ -111,6 +111,10 @@ export default function KullaniciDetayPage() {
   const [showComments, setShowComments] = useState(false)
   const [comments, setComments] = useState('')
   const [savingComments, setSavingComments] = useState(false)
+  // Durum degistirme modal
+  const [showStatusModal, setShowStatusModal] = useState(false)
+  const [statusModalValue, setStatusModalValue] = useState<'active' | 'inactive'>('active')
+  const [savingStatus, setSavingStatus] = useState(false)
   // Feature flag: sayfanın en altındaki inline Rezervasyonlar kartını gizle
   const HIDE_BOTTOM_RESERVATIONS_SECTION = true
   const balances = [
@@ -362,6 +366,39 @@ export default function KullaniciDetayPage() {
     }
   }
 
+  const openStatusModal = () => {
+    const dbVal = user?.status === 'Pasif' ? 'inactive' : 'active'
+    setStatusModalValue(dbVal)
+    setShowStatusModal(true)
+  }
+
+  const handleStatusSave = async () => {
+    if (!params.id) return
+    try {
+      setSavingStatus(true)
+      setError(null)
+      setSuccess(null)
+      const res = await fetch(`/api/users/${params.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: statusModalValue })
+      })
+      const data = await res.json()
+      if (data?.success) {
+        setSuccess('Durum başarıyla güncellendi!')
+        setShowStatusModal(false)
+        await fetchUser()
+      } else {
+        setError(data.error || 'Durum güncellenemedi')
+      }
+    } catch (e) {
+      console.error('Durum güncellenemedi:', e)
+      setError('Durum güncellenirken hata oluştu')
+    } finally {
+      setSavingStatus(false)
+    }
+  }
+
   const togglePassengers = async () => {
     const next = !showPassengers
     setShowPassengers(next)
@@ -580,7 +617,15 @@ export default function KullaniciDetayPage() {
                     </div>
                     <div className="p-2 bg-gray-50 border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">Durum</p>
-                      <p className="text-xs text-gray-500">{user?.status}</p>
+                      <button
+                        type="button"
+                        onClick={openStatusModal}
+                        className={`text-xs font-medium px-2 py-1 rounded hover:bg-gray-200 transition-colors ${
+                          user?.status === 'Aktif' ? 'text-green-700 bg-green-100' : user?.status === 'Pasif' ? 'text-amber-700 bg-amber-100' : 'text-gray-600 bg-gray-100'
+                        }`}
+                      >
+                        {user?.status ?? '-'}
+                      </button>
                     </div>
                     <div className="p-2 bg-gray-50 border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">Rol</p>
@@ -1497,6 +1542,47 @@ export default function KullaniciDetayPage() {
         onSave={handlePassengerSave}
         saving={savingPassenger}
       />
+      {showStatusModal && (
+        <div className="admin-modal-overlay" onClick={() => !savingStatus && setShowStatusModal(false)}>
+          <div className="admin-modal max-w-sm w-full" onClick={e => e.stopPropagation()}>
+            <div className="admin-modal-header">
+              <h3 className="admin-modal-title">Durum Değiştir</h3>
+              <button onClick={() => !savingStatus && setShowStatusModal(false)} className="text-gray-400 hover:text-gray-600">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="admin-modal-content">
+              <label className="block text-sm font-medium text-gray-700 mb-2">Kullanıcı Durumu</label>
+              <select
+                value={statusModalValue}
+                onChange={e => setStatusModalValue(e.target.value as 'active' | 'inactive')}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+              >
+                <option value="active">Aktif</option>
+                <option value="inactive">Pasif</option>
+              </select>
+            </div>
+            <div className="admin-modal-footer">
+              <button
+                onClick={() => !savingStatus && setShowStatusModal(false)}
+                className="admin-btn admin-btn-secondary"
+                disabled={savingStatus}
+              >
+                İptal
+              </button>
+              <button
+                onClick={handleStatusSave}
+                className="admin-btn admin-btn-primary"
+                disabled={savingStatus}
+              >
+                {savingStatus ? 'Kaydediliyor...' : 'Kaydet'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 } 

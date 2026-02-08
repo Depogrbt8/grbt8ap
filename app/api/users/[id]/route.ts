@@ -276,6 +276,10 @@ export async function PUT(
       if (body.address !== undefined) updateData.address = body.address || null
       if (body.isForeigner !== undefined) updateData.isForeigner = body.isForeigner
       if (body.comments !== undefined) updateData.comments = body.comments || null
+      if (body.status !== undefined) {
+        const s = String(body.status).toLowerCase()
+        if (s === 'active' || s === 'inactive') updateData.status = s
+      }
       
       // Kullanıcıyı güncelle
       const updatedUser = await tx.user.update({
