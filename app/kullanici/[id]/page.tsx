@@ -1487,43 +1487,6 @@ export default function KullaniciDetayPage() {
               )}
             </div>
 
-            {/* Yorumlar - Açılır kapanır bölüm */}
-            <div className="border-t border-gray-200">
-              <button
-                onClick={() => setShowComments(!showComments)}
-                className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
-              >
-                <div className="flex items-center space-x-2">
-                  <MessageSquare className="h-4 w-4 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-900">Yorumlar</span>
-                </div>
-                {showComments ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              </button>
-
-              {showComments && (
-                <div className="px-4 pb-4">
-                  <textarea
-                    value={comments}
-                    onChange={(e) => setComments(e.target.value)}
-                    rows={2}
-                    placeholder="Kullanıcı hakkında notlarınızı buraya yazabilirsiniz..."
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
-                  />
-                  <button
-                    onClick={handleSaveComments}
-                    disabled={savingComments}
-                    className={`mt-2 px-4 py-2 text-sm rounded-md ${
-                      savingComments
-                        ? 'bg-gray-400 text-white cursor-not-allowed'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    {savingComments ? 'Kaydediliyor...' : 'Yorumları Kaydet'}
-                  </button>
-                </div>
-              )}
-            </div>
-
             {/* Inline Detay Kartı - Rezervasyonlar sekmesi (sadece tıklanınca göster) */}
             {!HIDE_BOTTOM_RESERVATIONS_SECTION && activeInlineTab === 'reservations' && (
               <div className="admin-card">
