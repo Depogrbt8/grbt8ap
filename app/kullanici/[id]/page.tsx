@@ -641,16 +641,7 @@ export default function KullaniciDetayPage() {
                     </div>
                     <div className="p-2 bg-gray-50 rounded-r-md">
                       <p className="text-sm font-medium text-gray-900">İşlem</p>
-                      <p className="text-xs text-gray-500">
-                        {reservations.length > 0 || hotelReservations.length > 0 ? (
-                          <>
-                            {reservations.length} uçak, {hotelReservations.length} otel
-                            <span className="block font-medium text-gray-700 mt-0.5">Toplam {reservations.length + hotelReservations.length}</span>
-                          </>
-                        ) : (
-                          '0'
-                        )}
-                      </p>
+                      <p className="text-xs text-gray-500">{reservations.length + hotelReservations.length}</p>
                     </div>
                   </div>
                 </div>
