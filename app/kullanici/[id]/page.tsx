@@ -157,7 +157,13 @@ export default function KullaniciDetayPage() {
       const data = await response.json()
       
       if (data.success && data.data) {
-        setHotelReservations(data.data)
+        // data.data düz dizi veya { bookings: [...] } olabilir
+        const bookingsList = Array.isArray(data.data) 
+          ? data.data 
+          : Array.isArray(data.data?.bookings) 
+            ? data.data.bookings 
+            : []
+        setHotelReservations(bookingsList)
       } else {
         setHotelReservations([])
       }

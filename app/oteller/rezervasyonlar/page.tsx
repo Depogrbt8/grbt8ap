@@ -85,7 +85,13 @@ export default function OtelRezervasyonlarPage() {
       const data = await response.json()
 
       if (data.success) {
-        setBookings(data.data || [])
+        // data.data düz dizi veya { bookings: [...] } olabilir (proxy normalize etmese bile)
+        const bookingsList = Array.isArray(data.data) 
+          ? data.data 
+          : Array.isArray(data.data?.bookings) 
+            ? data.data.bookings 
+            : []
+        setBookings(bookingsList)
       } else {
         setError(data.error || 'Rezervasyonlar yüklenemedi')
         setBookings([])

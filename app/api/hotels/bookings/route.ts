@@ -202,6 +202,17 @@ export async function GET(request: NextRequest) {
     }
 
     const data = await response.json();
+    
+    // Ana site { data: { bookings: [...], pagination } } formatında döndürüyor
+    // Admin panel frontend düz dizi bekliyor, normalize et
+    if (data.success && data.data && !Array.isArray(data.data) && Array.isArray(data.data.bookings)) {
+      return NextResponse.json({
+        success: true,
+        data: data.data.bookings,
+        pagination: data.data.pagination
+      });
+    }
+    
     return NextResponse.json(data);
   } catch (error: any) {
     console.error('Error in admin panel hotel bookings proxy:', error);
