@@ -103,9 +103,11 @@ export default function KullaniciDetayPage() {
   const [hotelFavorites, setHotelFavorites] = useState<any[]>([])
   const [reservations, setReservations] = useState<any[]>([])
   const [hotelReservations, setHotelReservations] = useState<any[]>([])
+  const [carReservations, setCarReservations] = useState<any[]>([])
   const [loadingReservations, setLoadingReservations] = useState(false)
   const [loadingHotelReservations, setLoadingHotelReservations] = useState(false)
-  const [reservationFilter, setReservationFilter] = useState<'all' | 'flight' | 'hotel'>('all')
+  const [loadingCarReservations, setLoadingCarReservations] = useState(false)
+  const [reservationFilter, setReservationFilter] = useState<'all' | 'flight' | 'hotel' | 'car'>('all')
   // Inline tab and passengers panel (non-navigating UI)
   const [activeInlineTab, setActiveInlineTab] = useState<'none' | 'passengers' | 'reservations'>('reservations')
   const [passengers, setPassengers] = useState<any[]>([])
@@ -220,6 +222,7 @@ export default function KullaniciDetayPage() {
     fetchUser()
     fetchSurveyResponse()
     fetchHotelReservations()
+    fetchCarReservations()
   }, [params.id])
 
   const fetchHotelReservations = async () => {
@@ -245,6 +248,26 @@ export default function KullaniciDetayPage() {
       setHotelReservations([])
     } finally {
       setLoadingHotelReservations(false)
+    }
+  }
+
+  const fetchCarReservations = async () => {
+    if (!params.id) return
+    try {
+      setLoadingCarReservations(true)
+      const response = await fetch(`/api/cars/bookings?userId=${params.id}`)
+      const data = await response.json()
+      if (data.success && data.data) {
+        const list = Array.isArray(data.data) ? data.data : data.data?.bookings ?? []
+        setCarReservations(list)
+      } else {
+        setCarReservations([])
+      }
+    } catch (err) {
+      console.error('Araç rezervasyonları yüklenirken hata:', err)
+      setCarReservations([])
+    } finally {
+      setLoadingCarReservations(false)
     }
   }
 
@@ -759,7 +782,7 @@ export default function KullaniciDetayPage() {
                     </div>
                     <div className="p-2 bg-gray-50 border-r border-gray-200">
                       <p className="text-sm font-medium text-gray-900">İşlem</p>
-                      <p className="text-xs text-gray-500">{reservations.length + hotelReservations.length}</p>
+                      <p className="text-xs text-gray-500">{reservations.length + hotelReservations.length + carReservations.length}</p>
                     </div>
                     <div className="p-2 bg-gray-50 rounded-r-md">
                       <p className="text-sm font-medium text-gray-900">Not</p>
@@ -933,7 +956,7 @@ export default function KullaniciDetayPage() {
                               : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                           }`}
                         >
-                          Rezervasyonlar ({reservations.length + hotelReservations.length})
+                          Rezervasyonlar ({reservations.length + hotelReservations.length + carReservations.length})
                         </button>
                         <button
                           onClick={() => setPaymentsInlineTab('odemeler')}
@@ -971,7 +994,7 @@ export default function KullaniciDetayPage() {
                                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                               }`}
                             >
-                              Tümü ({reservations.length + hotelReservations.length})
+                              Tümü ({reservations.length + hotelReservations.length + carReservations.length})
                             </button>
                             <button
                               onClick={() => setReservationFilter('flight')}
@@ -993,9 +1016,19 @@ export default function KullaniciDetayPage() {
                             >
                               Otel ({hotelReservations.length})
                             </button>
+                            <button
+                              onClick={() => setReservationFilter('car')}
+                              className={`px-3 py-1 text-xs font-medium rounded-md ${
+                                reservationFilter === 'car'
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                            >
+                              Araç ({carReservations.length})
+                            </button>
                           </div>
 
-                          {(loadingReservations || loadingHotelReservations) ? (
+                          {(loadingReservations || loadingHotelReservations || loadingCarReservations) ? (
                             <div className="admin-text-xs text-gray-500">Yükleniyor...</div>
                           ) : (
                             <>
@@ -1160,8 +1193,57 @@ export default function KullaniciDetayPage() {
                                 </div>
                               )}
 
+                              {/* Araç Rezervasyonları */}
+                              {(reservationFilter === 'all' || reservationFilter === 'car') && carReservations.length > 0 && (
+                                <div className="w-full overflow-x-auto mt-4">
+                                  <div className="text-sm font-medium text-gray-900 mb-2">Araç Rezervasyonları</div>
+                                  <table className="w-full min-w-[640px] text-sm">
+                                    <thead>
+                                      <tr className="border-b border-gray-200">
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Rezervasyon No</th>
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Araç</th>
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Tarihler</th>
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Tutar</th>
+                                        <th className="text-left py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">Durum</th>
+                                        <th className="text-right py-3 px-3 text-xs font-medium text-gray-500 uppercase tracking-wide">İşlemler</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                    {carReservations.map((r: any) => {
+                                      const pickup = r.pickupDateTime ? new Date(r.pickupDateTime) : null
+                                      const dropoff = r.dropoffDateTime ? new Date(r.dropoffDateTime) : null
+                                      const dateStr = (d: Date) => d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })
+                                      const tutar = r.totalPrice != null ? `${r.totalPrice} ${r.currency || 'EUR'}` : '-'
+                                      const badge = (s: string) => {
+                                        if (!s) return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">-</span>
+                                        const textMap: Record<string,string> = { pending: 'Beklemede', confirmed: 'Onaylandı', cancelled: 'İptal', completed: 'Tamamlandı' }
+                                        const text = textMap[s] || s
+                                        const map: Record<string,string> = { confirmed: 'bg-emerald-100 text-emerald-800', pending: 'bg-amber-100 text-amber-800', cancelled: 'bg-red-100 text-red-700', completed: 'bg-blue-100 text-blue-700' }
+                                        return <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${map[s] || 'bg-gray-100 text-gray-700'}`}>{text}</span>
+                                      }
+                                      return (
+                                        <tr key={r.id} className="border-b border-gray-100 hover:bg-gray-50/50">
+                                          <td className="py-3 px-3"><span className="font-semibold text-gray-900">{r.bookingNumber || r.id?.slice(-8)}</span></td>
+                                          <td className="py-3 px-3">
+                                            <span className="font-semibold text-gray-900 block">{r.carName || '-'}</span>
+                                            {(r.carCategory || r.supplierName) && <span className="text-xs text-gray-500">{[r.carCategory, r.supplierName].filter(Boolean).join(' · ')}</span>}
+                                          </td>
+                                          <td className="py-3 px-3 text-gray-700 text-sm">{pickup ? dateStr(pickup) : '-'}{dropoff ? ` – ${dateStr(dropoff)}` : ''}</td>
+                                          <td className="py-3 px-3"><span className="font-semibold text-gray-900">{tutar}</span></td>
+                                          <td className="py-3 px-3">{badge(r.status)}</td>
+                                          <td className="py-3 px-3 text-right">
+                                            <button type="button" onClick={() => router.push(`/araclar/rezervasyonlar`)} className="text-blue-600 hover:text-blue-800 font-medium text-sm hover:underline">Detay</button>
+                                          </td>
+                                        </tr>
+                                      )
+                                    })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              )}
+
                               {/* Boş Durum */}
-                              {reservationFilter === 'all' && reservations.length === 0 && hotelReservations.length === 0 && (
+                              {reservationFilter === 'all' && reservations.length === 0 && hotelReservations.length === 0 && carReservations.length === 0 && (
                                 <div className="admin-text-xs text-gray-500">Kayıtlı rezervasyon yok</div>
                               )}
                               {reservationFilter === 'flight' && reservations.length === 0 && (
@@ -1169,6 +1251,9 @@ export default function KullaniciDetayPage() {
                               )}
                               {reservationFilter === 'hotel' && hotelReservations.length === 0 && (
                                 <div className="admin-text-xs text-gray-500">Kayıtlı otel rezervasyonu yok</div>
+                              )}
+                              {reservationFilter === 'car' && carReservations.length === 0 && (
+                                <div className="admin-text-xs text-gray-500">Kayıtlı araç rezervasyonu yok</div>
                               )}
                             </>
                           )}
