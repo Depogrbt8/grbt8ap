@@ -50,6 +50,10 @@ export default function AracRezervasyonlarPage() {
       setError(null)
       const params = new URLSearchParams()
       if (activeFilter !== 'all') params.append('status', activeFilter)
+      // Demo veri görmek için: ?mock=true ekle (veya ana site boşsa otomatik mock döner)
+      if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('demo') === '1') {
+        params.set('mock', 'true')
+      }
       const response = await fetch(`/api/cars/bookings?${params.toString()}`)
       const data = await response.json()
       if (data.success) {
